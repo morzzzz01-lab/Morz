@@ -395,3 +395,33 @@ body.xm-hold,body.xm-hold *{-webkit-user-select:none!important;user-select:none!
 .xm-fly2 .xm-sg{filter:drop-shadow(0 0 8px rgba(255,230,150,.35))}
 .xm-chunk{position:fixed;z-index:58;pointer-events:none;border-radius:46% 54% 52% 48%/55% 45% 55% 45%;will-change:transform,opacity;
   background:radial-gradient(circle at 34% 28%,#fff 0,#f2f7fd 55%,#cfdff1 100%);box-shadow:inset -2px -3px 6px rgba(120,150,190,.35),0 3px 6px rgba(20,45,90,.2)}
+
+
+/* =====================================================================
+   v59: smoother logo + animation polish (shapes and colours unchanged)
+   ===================================================================== */
+/* header / footer logo: soft entrance, gentle lift on hover, smoother hat pop */
+.xm-logo{transition:transform .6s var(--ease),filter .6s var(--ease)}
+.xm-logo .mark--xm{transition:filter .6s var(--ease);backface-visibility:hidden}
+@media(hover:hover){.xm-logo:hover{transform:translateY(-2px) scale(1.035)}.xm-logo:hover .mark--xm{filter:drop-shadow(0 6px 12px rgba(0,0,0,.4))}}
+.xm-logo:active{transform:scale(.97);transition-duration:.15s}
+.xm-hat{will-change:transform}
+.xm-hat--intro{animation:xm-hatpop 1s cubic-bezier(.22,1,.36,1) 3.75s forwards}
+@keyframes xm-hatpop{0%{opacity:0;transform:translate3d(0,-60%,0) rotate(-22deg) scale(.7)}60%{opacity:1}100%{opacity:1;transform:rotate(-14deg)}}
+header.top .xm-logo{animation:xm-logo-in 1s var(--ease) .1s both}
+@keyframes xm-logo-in{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
+
+/* loading screen: the hat settles with a soft spring, the pompom swings with a smoother decay */
+.xi-hat{animation:xi-hat-drop .95s cubic-bezier(.22,1,.36,1) 2.5s forwards}
+@keyframes xi-hat-drop{0%{opacity:0;transform:translate3d(0,-125%,0)}14%{opacity:1}72%{transform:translate3d(0,1.2%,0)}100%{opacity:1;transform:none}}
+.xi-hat .xi-pom{animation:xi-pom-swing 2.6s cubic-bezier(.37,0,.63,1) 3.2s both}
+.xi-b::after,.xi-b::before{animation:xi-halo-on .8s cubic-bezier(.22,1,.36,1) var(--arr) both,xi-halo 2.2s cubic-bezier(.45,0,.55,1) calc(var(--arr) + .8s + var(--g) * .55s) infinite}
+
+/* snowman: smoother arm waving, softer Santa gallop */
+.xm-dress .xa-r{animation-timing-function:cubic-bezier(.45,0,.55,1);animation-duration:1.5s}
+.xm-dress .xa-l{animation-timing-function:cubic-bezier(.45,0,.55,1)}
+.xm-sg .b i{animation-timing-function:cubic-bezier(.45,0,.55,1)}
+.xm-fly2 img,.xm-fly2 svg{animation-timing-function:cubic-bezier(.45,0,.55,1);animation-duration:4s}
+.xm-chunk,.xm-bit,.xm-puff,.xm-twig,.xm-mound,.xm-skirt{backface-visibility:hidden}
+.xtb{animation-timing-function:cubic-bezier(.45,0,.55,1)}
+@media(prefers-reduced-motion:reduce){.xm-logo,.xm-logo .mark--xm{transition:none}header.top .xm-logo{animation:none}}

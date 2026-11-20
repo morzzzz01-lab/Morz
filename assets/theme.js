@@ -542,6 +542,16 @@
       wx.drawImage(limg, x0 * k, y0 * k, sz * k, sz * k, x0, y0, sz, sz);
       wx.restore();
     }
+    /* paint the wire along the segment from sample i towards sample i+1 up to fraction f, in small overlapping steps */
+    var lastX = null, lastY = 0;
+    function stepTo(i, f) {
+      var a = SNAKE[i], b = SNAKE[i + 1] || a;
+      var x = (a[0] + (b[0] - a[0]) * f + .5) * S, y = (a[1] + (b[1] - a[1]) * f + .5) * S;
+      if (lastX === null) { reveal([x, y]); lastX = x; lastY = y; return; }
+      var dx = x - lastX, dy = y - lastY, d = Math.sqrt(dx * dx + dy * dy), n = Math.ceil(d / (7 * S));
+      for (var k = 1; k <= n; k++) reveal([lastX + dx * k / n, lastY + dy * k / n]);
+      lastX = x; lastY = y;
+    }
     function frame(now) {
       if (done) return;
       var e = now - t0;
@@ -552,8 +562,22 @@
         p++;
       }
       ctx.fill();
-      while (w < SNAKE.length && (SNAKE[w][2] + WSTART) * TS <= e) { reveal([(SNAKE[w][0] + .5) * S, (SNAKE[w][1] + .5) * S]); w++; }
-      if (p < PEN.length || w < SNAKE.length) raf = requestAnimationFrame(frame);
+      /* the snake glides: time is eased (slow start, smooth finish) and the head is interpolated between the recorded
+         points, so the wire is revealed as one continuous line instead of in jumps */
+      if (w < SNAKE.length - 1) {
+        var tt = Math.max(0, e / TS - WSTART), T = SNAKE[SNAKE.length - 1][2], u = Math.min(1, tt / T);
+        u = u * .55 + (u * u * (3 - 2 * u)) * .45;
+        var target = u * T;
+        while (w < SNAKE.length - 1 && SNAKE[w + 1][2] <= target) {
+          stepTo(w, 1); w++;
+        }
+        if (w < SNAKE.length - 1) {
+          var a0 = SNAKE[w], b0 = SNAKE[w + 1], f = (target - a0[2]) / Math.max(1, b0[2] - a0[2]);
+          stepTo(w, Math.min(1, Math.max(0, f)));
+        }
+        if (u >= 1) { while (w < SNAKE.length - 1) { stepTo(w, 1); w++; } }
+      }
+      if (p < PEN.length || w < SNAKE.length - 1) raf = requestAnimationFrame(frame);
     }
     begin();
     t0 = performance.now();
