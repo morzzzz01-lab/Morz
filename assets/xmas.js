@@ -1,3 +1,40 @@
+/* Light / Dark: two buttons in the header menu. Light makes the shop white, Dark is the original look.
+   The choice is remembered on this device (an inline script in the page head applies it before the first paint). */
+(function () {
+  if (window.__xmMode) return;
+  window.__xmMode = true;
+  var KEY = 'morz_mode', root = document.documentElement;
+  function get() { try { return localStorage.getItem(KEY) === 'light' ? 'light' : 'dark'; } catch (e) { return 'dark'; } }
+  function apply(m, save) {
+    root.classList.toggle('xm-light', m === 'light');
+    if (save) { try { localStorage.setItem(KEY, m); } catch (e) {} }
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) { if (!tc.__orig) tc.__orig = tc.getAttribute('content'); tc.setAttribute('content', m === 'light' ? '#ffffff' : tc.__orig); }
+    /* the logo's light-coloured wire would vanish on white: use the dark-wire version of the same logo */
+    [].forEach.call(document.querySelectorAll('img.mark--xm'), function (im) {
+      var src = im.getAttribute('src') || '';
+      if (m === 'light' && src.indexOf('morz-logo-mini-light.png') > -1) im.setAttribute('src', src.replace('morz-logo-mini-light.png', 'morz-logo-mini.png'));
+      else if (m !== 'light' && src.indexOf('morz-logo-mini.png') > -1 && im.__xmSwap) im.setAttribute('src', src.replace('morz-logo-mini.png', 'morz-logo-mini-light.png'));
+      if (m === 'light') im.__xmSwap = 1;
+    });
+    [].forEach.call(document.querySelectorAll('.xm-mode button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-mode') === m ? 'true' : 'false'); });
+  }
+  var sun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>';
+  var moon = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.7 8.7 0 1 0 11.1 11.1z"/></svg>';
+  function build() {
+    if (document.querySelector('.xm-mode')) return;
+    var g = document.createElement('div'); g.className = 'xm-mode'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'Light or dark');
+    g.innerHTML = '<button type="button" data-mode="light" aria-pressed="false">' + sun + '<span>Light</span></button><button type="button" data-mode="dark" aria-pressed="false">' + moon + '<span>Dark</span></button>';
+    g.addEventListener('click', function (e) { var b = e.target.closest('button[data-mode]'); if (b) apply(b.getAttribute('data-mode'), true); });
+    var nav = document.querySelector('header.top nav.main');
+    if (nav) { var fab = nav.querySelector('.mx-fab'); if (fab) nav.insertBefore(g, fab); else nav.appendChild(g); }
+    else { var w = document.querySelector('header.top .wrap'), cart = w && w.querySelector('.cartb'); if (w) w.insertBefore(g, cart || null); }
+    apply(get(), false);
+  }
+  apply(get(), false);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
+})();
+
 /* MORZ Christmas: continuous snowfall (white snow + a few gold sparkles). */
 (function () {
   if (window.__xmSnow) return;
@@ -191,37 +228,42 @@
   afterIntro();
 })();
 
-/* Snowball: press and hold on the Home page. The ball follows your finger/mouse and slowly grows; let go and it drops and
-   bursts into a spray of snow. Drop smaller balls on top of each other (big, medium, small) to build your own snowman,
-   which then puts on a hat and scarf from the shop's products. Hold very long and the whole site is buried in snow,
-   then the wind blows it away from the top. */
+/* Snowball: press and hold on the Home page. Loose snow gathers into a ball that follows your finger and grows; let go
+   and it drops. Drop smaller balls on top of each other (big, medium, small) to build a snowman, which then puts on a hat
+   and scarf from the shop's products. Tap the snowman and it falls over backwards; swipe it left or right and it tips
+   that way and rolls, and every ball turns back into snow. Hold very long and the giant ball flies at the screen and
+   smashes into the glass; the wind blows the snow away and a winter scene with its own snowman appears. */
 (function () {
   if (window.__xmBall) return;
   window.__xmBall = true;
   if (window.Shopify && Shopify.designMode) return;
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var SKIP = 'a,button,input,select,textarea,label,summary,dialog,iframe,.mx-panel,.mx-fab,[role=button],[role=dialog]';
+  var SKIP = 'a,button,input,select,textarea,label,summary,dialog,iframe,.mx-panel,.mx-fab,.xm-mode,[role=button],[role=dialog]';
   var CFG = window.MORZ_SNOW || {};
   function abs(u) { return u && u.indexOf('//') === 0 ? 'https:' + u : u; }
   var BALL = abs(CFG.ball) || '', TWIG = abs(CFG.twig) || '';
-  var S = 512, R0 = 253, GROW = 14000, cur = null, pend = null, live = 0, busy = false, PAT = null;
-  var knock = null;
-  var tower = { balls: [], shadow: null, skirt: null, dress: null, timer: 0 }, ACC = {};
+  var S = 512, R0 = 253, GROW = 14000, cur = null, pend = null, live = 0, busy = false, knock = null, SCN = null, PREP = null;
+  var tower = { balls: [], shadow: null, skirt: null, dress: null, timer: 0, gy: 0, scene: false }, ACC = {};
   if (BALL) { var pre = new Image(); pre.src = BALL; }
 
-  function pat() {
-    if (PAT) return PAT;
-    var c = document.createElement('canvas'); c.width = c.height = 220; var x = c.getContext('2d'), i;
-    for (i = 0; i < 700; i++) {
-      x.fillStyle = Math.random() < .5 ? 'rgba(255,255,255,' + (.3 + Math.random() * .5) + ')' : 'rgba(140,170,205,' + (.06 + Math.random() * .12) + ')';
-      x.beginPath(); x.arc(Math.random() * 220, Math.random() * 220, .7 + Math.random() * 2.2, 0, 6.2832); x.fill();
+  /* ---------- the stage: every piece of snow lives in one layer that is glued to the bottom of the screen,
+     so the snow stays on the ground when the browser's address bar slides away or comes back ---------- */
+  var STAGE = null, VW = window.innerWidth, VH = window.innerHeight, H0 = VH, OFF = 0;
+  function stage() {
+    if (!STAGE) {
+      STAGE = document.createElement('div'); STAGE.className = 'xm-stage xm-tw'; STAGE.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(STAGE); H0 = VH; OFF = 0;
     }
-    return (PAT = c.toDataURL('image/png'));
+    return STAGE;
   }
-  function dims() {
-    var W = window.innerWidth, H = window.innerHeight, big = Math.max(W, H);
-    return { W: W, H: H, Rmax: big * .75, Rbury: Math.min(big * .35, H * .4) };
-  }
+  function shift() { if (STAGE) STAGE.style.transform = 'translate3d(0,' + OFF + 'px,0)'; }
+  function rebase() { stage(); H0 = VH; OFF = 0; shift(); }
+  window.addEventListener('resize', function () { VW = window.innerWidth; VH = window.innerHeight; OFF = VH - H0; shift(); });
+  function SY(y) { return y - OFF; }
+  function add(el) { stage().appendChild(el); return el; }
+  function dims() { var W = VW, H = H0, big = Math.max(W, H); return { W: W, H: H, Rmax: big * .75, Rbury: Math.min(big * .35, H * .4) }; }
+  function lifeMs() { return tower.scene || SCN ? 60000 : 4300; }
+
   function ok(e) {
     if (knock) return false;
     if (!document.body.classList.contains('tpl-index') || busy) return false;
@@ -231,103 +273,122 @@
     var d = document.getElementById('MenuDrawer'); if (d && d.open) return false;
     return live < 5;
   }
-  function place(b) {
-    b.el.style.transform = 'translate3d(' + (b.x - S / 2) + 'px,' + (b.y - S / 2) + 'px,0) rotate(' + (b.rot || 0) + 'rad) scale(' + (b.r / R0 * (b.sx || 1)) + ',' + (b.r / R0 * (b.sy || 1)) + ')';
+  function tf(r, x, y, rot, sx, sy) {
+    return 'translate3d(' + (x - S / 2) + 'px,' + (y - S / 2) + 'px,0) rotate(' + (rot || 0) + 'rad) scale(' + (r / R0 * (sx || 1)) + ',' + (r / R0 * (sy || 1)) + ')';
   }
+  function place(b) { b.el.style.transform = tf(b.r, b.x, b.y, b.rot, b.sx, b.sy); }
   function newBall(x, y) {
     var el = document.createElement('div');
     el.className = 'xm-ball held'; el.setAttribute('aria-hidden', 'true');
     if (BALL) el.style.backgroundImage = 'url(' + BALL + ')';
-    document.body.appendChild(el); live++;
+    add(el); live++;
     el.__t = Date.now();
     return { el: el, x: x, y: y, tx: x, ty: y, r: 8, rot: 0, vx: 0 };
   }
 
-  /* spray of fine snow thrown sideways (it does not fall) */
-  function spray(x, y, r) {
-    var n = Math.min(46, 16 + Math.round(r / 4)), W = window.innerWidth, i;
-    var puff = document.createElement('i'); puff.className = 'xm-puff';
-    puff.style.cssText = 'left:' + (x - r * 1.1) + 'px;top:' + (y - r * .7) + 'px;width:' + r * 2.2 + 'px;height:' + r * 1.4 + 'px';
-    document.body.appendChild(puff);
-    puff.animate([{ transform: 'scale(.4)', opacity: .8 }, { transform: 'scale(1.5)', opacity: 0 }], { duration: 650, easing: 'ease-out', fill: 'forwards' }).onfinish = function () { puff.remove(); };
+  /* small pieces positioned only with transforms (no layout work while they fly) */
+  function bit(cls, x, y, w, h) {
+    var p = document.createElement('i'); p.className = cls;
+    p.style.cssText = 'left:0;top:0;width:' + w.toFixed(1) + 'px;height:' + h.toFixed(1) + 'px;transform:translate(' + (x - w / 2).toFixed(1) + 'px,' + (y - h / 2).toFixed(1) + 'px)';
+    return add(p);
+  }
+  function T(x, y, s) { return 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)' + (s !== undefined ? ' scale(' + s + ')' : ''); }
+
+  /* spray of fine snow thrown sideways */
+  function spray(x, y, r, n0) {
+    var n = n0 || Math.min(30, 12 + Math.round(r / 5)), i;
+    var pw = r * 2.2, ph = r * 1.4, puff = bit('xm-puff', x, y, pw, ph);
+    puff.animate([{ transform: T(x - pw / 2, y - ph / 2, .4), opacity: .8 }, { transform: T(x - pw / 2, y - ph / 2, 1.5), opacity: 0 }], { duration: 650, easing: 'ease-out', fill: 'forwards' }).onfinish = function () { puff.remove(); };
     for (i = 0; i < n; i++) {
-      var p = document.createElement('i'); p.className = 'xm-bit';
-      var sz = 2 + Math.random() * Math.max(2.5, r / 12) * (Math.random() < .15 ? 2.2 : 1);
-      p.style.cssText = 'width:' + sz + 'px;height:' + sz * (.8 + Math.random() * .35) + 'px;left:' + x + 'px;top:' + y + 'px';
-      document.body.appendChild(p);
+      var sz = 2 + Math.random() * Math.max(2.5, r / 12) * (Math.random() < .15 ? 2.2 : 1), sh = sz * (.8 + Math.random() * .35);
+      var p = bit('xm-bit', x, y, sz, sh);
       var dir = Math.random() < .5 ? -1 : 1, ang = (Math.random() - .5) * 1.0 - (Math.random() < .25 ? .5 : 0);
       var dist = (50 + Math.random() * 230) * (.55 + r / 150), dx = Math.cos(ang) * dist * dir, dy = Math.sin(ang) * dist * .8;
-      p.animate([
-        { transform: 'translate(0,0) scale(1)', opacity: 1 },
-        { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.45)', opacity: 0 }
-      ], { duration: 650 + Math.random() * 750, easing: 'cubic-bezier(.08,.75,.3,1)', fill: 'forwards' }).onfinish = (function (p) { return function () { p.remove(); }; })(p);
+      p.animate([{ transform: T(x - sz / 2, y - sh / 2, 1), opacity: 1 }, { transform: T(x - sz / 2 + dx, y - sh / 2 + dy, .45), opacity: 0 }],
+        { duration: 650 + Math.random() * 750, easing: 'cubic-bezier(.08,.75,.3,1)', fill: 'forwards' }).onfinish = (function (p) { return function () { p.remove(); }; })(p);
+    }
+  }
+  /* a fallen ball turns into fine powder: it is thrown up, drifts down and settles on the ground */
+  function powder(x, y, r, py, dir) {
+    var n = Math.min(60, Math.round(26 + r / 2.5)), k;
+    for (k = 0; k < n; k++) {
+      var sz = 1.4 + Math.random() * Math.max(2, r / 24), c = bit('xm-bit', x, y, sz, sz);
+      var dx = dir ? dir * r * (.2 + Math.random() * 1.9) + (Math.random() - .5) * r : (Math.random() - .5) * r * 2.8,
+          up = r * (.2 + Math.random() * 1.1), gd = Math.max(6, py - y - Math.random() * 8), sw = (Math.random() - .5) * r * .5, x0 = x - sz / 2, y0 = y - sz / 2;
+      c.animate([
+        { transform: T(x0, y0), opacity: 1, offset: 0, easing: 'cubic-bezier(.2,.8,.4,1)' },
+        { transform: T(x0 + dx * .6, y0 - up), opacity: 1, offset: .35, easing: 'cubic-bezier(.45,.1,.8,.7)' },
+        { transform: T(x0 + dx * .9 + sw, y0 + gd), opacity: .95, offset: .85 },
+        { transform: T(x0 + dx + sw, y0 + gd), opacity: 0, offset: 1 }
+      ], { duration: 1000 + Math.random() * 1300, delay: Math.random() * 220, fill: 'forwards' }).onfinish = (function (c) { return function () { c.remove(); }; })(c);
     }
   }
 
-  /* ---------- tower / snowman ---------- */
   function fadeOut(el, ms) {
     if (!el || el.__fo) return; el.__fo = 1;
     var o = 1; try { o = parseFloat(getComputedStyle(el).opacity); if (isNaN(o)) o = 1; } catch (e) {}
     try { el.animate([{ opacity: o }, { opacity: 0 }], { duration: ms, easing: 'ease-in', fill: 'forwards' }); } catch (e) { el.style.transition = 'opacity ' + ms + 'ms'; el.style.opacity = '0'; }
     setTimeout(function () { if (el.parentNode) el.remove(); }, ms + 80);
   }
+  function freshTower() { return { balls: [], shadow: null, skirt: null, dress: null, timer: 0, gy: 0, scene: false }; }
   function clearTower(quick) {
     clearTimeout(tower.timer);
     tower.balls.forEach(function (t) { if (!quick) spray(t.x, t.y, t.r * .7); fadeOut(t.el, quick ? 500 : 1500); });
     fadeOut(tower.shadow, quick ? 500 : 1500); fadeOut(tower.skirt, quick ? 500 : 1500); fadeOut(tower.dress, quick ? 500 : 1500);
-    tower = { balls: [], shadow: null, skirt: null, dress: null, timer: 0 };
+    tower = freshTower();
   }
 
-  /* real-looking snow: a soft mound made of thousands of tiny grains (no round balls) */
-  function snowCanvas(w, h, peak) {
+  /* real-looking snow: a soft mound made of thousands of tiny grains. The top centre of the canvas is the highest
+     point, both sides slope down to its bottom corners; `fade` lets the bottom melt into snowy ground */
+  function snowCanvas(w, h, fade) {
+    w = Math.max(4, w); h = Math.max(4, h);
     var c = document.createElement('canvas'), dpr = Math.min(2, window.devicePixelRatio || 1), i;
-    c.width = Math.max(2, Math.round(w * dpr)); c.height = Math.max(2, Math.round(h * dpr)); c.style.width = w + 'px'; c.style.height = h + 'px';
-    var x = c.getContext('2d'), ph = Math.random() * 6.28, N = Math.min(2600, Math.round(w * h / 11));
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); c.style.width = w + 'px'; c.style.height = h + 'px';
+    var x = c.getContext('2d'), ph = Math.random() * 6.28, N = Math.min(2200, Math.round(w * h / 12));
     x.scale(dpr, dpr);
-    function top(u) { return h * (1 - peak * Math.pow(Math.max(0, 1 - u * u), .7) * (1 + .06 * Math.sin(u * 11 + ph))); }
-    var g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#ffffff'); g.addColorStop(.5, '#f3f8fd'); g.addColorStop(1, '#d6e4f3');
+    function top(u) { return h * (1 - .96 * Math.pow(Math.max(0, 1 - u * u), .62) * (1 + .04 * Math.sin(u * 11 + ph))); }
+    var g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#ffffff'); g.addColorStop(.45, '#f4f8fd'); g.addColorStop(1, '#dde8f5');
     x.fillStyle = g; x.beginPath(); x.moveTo(0, h);
     for (i = 0; i <= 48; i++) x.lineTo(i / 48 * w, top(i / 24 - 1));
     x.lineTo(w, h); x.closePath(); x.fill();
+    var sg = x.createLinearGradient(0, 0, w, 0); sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(.62, 'rgba(255,255,255,0)'); sg.addColorStop(1, 'rgba(120,150,195,.16)');
+    x.globalCompositeOperation = 'source-atop'; x.fillStyle = sg; x.fillRect(0, 0, w, h); x.globalCompositeOperation = 'source-over';
     for (i = 0; i < N; i++) {
-      var px = Math.random() * w, ty = top(px / w * 2 - 1), py = ty - 5 + Math.random() * (h - ty + 5), dark = Math.random() < .3;
-      x.fillStyle = dark ? 'rgba(130,160,200,' + (.07 + Math.random() * .13) + ')' : 'rgba(255,255,255,' + (.45 + Math.random() * .5) + ')';
-      x.beginPath(); x.arc(px, py, .5 + Math.random() * 1.5, 0, 6.2832); x.fill();
+      var px = Math.random() * w, ty = top(px / w * 2 - 1), py = ty - 4 + Math.random() * (h - ty + 4), dark = Math.random() < .28;
+      x.fillStyle = dark ? 'rgba(130,160,200,' + (.06 + Math.random() * .12) + ')' : 'rgba(255,255,255,' + (.5 + Math.random() * .5) + ')';
+      x.beginPath(); x.arc(px, py, .45 + Math.random() * 1.3, 0, 6.2832); x.fill();
+    }
+    if (fade) {
+      var fg = x.createLinearGradient(0, 0, 0, h); fg.addColorStop(0, '#000'); fg.addColorStop(.55, '#000'); fg.addColorStop(1, 'rgba(0,0,0,0)');
+      x.globalCompositeOperation = 'destination-in'; x.fillStyle = fg; x.fillRect(0, 0, w, h); x.globalCompositeOperation = 'source-over';
     }
     return c;
   }
-  /* the fallen snowman becomes fine powder that flies, drifts down and settles */
-  function powder(x, y, r, py, dir) {
-    var n = Math.min(80, Math.round(34 + r / 2)), k;
-    for (k = 0; k < n; k++) {
-      var sz = 1.4 + Math.random() * Math.max(2, r / 24), c = document.createElement('i'); c.className = 'xm-bit xm-tw';
-      c.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;left:' + (x - sz / 2) + 'px;top:' + (y - sz / 2) + 'px;z-index:60';
-      document.body.appendChild(c);
-      var dx = dir * r * (.2 + Math.random() * 2.2) + (Math.random() - .5) * r, up = r * (.2 + Math.random() * 1.1), gd = Math.max(8, py - y - Math.random() * 6), sw = (Math.random() - .5) * r * .5;
-      c.animate([
-        { transform: 'translate(0,0)', opacity: 1, offset: 0, easing: 'cubic-bezier(.2,.8,.4,1)' },
-        { transform: 'translate(' + (dx * .6) + 'px,' + (-up) + 'px)', opacity: 1, offset: .35, easing: 'cubic-bezier(.45,.1,.8,.7)' },
-        { transform: 'translate(' + (dx * .9 + sw) + 'px,' + gd + 'px)', opacity: .95, offset: .85 },
-        { transform: 'translate(' + (dx + sw) + 'px,' + gd + 'px)', opacity: 0, offset: 1 }
-      ], { duration: 1000 + Math.random() * 1400, delay: Math.random() * 260, fill: 'forwards' }).onfinish = (function (c) { return function () { c.remove(); }; })(c);
-    }
-  }
-  /* a low drift of real snow that grows where the snowman fell and melts away again */
-  function drift(cx, py, w, h, delay, life) {
-    var el = snowCanvas(w, h, .9); el.className = 'xm-drift xm-tw'; el.__t = Date.now();
-    el.style.cssText += ';position:fixed;pointer-events:none;z-index:58;left:' + (cx - w / 2) + 'px;top:' + (py - h * .86) + 'px;transform-origin:50% 100%';
-    document.body.appendChild(el);
+  /* where the snow on the ground ends: the bottom of the screen, or (in the winter scene) a bit under the snowline */
+  function floorOf(gy, r, scene) { return scene ? gy + Math.max(26, r * .55) : H0 + 2; }
+  /* a low drift of real snow that grows where a ball fell, and melts away again */
+  function drift(cx, gy, w, hAbove, delay, life, scene) {
+    var top = gy - hAbove, el = snowCanvas(w, floorOf(gy, hAbove, scene) - top, scene); el.className = 'xm-drift'; el.__t = Date.now();
+    el.style.left = (cx - w / 2).toFixed(1) + 'px'; el.style.top = top.toFixed(1) + 'px';
+    add(el);
     el.animate([{ transform: 'scale(.55,.05)', opacity: 0 }, { transform: 'scale(1.03,1.06)', opacity: 1, offset: .65 }, { transform: 'scale(1)', opacity: 1 }], { duration: 900, delay: delay, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'backwards' });
     setTimeout(function () { fadeOut(el, 2400); }, delay + life);
+    return el;
   }
-  /* soft snow skirt around the foot of the bottom ball, so it sinks smoothly into the snow */
+  /* soft snow around the foot of the bottom ball, so it sits in the snow; it reaches down to the ground/screen edge */
   function mkSkirt(x, y, r) {
-    var k = snowCanvas(r * 3.1, r * .85, .88); k.className = 'xm-skirt xm-tw';
-    k.style.cssText += ';position:fixed;pointer-events:none;z-index:59;left:' + (x - r * 1.55) + 'px;top:' + (y + r * .5) + 'px;transform-origin:50% 100%';
-    document.body.appendChild(k);
+    var top = y + r * .5, w = r * 3.1, k = snowCanvas(w, floorOf(tower.gy || (y + r * .82), r, tower.scene) - top, tower.scene);
+    k.className = 'xm-skirt'; k.style.left = (x - w / 2).toFixed(1) + 'px'; k.style.top = top.toFixed(1) + 'px';
+    add(k);
     try { k.animate([{ transform: 'scale(.6,.15)', opacity: 0 }, { transform: 'scale(1.04,1.08)', opacity: 1, offset: .6 }, { transform: 'scale(1)', opacity: 1 }], { duration: 700, easing: 'cubic-bezier(.2,.8,.3,1)' }); } catch (e) {}
     return k;
   }
+  function mkShadow(x, gy, r) {
+    var sh = document.createElement('i'); sh.className = 'xm-shd';
+    sh.style.cssText = 'left:' + (x - r * 1.15) + 'px;top:' + (gy - r * .02) + 'px;width:' + r * 2.3 + 'px;height:' + r * .34 + 'px';
+    return add(sh);
+  }
+
   function plan(b) {
     var d = dims(), n = tower.balls.length, top = tower.balls[n - 1];
     if (n && n < 3 && b.r <= top.r * .95 && Math.abs(b.x - top.x) < top.r * 1.1 + b.r * .5 && b.y < top.y + top.r * .3) {
@@ -337,7 +398,7 @@
     if (n) clearTower(true);
     return { stack: false, x: Math.max(b.r + 4, Math.min(d.W - b.r - 4, b.x)), y: d.H - b.r - 6 };
   }
-  function drop(b, cb) {
+  function drop(b) {
     var pl = plan(b), vy = 0, last = performance.now(), bounced = 0;
     b.el.classList.remove('held');
     if (b.y > pl.y) b.y = pl.y - 2;
@@ -358,16 +419,15 @@
     })(last);
   }
   function settle(b, pl) {
-    live--; b.el.classList.add('xm-tw'); b.el.style.zIndex = 58;
+    live--; b.el.__t = 0; b.el.style.zIndex = 58;
     if (!pl.stack) {
-      var sh = document.createElement('i'); sh.className = 'xm-shd xm-tw';
-      sh.style.cssText = 'left:' + (b.x - b.r * 1.15) + 'px;top:' + (b.y + b.r * .82) + 'px;width:' + b.r * 2.3 + 'px;height:' + b.r * .34 + 'px';
-      document.body.appendChild(sh); tower.shadow = sh; tower.skirt = mkSkirt(b.x, b.y, b.r);
+      tower.gy = b.y + b.r * .82; tower.scene = false;
+      tower.shadow = mkShadow(b.x, tower.gy, b.r); tower.skirt = mkSkirt(b.x, b.y, b.r);
     }
-    tower.balls.push({ el: b.el, x: b.x, y: b.y, r: b.r });
+    tower.balls.push({ el: b.el, x: b.x, y: b.y, r: b.r, rot: b.rot || 0 });
     clearTimeout(tower.timer);
     if (tower.balls.length === 3) setTimeout(dress, 380);
-    tower.timer = setTimeout(function () { if (tower.balls.length === 3) collapse(); else clearTower(false); }, tower.balls.length === 3 ? 14000 : 22000);
+    tower.timer = setTimeout(function () { if (tower.balls.length === 3) fallBack(); else clearTower(false); }, tower.balls.length === 3 ? 14000 : 22000);
   }
 
   /* background cut-out for the shop's hat/scarf product photos */
@@ -487,12 +547,120 @@
     }
     var el = document.createElement('div'); el.className = 'xm-dress xm-tw'; el.setAttribute('aria-hidden', 'true');
     el.innerHTML = '<svg width="' + d.W + '" height="' + d.H + '" viewBox="0 0 ' + d.W + ' ' + d.H + '">' + defs + g + '</svg>';
-    document.body.appendChild(el); tower.dress = el; tower.armMeta = armMeta;
+    add(el); tower.dress = el; tower.armMeta = armMeta;
     el.animate([{ opacity: 0, transform: 'translateY(-14px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 650, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'forwards' });
     spray(hx, hy, hr);
   }
 
-  /* ---------- the winter scene revealed under the snow ---------- */
+
+  /* ---------- falling over ---------- */
+  function detach() { clearTimeout(tower.timer); var t = tower; tower = freshTower(); return t; }
+  /* the snow left where a ball broke up */
+  function burst(x, y, r, gy, dir, scene) {
+    powder(x, Math.min(y, gy - 4), r * 1.15, gy, dir);
+    spray(x, Math.min(y, gy - 4), r * .75, 10);
+    drift(x + dir * r * .3, gy, r * 2.9, r * .55, 120, lifeMs(), scene);
+  }
+  /* the twig arms come loose, hop once and lie in the snow */
+  function tossArms(meta, grp, gy, dir) {
+    if (!meta || !TWIG) return;
+    meta.forEach(function (a) {
+      var g = grp.querySelector('.' + a.cls); if (!g) return;
+      var r = g.getBoundingClientRect(), cx = r.left + r.width / 2, cy = SY(r.top + r.height / 2);
+      var img = document.createElement('img'); img.src = TWIG; img.alt = ''; img.className = 'xm-twig';
+      img.style.cssText = 'left:' + (cx - a.w / 2).toFixed(1) + 'px;top:' + (cy - a.h / 2).toFixed(1) + 'px;width:' + a.w.toFixed(1) + 'px;height:' + a.h.toFixed(1) + 'px';
+      add(img); g.style.opacity = '0';
+      var end = a.side * (80 + Math.random() * 18), r0 = a.ang + dir * 40, dxs = (dir || a.side) * (24 + Math.random() * 46) + a.side * 16,
+          land = Math.max(-a.h * .2, gy - a.w * .35 - cy), up = Math.min(46, a.h * .28);
+      var R = function (x, y, rot) { return 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + rot.toFixed(1) + 'deg)'; };
+      img.animate([
+        { transform: R(0, 0, r0), offset: 0, easing: 'cubic-bezier(.2,.7,.4,1)' },
+        { transform: R(dxs * .35, -up, r0 + (end - r0) * .35), offset: .3, easing: 'cubic-bezier(.5,0,.9,.6)' },
+        { transform: R(dxs * .85, land, end), offset: .78, easing: 'cubic-bezier(.2,.6,.4,1)' },
+        { transform: R(dxs * .95, land - a.h * .07, end + a.side * 5), offset: .88 },
+        { transform: R(dxs, land, end), offset: 1 }
+      ], { duration: 1050, fill: 'forwards' }).onfinish = function () { spray(cx + dxs, gy - 4, Math.max(12, a.h * .15), 8); };
+      setTimeout(function () { fadeOut(img, 1800); }, lifeMs() + 600);
+    });
+  }
+  /* a tap from the front: the snowman tips over backwards, away from you, lands flat in the snow behind and breaks up */
+  function fallBack() {
+    var t = detach(), B = t.balls; if (!B.length) return;
+    var d = dims(), base = B[0], px = base.x, gy = t.gy, hz = Math.max(70, d.H * .12), ms = 1250, hit = ms * .74;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:0;top:0;width:' + d.W + 'px;height:' + d.H + 'px;pointer-events:none;z-index:58;perspective:' + Math.round(d.H * 1.15) + 'px;perspective-origin:' + px.toFixed(1) + 'px ' + (gy - hz).toFixed(1) + 'px';
+    var grp = document.createElement('div');
+    grp.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:' + px.toFixed(1) + 'px ' + gy.toFixed(1) + 'px';
+    wrap.appendChild(grp); add(wrap);
+    B.forEach(function (b) { grp.appendChild(b.el); }); if (t.dress) grp.appendChild(t.dress);
+    grp.animate([
+      { transform: 'rotateX(0deg)', offset: 0, easing: 'cubic-bezier(.42,0,.92,.5)' },
+      { transform: 'rotateX(87deg)', offset: .74, easing: 'cubic-bezier(.2,.6,.4,1)' },
+      { transform: 'rotateX(79deg)', offset: .86, easing: 'cubic-bezier(.5,0,.9,.6)' },
+      { transform: 'rotateX(87deg)', offset: 1 }
+    ], { duration: ms, fill: 'forwards' });
+    setTimeout(function () {
+      tossArms(t.armMeta, grp, gy, 0);
+      B.forEach(function (b, i) {
+        var r = b.el.getBoundingClientRect(), x = r.left + r.width / 2, y = SY(r.top + r.height / 2);
+        setTimeout(function () { powder(x, y, b.r * 1.25, gy - 2, 0); spray(x, y, b.r * .8, 10); }, i * 50);
+      });
+      spray(px, gy - base.r * .2, base.r * 1.4);
+      drift(px, gy, base.r * 4.4, base.r * .78, 60, lifeMs(), t.scene);
+      try { grp.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, delay: 90, fill: 'forwards' }); } catch (e) {}
+      setTimeout(function () { wrap.remove(); }, 420);
+      fadeOut(t.shadow, 700);
+      setTimeout(function () { fadeOut(t.skirt, 2400); }, lifeMs());
+      fallen();
+    }, hit);
+  }
+  /* a ball that has come off rolls along the ground (it turns as far as it travels) and breaks into snow where it stops */
+  function rollBall(b, x0, y0, rot0, dir, gy, delay, scene) {
+    var yg = gy - b.r * .86, dist = b.r * (1.5 + Math.random() * .7) + 50, x2 = x0 + dir * dist;
+    x2 = Math.max(b.r * .55, Math.min(VW - b.r * .55, x2));
+    var x1 = x0 + (x2 - x0) * .3, r1 = rot0 + (x1 - x0) / b.r, r2 = rot0 + (x2 - x0) / b.r;
+    b.el.style.transition = 'none';
+    var an = b.el.animate([
+      { transform: tf(b.r, x0, y0, rot0), offset: 0, easing: 'cubic-bezier(.5,0,.9,.6)' },
+      { transform: tf(b.r, x1, yg, r1, 1.04, .94), offset: .3, easing: 'cubic-bezier(.3,.8,.5,1)' },
+      { transform: tf(b.r, x1 + (x2 - x1) * .08, yg, r1 + (r2 - r1) * .08), offset: .36, easing: 'cubic-bezier(.25,.65,.45,1)' },
+      { transform: tf(b.r, x2, yg, r2), offset: 1 }
+    ], { duration: 1150 + b.r * 2.2, delay: delay, fill: 'forwards' });
+    an.onfinish = function () { burst(x2, yg, b.r, gy, dir, scene); fadeOut(b.el, 160); };
+  }
+  /* a swipe to the side: it tips over that way (no wobbling) and the balls roll on along the ground */
+  function rollSide(dir) {
+    var t = detach(), B = t.balls; if (!B.length) return;
+    var base = B[0], gy = t.gy, pvx = base.x + dir * base.r * .7, TH = 68;
+    var grp = document.createElement('div');
+    grp.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:58;transform-origin:' + pvx.toFixed(1) + 'px ' + gy.toFixed(1) + 'px';
+    add(grp); B.forEach(function (b) { grp.appendChild(b.el); }); if (t.dress) grp.appendChild(t.dress);
+    var an = grp.animate([{ transform: 'rotate(0deg)', easing: 'cubic-bezier(.45,0,.95,.6)' }, { transform: 'rotate(' + dir * TH + 'deg)' }], { duration: 620, fill: 'forwards' });
+    setTimeout(function () { tossArms(t.armMeta, grp, gy, dir); }, 360);
+    an.onfinish = function () {
+      var th = dir * TH * Math.PI / 180, cs = Math.cos(th), sn = Math.sin(th);
+      if (t.dress) { spray(t.balls[B.length - 1].x + dir * base.r, gy - base.r * .6, base.r * .9); fadeOut(t.dress, 160); }
+      B.forEach(function (b, i) {
+        var dx = b.x - pvx, dy = b.y - gy, x = pvx + dx * cs - dy * sn, y = gy + dx * sn + dy * cs;
+        add(b.el);
+        rollBall(b, x, y, (b.rot || 0) + th, dir, gy, i * 40, t.scene);
+      });
+      setTimeout(function () { grp.remove(); }, 260);
+      fadeOut(t.shadow, 700);
+      setTimeout(function () { fadeOut(t.skirt, 2400); }, lifeMs());
+      setTimeout(fallen, 900);
+    };
+  }
+  /* one or two balls (no snowman yet) just roll away */
+  function rollAway(dir) {
+    var t = detach(), B = t.balls; if (!B.length) return;
+    B.forEach(function (b, i) { rollBall(b, b.x, b.y, b.rot || 0, dir, t.gy, (B.length - 1 - i) * 90, t.scene); });
+    fadeOut(t.shadow, 900);
+    setTimeout(function () { fadeOut(t.skirt, 2400); }, lifeMs());
+    setTimeout(fallen, 900);
+  }
+  function fallen() { if (SCN && !SCN.ending) setTimeout(endScene, 1900); }
+
   var BULB = ['#ff3b30', '#ffc83a', '#39a8ff', '#35d56a', '#ff7ad9'];
   function tree(cx, bt, h) {
     var o = '', bulbs = [], k, j, TW = Math.max(6, h * .06);
@@ -520,29 +688,127 @@
     bulbs.push([cx, sy - h * .02, '#ffe27a', 1]);
     return { svg: o, bulbs: bulbs };
   }
+
+  /* ---------- the winter scene revealed after the giant snowball ---------- */
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function f1(v) { return Math.round(v * 10) / 10; }
+  /* a jagged mountain range with snow caps */
+  function range(W, H, yTop, yLow, n, fill, cap) {
+    var pts = [], i, o = '', caps = '';
+    for (i = 0; i <= n; i++) {
+      var x = -W * .06 + i / n * W * 1.12, pk = yTop + Math.random() * (yLow - yTop) * .55;
+      pts.push([x, pk]);
+      if (i < n) pts.push([x + W * 1.12 / n * (.4 + Math.random() * .2), yLow - Math.random() * (yLow - yTop) * .25]);
+    }
+    o = 'M' + f1(-W * .06) + ' ' + f1(yLow + H * .2) + pts.map(function (p) { return ' L' + f1(p[0]) + ' ' + f1(p[1]); }).join('') + ' L' + f1(W * 1.06) + ' ' + f1(yLow + H * .2) + 'Z';
+    for (i = 0; i < pts.length; i += 2) {
+      var p = pts[i], L = pts[i - 1] || [p[0] - W * .08, yLow], R = pts[i + 1] || [p[0] + W * .08, yLow], k = .26 + Math.random() * .1;
+      var lx = p[0] + (L[0] - p[0]) * k, ly = p[1] + (L[1] - p[1]) * k, rx = p[0] + (R[0] - p[0]) * k, ry = p[1] + (R[1] - p[1]) * k;
+      caps += '<path d="M' + f1(p[0]) + ' ' + f1(p[1]) + ' L' + f1(rx) + ' ' + f1(ry) + ' L' + f1(rx - (rx - p[0]) * .35) + ' ' + f1(ry - (ry - p[1]) * .25 + 3) +
+        ' L' + f1(p[0] + (rx - p[0]) * .1) + ' ' + f1(ry + 2) + ' L' + f1(p[0] - (p[0] - lx) * .25) + ' ' + f1(ly - (ly - p[1]) * .3 + 2) + ' L' + f1(lx) + ' ' + f1(ly) + 'Z" fill="' + cap + '"/>';
+    }
+    return '<path d="' + o + '" fill="' + fill + '"/>' + caps;
+  }
+  /* little snowy pines along the far hill */
+  function pine(x, b, h, c, snow) {
+    var w = h * .42, o = '<rect x="' + f1(x - h * .03) + '" y="' + f1(b - h * .12) + '" width="' + f1(h * .06) + '" height="' + f1(h * .12) + '" fill="' + c + '"/>', k;
+    for (k = 0; k < 3; k++) {
+      var tb = b - h * .1 - k * h * .26, tt = tb - h * .42, hw = w * (1 - k * .25);
+      o += '<path d="M' + f1(x) + ' ' + f1(tt) + ' L' + f1(x + hw) + ' ' + f1(tb) + ' L' + f1(x - hw) + ' ' + f1(tb) + 'Z" fill="' + c + '"/>' +
+        '<path d="M' + f1(x) + ' ' + f1(tt) + ' L' + f1(x + hw * .42) + ' ' + f1(tt + h * .18) + ' Q' + f1(x) + ' ' + f1(tt + h * .23) + ' ' + f1(x - hw * .42) + ' ' + f1(tt + h * .18) + 'Z" fill="' + snow + '"/>';
+    }
+    return o;
+  }
+  /* a log cabin with a thick snowy roof and warm windows (wide screens only) */
+  function cabin(cx, b, s, P) {
+    var w = s, h = s * .58, x0 = cx - w / 2, rt = b - h, o = '', i;
+    o += '<ellipse cx="' + f1(cx) + '" cy="' + f1(b - h * .45) + '" rx="' + f1(w * 1.1) + '" ry="' + f1(h * 1.05) + '" fill="url(#xwg)"/>';
+    o += '<rect x="' + f1(x0) + '" y="' + f1(rt) + '" width="' + f1(w) + '" height="' + f1(h) + '" fill="url(#xwd)"/>';
+    for (i = 1; i < 6; i++) o += '<path d="M' + f1(x0) + ' ' + f1(rt + h * i / 6) + 'h' + f1(w) + '" stroke="#3b2214" stroke-opacity=".45" stroke-width="1.2"/>';
+    var ww = w * .17, wh = h * .34, wy = rt + h * .26;
+    [x0 + w * .14, x0 + w * .69].forEach(function (wx) {
+      o += '<rect x="' + f1(wx) + '" y="' + f1(wy) + '" width="' + f1(ww) + '" height="' + f1(wh) + '" rx="1.5" fill="' + P.win + '"/>' +
+        '<path d="M' + f1(wx + ww / 2) + ' ' + f1(wy) + 'v' + f1(wh) + 'M' + f1(wx) + ' ' + f1(wy + wh / 2) + 'h' + f1(ww) + '" stroke="#5a321b" stroke-width="1.6"/>' +
+        '<path d="M' + f1(wx - 2) + ' ' + f1(wy - 1) + 'h' + f1(ww + 4) + '" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>';
+    });
+    var dw = w * .2, dh = h * .62, dx = cx - dw / 2;
+    o += '<rect x="' + f1(dx) + '" y="' + f1(b - dh) + '" width="' + f1(dw) + '" height="' + f1(dh) + '" rx="2" fill="#4a2a17"/>' +
+      '<circle cx="' + f1(cx) + '" cy="' + f1(b - dh * .7) + '" r="' + f1(dw * .3) + '" fill="none" stroke="#2f8f4e" stroke-width="' + f1(dw * .14) + '"/><circle cx="' + f1(cx) + '" cy="' + f1(b - dh * .7 + dw * .3) + '" r="' + f1(dw * .07) + '" fill="#e0263b"/>';
+    var chx = x0 + w * .74, ry = rt - w * .34;
+    o += '<rect x="' + f1(chx) + '" y="' + f1(ry - w * .06) + '" width="' + f1(w * .1) + '" height="' + f1(w * .3) + '" fill="#6b3b2a"/><rect x="' + f1(chx - 2) + '" y="' + f1(ry - w * .09) + '" width="' + f1(w * .1 + 4) + '" height="' + f1(w * .05) + '" rx="3" fill="#fff"/>';
+    o += '<path d="M' + f1(x0 - w * .1) + ' ' + f1(rt + 2) + ' L' + f1(cx) + ' ' + f1(ry) + ' L' + f1(x0 + w * 1.1) + ' ' + f1(rt + 2) + 'Z" fill="#3a2418"/>';
+    o += '<path d="M' + f1(x0 - w * .14) + ' ' + f1(rt + 4) + ' Q' + f1(x0 - w * .16) + ' ' + f1(rt - 6) + ' ' + f1(x0 - w * .02) + ' ' + f1(rt - 9) + ' L' + f1(cx) + ' ' + f1(ry - 9) + ' L' + f1(x0 + w * 1.02) + ' ' + f1(rt - 9) +
+      ' Q' + f1(x0 + w * 1.16) + ' ' + f1(rt - 6) + ' ' + f1(x0 + w * 1.14) + ' ' + f1(rt + 4) + ' Q' + f1(x0 + w * .9) + ' ' + f1(rt + 10) + ' ' + f1(x0 + w * .8) + ' ' + f1(rt + 3) + ' Q' + f1(x0 + w * .65) + ' ' + f1(rt + 13) + ' ' + f1(x0 + w * .5) + ' ' + f1(rt + 4) +
+      ' Q' + f1(x0 + w * .3) + ' ' + f1(rt + 11) + ' ' + f1(x0 + w * .16) + ' ' + f1(rt + 4) + ' Q' + f1(x0) + ' ' + f1(rt + 9) + ' ' + f1(x0 - w * .14) + ' ' + f1(rt + 4) + 'Z" fill="url(#xsr)"/>';
+    return { svg: o, smoke: [chx + w * .05, ry - w * .1] };
+  }
   function scene(d) {
-    var W = d.W, H = d.H, gy = Math.round(H * .79), i, g = '', lights = '', sk = document.createElement('div');
-    sk.className = 'xm-scene2 xm-tw';
-    for (i = 0; i < 40; i++) g += '<circle cx="' + Math.round(Math.random() * W) + '" cy="' + Math.round(Math.random() * H * .45) + '" r="' + (.5 + Math.random() * 1.3).toFixed(1) + '" fill="#fff" opacity="' + (.35 + Math.random() * .6).toFixed(2) + '"/>';
-    g += '<path d="M0 ' + (gy - H * .1) + ' Q' + W * .25 + ' ' + (gy - H * .17) + ' ' + W * .5 + ' ' + (gy - H * .09) + ' T' + W + ' ' + (gy - H * .12) + ' V' + H + ' H0Z" fill="#28376f"/>';
+    var W = d.W, H = d.H, gy = Math.round(H * .79), i, g = '', html = '', lights = '', sk = document.createElement('div');
+    var light = document.documentElement.classList.contains('xm-light');
+    var P = light ? {
+      sky: 'linear-gradient(180deg,#3f8ddb 0%,#76b6ee 30%,#b8dbf8 56%,#e6f3ff 72%,#fbfdff 82%)',
+      far1: '#a6c2e6', far2: '#86a8d4', cap1: '#ffffff', cap2: '#f4f8fe', hill: '#b2cdeb', forest: '#5f87b4', fsnow: '#f6faff', win: '#ffcf63', glow: .35
+    } : {
+      sky: 'linear-gradient(180deg,#050a24 0%,#0d1848 26%,#213179 50%,#57599b 66%,#b0849f 77%,#f0bca6 85%)',
+      far1: '#3a4a8c', far2: '#283670', cap1: '#dfe8fb', cap2: '#c9d6f1', hill: '#1d2b60', forest: '#121d47', fsnow: '#c3d1ee', win: '#ffc552', glow: .85
+    };
+    sk.className = 'xm-scene2 xm-tw'; sk.style.background = P.sky;
+    var mn = Math.min(W, H);
+    if (light) {
+      g += '<circle cx="' + f1(W * .82) + '" cy="' + f1(H * .1) + '" r="' + f1(mn * .3) + '" fill="url(#xsun)"/><circle cx="' + f1(W * .82) + '" cy="' + f1(H * .1) + '" r="' + f1(mn * .055) + '" fill="#fffdf0"/>';
+    } else {
+      for (i = 0; i < 70; i++) g += '<circle cx="' + Math.round(Math.random() * W) + '" cy="' + Math.round(Math.random() * H * .55) + '" r="' + rnd(.4, 1.3).toFixed(1) + '" fill="#fff" opacity="' + rnd(.3, .9).toFixed(2) + '"/>';
+      for (i = 0; i < 14; i++) html += '<i class="xs-st" style="left:' + f1(Math.random() * W) + 'px;top:' + f1(Math.random() * H * .5) + 'px;--d:-' + rnd(0, 2.4).toFixed(1) + 's"></i>';
+      /* northern lights */
+      for (i = 0; i < 3; i++) {
+        var ay = H * (.12 + i * .07), aa = H * rnd(.03, .07), th2 = H * rnd(.05, .09);
+        g += '<path d="M' + f1(-W * .1) + ' ' + f1(ay + aa) + ' C' + f1(W * .25) + ' ' + f1(ay - aa * 2) + ' ' + f1(W * .55) + ' ' + f1(ay + aa * 2) + ' ' + f1(W * 1.1) + ' ' + f1(ay - aa) +
+          ' L' + f1(W * 1.1) + ' ' + f1(ay - aa + th2) + ' C' + f1(W * .55) + ' ' + f1(ay + aa * 2 + th2 * .6) + ' ' + f1(W * .25) + ' ' + f1(ay - aa * 2 + th2 * 1.3) + ' ' + f1(-W * .1) + ' ' + f1(ay + aa + th2) + 'Z" fill="url(#xau' + (i % 2) + ')" opacity="' + (.5 - i * .1).toFixed(2) + '" filter="url(#xab)"/>';
+      }
+      var mx = W * .8, my = H * .13, mr = mn * .062;
+      g += '<circle cx="' + f1(mx) + '" cy="' + f1(my) + '" r="' + f1(mr * 4) + '" fill="url(#xmg)"/><circle cx="' + f1(mx) + '" cy="' + f1(my) + '" r="' + f1(mr) + '" fill="url(#xmo)"/>' +
+        '<circle cx="' + f1(mx - mr * .3) + '" cy="' + f1(my - mr * .2) + '" r="' + f1(mr * .18) + '" fill="#d9c995" opacity=".45"/><circle cx="' + f1(mx + mr * .35) + '" cy="' + f1(my + mr * .3) + '" r="' + f1(mr * .12) + '" fill="#d9c995" opacity=".4"/><circle cx="' + f1(mx + mr * .1) + '" cy="' + f1(my - mr * .5) + '" r="' + f1(mr * .08) + '" fill="#d9c995" opacity=".4"/>';
+    }
+    g += range(W, H, H * .4, H * .62, 6, P.far1, P.cap1);
+    g += range(W, H, H * .5, H * .69, 8, P.far2, P.cap2);
+    /* the far hill with a pine forest */
+    var hy0 = gy - H * .1, hyc = gy - H * .17, hy1 = gy - H * .09, hyc2 = gy - H * .01, hy2 = gy - H * .12;
+    function hillY(x) { var t; if (x <= W / 2) { t = x / (W / 2); return (1 - t) * (1 - t) * hy0 + 2 * t * (1 - t) * hyc + t * t * hy1; } t = (x - W / 2) / (W / 2); return (1 - t) * (1 - t) * hy1 + 2 * t * (1 - t) * hyc2 + t * t * hy2; }
+    g += '<path d="M0 ' + f1(hy0) + ' Q' + f1(W * .25) + ' ' + f1(hyc) + ' ' + f1(W * .5) + ' ' + f1(hy1) + ' T' + f1(W) + ' ' + f1(hy2) + ' V' + H + ' H0Z" fill="' + P.hill + '"/>';
+    for (i = 0; i < 30; i++) { var px = (i + Math.random() * .6) / 30 * W, ph = H * rnd(.035, .065); g += pine(px, hillY(px) + ph * .25, ph, P.forest, P.fsnow); }
+    var smoke = null;
+    if (W > H * .8) { var cb = cabin(W * .66, hillY(W * .66) + H * .02, Math.min(W * .1, H * .17), P); g += cb.svg; smoke = cb.smoke; }
+    g += '<ellipse cx="' + f1(W * .5) + '" cy="' + f1(gy - H * .02) + '" rx="' + f1(W * .75) + '" ry="' + f1(H * .12) + '" fill="url(#xgl)"/>';
+    g += '<path d="M0 ' + f1(gy - H * .045) + ' C' + f1(W * .25) + ' ' + f1(gy - H * .1) + ' ' + f1(W * .55) + ' ' + f1(gy - H * .02) + ' ' + f1(W) + ' ' + f1(gy - H * .075) + ' V' + H + ' H0Z" fill="#eaf2fb" opacity=".9"/>';
     var tx = [.04, .13, .23, .82, .92, .985], th = [.36, .27, .21, .23, .35, .25];
     for (i = 0; i < tx.length; i++) {
       var tr = tree(W * tx[i], gy - H * (.012 + (i % 3) * .012), H * th[i]);
       g += tr.svg;
       tr.bulbs.forEach(function (q, n) { lights += '<i class="xtb' + (q[3] ? ' xts' : '') + '" style="left:' + q[0].toFixed(1) + 'px;top:' + q[1].toFixed(1) + 'px;--c:' + q[2] + ';--d:-' + (((n * 37) % 18) / 10).toFixed(1) + 's"></i>'; });
     }
-    g += '<ellipse cx="' + W * .5 + '" cy="' + (gy - H * .02) + '" rx="' + W * .75 + '" ry="' + H * .12 + '" fill="url(#xgl)"/>';
-    for (i = 0; i < 16; i++) g += '<circle cx="' + Math.round(Math.random() * W) + '" cy="' + Math.round(Math.random() * H * .6) + '" r="' + (3 + Math.random() * 7).toFixed(1) + '" fill="#fff" opacity="' + (.12 + Math.random() * .2).toFixed(2) + '"/>';
-    g += '<path d="M0 ' + (gy - H * .045) + ' C' + W * .25 + ' ' + (gy - H * .1) + ' ' + W * .55 + ' ' + (gy - H * .02) + ' ' + W + ' ' + (gy - H * .075) + ' V' + H + ' H0Z" fill="#e8f1fa" opacity=".85"/>';
-    g += '<path d="M0 ' + gy + ' Q' + W * .2 + ' ' + (gy - H * .035) + ' ' + W * .45 + ' ' + (gy - H * .005) + ' T' + W + ' ' + (gy - H * .02) + ' V' + H + ' H0Z" fill="url(#xgs)"/>';
-    sk.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none"><defs>' +
-      '<linearGradient id="xgs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#eaf2fb"/><stop offset="1" stop-color="#cadcf0"/></linearGradient><radialGradient id="xgl"><stop offset="0" stop-color="#bfe3ff" stop-opacity=".55"/><stop offset="1" stop-color="#bfe3ff" stop-opacity="0"/></radialGradient>' +
+    g += '<path d="M0 ' + gy + ' Q' + f1(W * .2) + ' ' + f1(gy - H * .035) + ' ' + f1(W * .45) + ' ' + f1(gy - H * .005) + ' T' + W + ' ' + f1(gy - H * .02) + ' V' + H + ' H0Z" fill="url(#xgs)"/>';
+    for (i = 0; i < 46; i++) { var gx = Math.random() * W, gyy = gy + Math.random() * (H - gy); g += '<circle cx="' + f1(gx) + '" cy="' + f1(gyy) + '" r="' + rnd(.6, 1.5).toFixed(1) + '" fill="#fff" opacity="' + rnd(.6, 1).toFixed(2) + '"/>'; }
+    for (i = 0; i < 28; i++) html += '<i class="xs-fl" style="left:' + f1(Math.random() * W) + 'px;--s:' + rnd(2, 5.5).toFixed(1) + 'px;--o:' + rnd(.5, .95).toFixed(2) + ';--t:' + rnd(6, 12).toFixed(1) + 's;--d:-' + rnd(0, 12).toFixed(1) + 's;--dx:' + Math.round(rnd(-40, 40)) + 'px"></i>';
+    if (smoke) for (i = 0; i < 3; i++) html += '<i class="xs-smk" style="left:' + f1(smoke[0]) + 'px;top:' + f1(smoke[1]) + 'px;--w:' + f1(mn * .05) + 'px;--d:-' + (i * 1.5) + 's"></i>';
+    sk.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '"><defs>' +
+      '<linearGradient id="xgs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#eaf2fb"/><stop offset="1" stop-color="#cadcf0"/></linearGradient>' +
+      '<radialGradient id="xgl"><stop offset="0" stop-color="' + (light ? '#ffffff' : '#bfe3ff') + '" stop-opacity=".55"/><stop offset="1" stop-color="#bfe3ff" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="xtg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f8f59"/><stop offset=".5" stop-color="#14573a"/><stop offset="1" stop-color="#082d1e"/></linearGradient>' +
-      '<radialGradient id="xsn" cx=".34" cy=".3" r=".85"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#f0f6fc"/><stop offset=".85" stop-color="#c4d7ed"/><stop offset="1" stop-color="#8aa6c7"/></radialGradient></defs>' + g + '</svg>' + lights;
+      '<radialGradient id="xsn" cx=".34" cy=".3" r=".85"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#f0f6fc"/><stop offset=".85" stop-color="#c4d7ed"/><stop offset="1" stop-color="#8aa6c7"/></radialGradient>' +
+      '<linearGradient id="xau0" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3cf2b4" stop-opacity="0"/><stop offset=".3" stop-color="#3cf2b4"/><stop offset=".7" stop-color="#5fc8ff"/><stop offset="1" stop-color="#a77bff" stop-opacity="0"/></linearGradient>' +
+      '<linearGradient id="xau1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7cffcf" stop-opacity="0"/><stop offset=".4" stop-color="#41d39a"/><stop offset=".8" stop-color="#2fa7d8"/><stop offset="1" stop-color="#2fa7d8" stop-opacity="0"/></linearGradient>' +
+      '<filter id="xab" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="' + f1(mn * .03) + '"/></filter>' +
+      '<radialGradient id="xmg"><stop offset="0" stop-color="#fff6d8" stop-opacity=".45"/><stop offset=".35" stop-color="#fff6d8" stop-opacity=".12"/><stop offset="1" stop-color="#fff6d8" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="xmo" cx=".4" cy=".38" r=".7"><stop offset="0" stop-color="#fffdf2"/><stop offset=".7" stop-color="#f6ecc6"/><stop offset="1" stop-color="#e8d9a6"/></radialGradient>' +
+      '<radialGradient id="xsun"><stop offset="0" stop-color="#fffbe6" stop-opacity=".95"/><stop offset=".25" stop-color="#fff6cf" stop-opacity=".45"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="xwg"><stop offset="0" stop-color="#ffc552" stop-opacity="' + P.glow * .45 + '"/><stop offset="1" stop-color="#ffc552" stop-opacity="0"/></radialGradient>' +
+      '<linearGradient id="xwd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a5532"/><stop offset="1" stop-color="#5e3520"/></linearGradient>' +
+      '<linearGradient id="xsr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe9f6"/></linearGradient>' +
+      '</defs>' + g + '</svg>' + html + lights;
     document.body.appendChild(sk);
     return {
       el: sk, gy: gy,
-      /* Santa, the greeting: added when the wind starts */
+      /* Santa and the greeting: added when the wind starts */
       extras: function () {
         var f = document.createElement('div'); f.className = 'xm-fly2'; f.innerHTML = window.__xmSanta || ''; sk.appendChild(f);
         var gr = document.createElement('div'); gr.className = 'xm-greet'; gr.style.top = Math.round(gy + (H - gy) * .1) + 'px';
@@ -553,9 +819,9 @@
     };
   }
   function mkBall(x, y, r) {
-    var el = document.createElement('div'); el.className = 'xm-ball xm-tw'; el.style.zIndex = 58; el.__t = Date.now();
+    var el = document.createElement('div'); el.className = 'xm-ball'; el.style.zIndex = 58;
     if (BALL) el.style.backgroundImage = 'url(' + BALL + ')';
-    document.body.appendChild(el);
+    add(el);
     return { el: el, x: x, y: y, r: r, rot: 0, sx: .001, sy: .001 };
   }
   function pop(b) {
@@ -566,198 +832,182 @@
     clearTower(true);
     var r0 = Math.max(46, Math.min(d.W * .22, d.H * .15)), r1 = r0 * .74, r2 = r0 * .54, x = d.W / 2;
     var y0 = gy - r0 * .82, y1 = y0 - (r0 + r1) * .93, y2 = y1 - (r1 + r2) * .93;
-    var sh = document.createElement('i'); sh.className = 'xm-shd xm-tw';
-    sh.style.cssText = 'left:' + (x - r0 * 1.15) + 'px;top:' + (gy - r0 * .1) + 'px;width:' + r0 * 2.3 + 'px;height:' + r0 * .34 + 'px';
-    document.body.appendChild(sh); tower.shadow = sh; tower.skirt = mkSkirt(x, y0, r0);
+    tower.gy = gy; tower.scene = true;
+    tower.shadow = mkShadow(x, gy, r0); tower.skirt = mkSkirt(x, y0, r0);
+    var mine = tower;
     [[0, y0, r0], [550, y1, r1], [1100, y2, r2]].forEach(function (q) {
       setTimeout(function () {
-        var b = mkBall(x, q[1], q[2]); pop(b); tower.balls.push({ el: b.el, x: b.x, y: b.y, r: b.r }); spray(b.x, b.y + b.r * .8, b.r * .8);
-        if (tower.balls.length === 3) { setTimeout(dress, 450); clearTimeout(tower.timer); tower.timer = setTimeout(collapse, 8200); }
+        if (tower !== mine) return;
+        var b = mkBall(x, q[1], q[2]); pop(b); tower.balls.push({ el: b.el, x: b.x, y: b.y, r: b.r, rot: 0 }); spray(b.x, b.y + b.r * .8, b.r * .8);
+        if (tower.balls.length === 3) { setTimeout(dress, 450); clearTimeout(tower.timer); tower.timer = setTimeout(fallBack, 8200); }
       }, q[0]);
     });
   }
-  /* the snowman creaks, leans to one side, then falls with its full weight (faster and faster) and smashes into a heap of snow on that side */
-  function collapse(dirArg, pushed) {
-    var B = tower.balls, dr = tower.dress;
-    if (B.length < 3 || !dr) { clearTower(false); return; }
-    clearTimeout(tower.timer);
-    var base = B[0], px = base.x, py = base.y + base.r * .82, dir = dirArg || (Math.random() < .5 ? -1 : 1);
-    var pvx = px + dir * base.r * .35, DEG = 66, SLIDE = .35;
-    var grp = document.createElement('div'); grp.className = 'xm-grp xm-tw';
-    grp.style.cssText = 'position:fixed;inset:0;z-index:58;pointer-events:none;transform-origin:' + pvx + 'px ' + py + 'px';
-    document.body.appendChild(grp);
-    B.forEach(function (t) { grp.appendChild(t.el); }); grp.appendChild(dr);
-    var shadow = tower.shadow, skirt = tower.skirt, meta = tower.armMeta, balls = B.map(function (t) { return { x: t.x, y: t.y, r: t.r }; });
-    tower = { balls: [], shadow: null, skirt: null, dress: null, timer: 0 };
-    setTimeout(function () { dropArms(grp, py, dir, meta); }, pushed ? 900 : 1900);
-    var A = function (v) { return 'translateX(' + (dir * v * SLIDE).toFixed(1) + 'px) rotate(' + dir * v + 'deg)'; };
-    var an = grp.animate(pushed ? [
-      { transform: A(0), offset: 0 }, { transform: A(-1.5), offset: .1, easing: 'ease-in' }, { transform: A(8), offset: .38, easing: 'cubic-bezier(.45,0,.95,.7)' },
-      { transform: A(34), offset: .72, easing: 'cubic-bezier(.5,0,.95,.6)' }, { transform: A(DEG), offset: 1 }
-    ] : [
-      { transform: A(0), offset: 0 }, { transform: A(-1.6), offset: .1, easing: 'ease-in-out' }, { transform: A(2.4), offset: .22, easing: 'ease-in-out' },
-      { transform: A(-2.2), offset: .34, easing: 'ease-in-out' }, { transform: A(4.5), offset: .5, easing: 'ease-in' }, { transform: A(10), offset: .64, easing: 'cubic-bezier(.45,0,.95,.7)' },
-      { transform: A(34), offset: .84, easing: 'cubic-bezier(.5,0,.95,.6)' }, { transform: A(DEG), offset: 1 }
-    ], { duration: pushed ? 1500 : 2500, fill: 'forwards' });
-    an.onfinish = function () {
-      var th = dir * DEG * Math.PI / 180, cs = Math.cos(th), sn = Math.sin(th), tr = dir * DEG * SLIDE;
-      balls.forEach(function (b, i) {
-        var dx = b.x - pvx, dy = b.y - py, x = pvx + dx * cs - dy * sn + tr, y = py + dx * sn + dy * cs;
-        setTimeout(function () { spray(x, Math.min(y, py - 4), b.r * 1.1); powder(x, Math.min(y, py - 4), b.r * 1.3, py, dir); }, i * 90);
-      });
-      heap(pvx + tr * .5, py, base.r, dir);
-      try { grp.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, delay: 40, fill: 'forwards' }); } catch (e) {}
-      setTimeout(function () { grp.remove(); }, 420);
-      fadeOut(shadow, 900); fadeOut(skirt, 900);
-    };
-  }
-  /* the pile of snow lumps that the fallen snowman leaves behind; it melts away again by itself */
-  function heap(cx0, py, r, dir) {
-    var cx = cx0 + dir * r * 1.2;
-    drift(cx, py + 2, r * 5, r * 1.05, 450, 4300);
-    drift(cx - dir * r * 1.1, py + 2, r * 3, r * .6, 700, 4100);
-    drift(cx + dir * r * 1.3, py + 2, r * 2.6, r * .5, 850, 3900);
+  /* everything from the scene leaves at the same moment: sky, greeting, the fallen snowman's snow and twigs */
+  function endScene() {
+    if (!SCN || SCN.ending) return;
+    var s = SCN, ms = 1800, keep = [];
+    s.ending = 1; clearTimeout(s.safety);
+    if (tower.scene) { var t = detach(); t.balls.forEach(function (b) { fadeOut(b.el, ms); }); fadeOut(t.dress, ms); fadeOut(t.skirt, ms); fadeOut(t.shadow, ms); }
+    tower.balls.forEach(function (b) { keep.push(b.el); }); keep.push(tower.skirt, tower.shadow, tower.dress); if (cur) keep.push(cur.el);
+    [].slice.call(stage().children).forEach(function (el) { if (keep.indexOf(el) < 0) fadeOut(el, ms); });
+    fadeOut(s.el, ms); fadeOut(s.gr || s.el.__gr, ms);
+    document.body.classList.remove('xm-busy');
+    setTimeout(function () { if (SCN === s) SCN = null; }, ms + 100);
   }
 
-  /* lumps of snow that break off, tumble through the air and roll to a stop */
-  function chunks(x, y, r, py, dir) {
-    var n = Math.min(22, Math.round(9 + r / 7)), k;
-    for (k = 0; k < n; k++) {
-      var sz = r * (.16 + Math.random() * .26), c = document.createElement('i'); c.className = 'xm-chunk xm-tw';
-      c.style.cssText = 'left:' + (x - sz / 2) + 'px;top:' + (y - sz / 2) + 'px;width:' + sz + 'px;height:' + sz * .9 + 'px';
-      document.body.appendChild(c);
-      var dx = dir * r * (.3 + Math.random() * 1.7) + (Math.random() - .5) * r * .8, up = r * (.25 + Math.random() * .9),
-          gy = py - sz * .42 - y + (Math.random() - .5) * 6, sp = (Math.random() - .5) * 240;
-      var T = function (a, b, rot, sc) { return 'translate(' + a.toFixed(1) + 'px,' + b.toFixed(1) + 'px) rotate(' + rot.toFixed(0) + 'deg)' + (sc || ''); };
-      c.animate([
-        { transform: T(0, 0, 0), offset: 0, easing: 'cubic-bezier(.2,.8,.4,1)' },
-        { transform: T(dx * .55, -up, sp * .4), offset: .4, easing: 'cubic-bezier(.5,0,.9,.6)' },
-        { transform: T(dx * .95, gy, sp * .8, ' scale(1.06,.84)'), offset: .82, easing: 'cubic-bezier(.3,.7,.5,1)' },
-        { transform: T(dx * 1.02, gy - sz * .2, sp * .9), offset: .91 },
-        { transform: T(dx * 1.07, gy, sp, ' scale(1,.92)'), offset: 1 }
-      ], { duration: 650 + Math.random() * 500, delay: Math.random() * 160, fill: 'forwards' });
-      setTimeout((function (c) { return function () { fadeOut(c, 1600); }; })(c), 4300 + Math.random() * 600);
-    }
-  }
-
-  /* when the snowman topples the twig arms drop off, fall, bounce and lie in the snow */
-  function dropArms(grp, py, dir, meta) {
-    if (!meta || !TWIG) return;
-    var gang = 0;
-    try { var mm = new DOMMatrixReadOnly(getComputedStyle(grp).transform); gang = Math.atan2(mm.b, mm.a) * 180 / Math.PI; } catch (e) {}
-    meta.forEach(function (a) {
-      var g = grp.querySelector('.' + a.cls); if (!g) return;
-      var r = g.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-      var img = document.createElement('img'); img.src = TWIG; img.alt = ''; img.className = 'xm-twig xm-tw';
-      img.style.cssText = 'left:' + (cx - a.w / 2) + 'px;top:' + (cy - a.h / 2) + 'px;width:' + a.w + 'px;height:' + a.h + 'px';
-      document.body.appendChild(img); g.style.opacity = '0';
-      var r0 = a.ang + gang, end = a.side * (76 + Math.random() * 26), dxs = dir * (6 + Math.random() * 30) + a.side * 10,
-          fall = Math.max(30, py - a.w * .4 - cy);
-      var T = function (x, y, rot) { return 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + rot.toFixed(1) + 'deg)'; };
-      img.animate([
-        { transform: T(0, 0, r0), offset: 0, easing: 'cubic-bezier(.5,0,.9,.6)' },
-        { transform: T(dxs * .7, fall, r0 + (end - r0) * .6), offset: .58, easing: 'cubic-bezier(.2,.6,.4,1)' },
-        { transform: T(dxs * .88, fall - a.h * .13, end + a.side * 12), offset: .76, easing: 'cubic-bezier(.5,0,.8,.6)' },
-        { transform: T(dxs, fall, end), offset: 1 }
-      ], { duration: 1150, fill: 'forwards' }).onfinish = function () { spray(cx + dxs, py - 4, Math.max(14, a.h * .18)); };
-      setTimeout(function () { fadeOut(img, 1800); }, 5200);
-    });
-  }
-
-  /* streaks of wind sweeping from the top to the bottom of the screen */
+  /* streaks of wind sweeping across the screen */
   function gust(d) {
     var W = d.W, H = d.H, n = 12, i, p = '';
     for (i = 0; i < n; i++) {
       var y = H * (.03 + .94 * i / (n - 1)) + (Math.random() - .5) * 20, a = 24 + Math.random() * 40, sw = 1.2 + Math.random() * 2.4;
-      p += '<path class="gst" pathLength="1" style="animation-delay:' + (i * 150 + Math.random() * 120).toFixed(0) + 'ms;animation-duration:' + (1100 + Math.random() * 700).toFixed(0) + 'ms" stroke-width="' + sw.toFixed(1) + '" d="M-120 ' + y.toFixed(0) +
-        ' C' + (W * .18) + ' ' + (y - a) + ',' + (W * .3) + ' ' + (y + a) + ',' + (W * .46) + ' ' + (y - a * .2) + ' S' + (W * .66) + ' ' + (y - a * 1.2) + ',' + (W * .8) + ' ' + (y + a * .3) + ' S' + (W * .96) + ' ' + (y + a * .5) + ',' + (W + 140) + ' ' + (y - a * .3) + '"/>';
+      p += '<path class="gst" pathLength="1" style="animation-delay:' + (i * 150 + Math.random() * 120).toFixed(0) + 'ms;animation-duration:' + (1100 + Math.random() * 700).toFixed(0) + 'ms" stroke-width="' + sw.toFixed(1) + '" stroke-opacity="' + (.5 + Math.random() * .4).toFixed(2) + '" d="M' + (-W * .05) + ' ' + y +
+        ' C' + (W * .18) + ' ' + (y - a) + ',' + (W * .3) + ' ' + (y + a) + ',' + (W * .46) + ' ' + (y - a * .2) + ' S' + (W * .66) + ' ' + (y - a * 1.2) + ',' + (W * .8) + ' ' + (y + a * .3) + ' S' + (W * .96) + ' ' + (y - a) + ',' + (W * 1.08) + ' ' + y + '"/>';
     }
     var el = document.createElement('div'); el.className = 'xm-gust';
     el.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" fill="none" stroke="#fff" stroke-linecap="round">' + p + '</svg>';
     document.body.appendChild(el); setTimeout(function () { el.remove(); }, 3800);
   }
 
-  /* the snow cover is a canvas of small snow cells; the wind lifts them off in a wave from the top-left,
-     each one accelerating, stretching and fading as it is carried away, so the cover erodes like real snow */
-  function windCover(d, onWind, onDone) {
-    var W = d.W, H = d.H, cs = Math.max(13, Math.round(Math.min(W, H) / 26)), cols = Math.ceil(W / cs), rows = Math.ceil(H / cs), i, j;
-    var EDGE = Math.round(H * .42), sc = Math.max(.8, W / 420);
-    function cv(z, h) { var c = document.createElement('canvas'); c.width = W; c.height = h; c.className = 'xm-cvs'; c.style.zIndex = z; c.style.height = h + 'px'; return c; }
-    var C = cv(59, H + EDGE), F = cv(60, H), cx = C.getContext('2d'), fx = F.getContext('2d');
-    /* avalanche powder cloud: soft grey-blue depth inside, bright billowing puffs, cauliflower-shaped leading edge */
-    function puff(x, y, r, dark) {
-      var p = cx.createRadialGradient(x - r * .2, y - r * .25, r * .05, x, y, r);
-      if (dark) { p.addColorStop(0, 'rgba(176,196,222,.20)'); p.addColorStop(.6, 'rgba(176,196,222,.08)'); p.addColorStop(1, 'rgba(176,196,222,0)'); }
-      else { p.addColorStop(0, 'rgba(255,255,255,.92)'); p.addColorStop(.5, 'rgba(250,252,255,.6)'); p.addColorStop(.8, 'rgba(246,250,255,.22)'); p.addColorStop(1, 'rgba(244,249,255,0)'); }
-      cx.fillStyle = p; cx.beginPath(); cx.arc(x, y, r, 0, 6.2832); cx.fill();
+  /* ---------- the giant ball hits the screen ---------- */
+  /* the snow stuck on the glass: an uneven, lumpy white layer; where the ball hit, a thick splat of packed snow
+     with chunks thrown outwards. Every lump has light on the top-left and a cool shadow bottom-right, so it looks 3D */
+  function makeCover(W, H) {
+    var dpr = Math.min(1.5, window.devicePixelRatio || 1), C = document.createElement('canvas'), i;
+    C.width = Math.round(W * dpr); C.height = Math.round(H * dpr); C.className = 'xm-cvs'; C.style.zIndex = 59; C.style.width = W + 'px'; C.style.height = H + 'px';
+    var x = C.getContext('2d'); x.scale(dpr, dpr);
+    var ix = W / 2, iy = H * .45, M = Math.min(W, H), R = Math.hypot(W, H);
+    function lump(cx, cy, rx, ry, rot, a) {
+      x.save(); x.translate(cx, cy); x.rotate(rot); x.scale(1, ry / rx);
+      var sg = x.createRadialGradient(rx * .22, rx * .3, 0, rx * .22, rx * .3, rx * 1.2);
+      sg.addColorStop(0, 'rgba(105,135,182,' + (.2 * a).toFixed(3) + ')'); sg.addColorStop(.65, 'rgba(105,135,182,' + (.08 * a).toFixed(3) + ')'); sg.addColorStop(1, 'rgba(105,135,182,0)');
+      x.fillStyle = sg; x.fillRect(-rx * 1.1, -rx * 1.1, rx * 2.6, rx * 2.6);
+      var g = x.createRadialGradient(-rx * .35, -rx * .4, 0, 0, 0, rx);
+      g.addColorStop(0, 'rgba(255,255,255,' + a + ')'); g.addColorStop(.6, 'rgba(248,251,255,' + (a * .95).toFixed(3) + ')'); g.addColorStop(.86, 'rgba(228,237,248,' + (a * .6).toFixed(3) + ')'); g.addColorStop(1, 'rgba(228,237,248,0)');
+      x.fillStyle = g; x.beginPath(); x.arc(0, 0, rx, 0, 6.2832); x.fill(); x.restore();
     }
-    var g = cx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#fbfdff'); g.addColorStop(.55, '#f2f7fc'); g.addColorStop(1, '#e3edf8'); cx.fillStyle = g; cx.fillRect(0, 0, W, H);
-    for (i = 0; i < 14; i++) puff(Math.random() * W, Math.random() * H, (110 + Math.random() * 190) * sc, true);
-    for (i = 0; i < 260; i++) puff(Math.random() * W, Math.random() * (H + EDGE * .2), (16 + Math.random() * 60) * sc, false);
-    for (i = 0; i < 80; i++) { var ex = Math.random() * W * 1.1 - W * .05, ey = H - 12 + EDGE * (.02 + Math.random() * .5); puff(ex, ey, (40 + Math.random() * 90) * sc * (1 - (ey - H) / EDGE * .3), false); }
-    var pc = document.createElement('canvas'); pc.width = pc.height = 220; var px = pc.getContext('2d');
-    for (i = 0; i < 700; i++) { px.fillStyle = Math.random() < .5 ? 'rgba(255,255,255,' + (.3 + Math.random() * .5) + ')' : 'rgba(140,170,205,' + (.06 + Math.random() * .12) + ')'; px.beginPath(); px.arc(Math.random() * 220, Math.random() * 220, .7 + Math.random() * 2.2, 0, 6.2832); px.fill(); }
-    cx.globalCompositeOperation = 'source-atop'; cx.fillStyle = cx.createPattern(pc, 'repeat'); cx.fillRect(0, 0, W, H + EDGE); cx.globalCompositeOperation = 'source-over';
-    var spr = document.createElement('canvas'); spr.width = spr.height = 48; var sx = spr.getContext('2d'), sg = sx.createRadialGradient(24, 24, 1, 24, 24, 24);
+    function hash(k, sd) { var v = Math.sin(k * 12.9898 + sd * 78.233) * 43758.5453; return v - Math.floor(v); }
+    function blob(cx, cy, r, sd) {
+      var pts = [], n = 44, k;
+      for (k = 0; k < n; k++) {
+        var an = k / n * 6.2832, rr = r * (1 + .08 * Math.sin(an * 2 + sd) + .05 * Math.sin(an * 5 + sd * 2) + (hash(k, sd) - .5) * .07);
+        if (hash(k + 50, sd) < .1) rr *= 1.07;
+        pts.push([cx + Math.cos(an) * rr, cy + Math.sin(an) * rr]);
+      }
+      x.beginPath();
+      for (k = 0; k <= n; k++) { var p0 = pts[k % n], p1 = pts[(k + 1) % n], mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2; if (k === 0) x.moveTo(mx, my); else x.quadraticCurveTo(p0[0], p0[1], mx, my); }
+      x.closePath();
+    }
+    var g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#f9fbfe'); g.addColorStop(.55, '#eff4fa'); g.addColorStop(1, '#e4ecf7');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    /* gentle unevenness over the whole layer */
+    var nl = Math.round(W * H / 5000);
+    for (i = 0; i < nl; i++) { var r = M * (.06 + Math.random() * .12); lump(Math.random() * W, Math.random() * H, r, r * (.7 + Math.random() * .3), Math.random() * 3, .45); }
+    /* chunks thrown out from the hit, stretched along their flight */
+    for (i = 0; i < 26; i++) {
+      var an = Math.random() * 6.2832, dd = M * (.32 + Math.random() * .4), rr = M * (.028 + Math.random() * .045);
+      lump(ix + Math.cos(an) * dd, iy + Math.sin(an) * dd * 1.1, rr * (1.6 + Math.random()), rr, an, .95);
+    }
+    for (i = 0; i < 46; i++) { var a2 = Math.random() * 6.2832, d2 = M * (.45 + Math.random() * .55), r2 = M * (.008 + Math.random() * .014); lump(ix + Math.cos(a2) * d2, iy + Math.sin(a2) * d2, r2 * 1.5, r2, a2, 1); }
+    /* the splat: a thick pad of packed snow with a soft shadow under its rim and a bumpy top */
+    var sr = M * .27, seed = Math.random() * 6;
+    for (i = 4; i >= 0; i--) { blob(ix + M * .02, iy + M * .03, sr * (1 + i * .035), seed); x.fillStyle = 'rgba(100,130,178,.06)'; x.fill(); }
+    blob(ix, iy, sr, seed);
+    var bg = x.createRadialGradient(ix - sr * .3, iy - sr * .35, sr * .1, ix, iy, sr * 1.15);
+    bg.addColorStop(0, '#ffffff'); bg.addColorStop(.62, '#f7fafd'); bg.addColorStop(1, '#dbe6f4');
+    x.fillStyle = bg; x.fill();
+    x.save(); blob(ix, iy, sr * .97, seed); x.clip();
+    for (i = 0; i < 46; i++) { var ra = Math.random() * 6.2832, rd = Math.sqrt(Math.random()) * sr * .9, lr = M * (.03 + Math.random() * .05); lump(ix + Math.cos(ra) * rd, iy + Math.sin(ra) * rd, lr, lr * (.8 + Math.random() * .2), ra, .75); }
+    x.restore();
+    /* fine grain and a little glitter */
+    var n = Math.min(9000, Math.round(W * H / 40));
+    for (i = 0; i < n; i++) {
+      var dk = Math.random() < .3, s = .6 + Math.random() * 1.1;
+      x.fillStyle = dk ? 'rgba(120,150,196,' + (.05 + Math.random() * .1).toFixed(3) + ')' : 'rgba(255,255,255,' + (.6 + Math.random() * .4).toFixed(2) + ')';
+      x.fillRect(Math.random() * W, Math.random() * H, s, s);
+    }
+    x.fillStyle = 'rgba(255,255,255,.95)';
+    for (i = 0; i < 60; i++) { var gx = Math.random() * W, gy2 = Math.random() * H; x.fillRect(gx - 1.6, gy2 - .3, 3.2, .6); x.fillRect(gx - .3, gy2 - 1.6, .6, 3.2); }
+    return { C: C, ctx: x, W: W, H: H };
+  }
+  /* the wind lifts the snow off the glass in small cells, in a wave from the top-left; each one speeds up,
+     stretches and fades as it is carried away, so the cover erodes like real snow */
+  function erode(cv, onDone) {
+    var W = cv.W, H = cv.H, cx = cv.ctx, cs = Math.max(14, Math.round(Math.min(W, H) / 24)), cols = Math.ceil(W / cs), rows = Math.ceil(H / cs), i, j;
+    var F = document.createElement('canvas'); F.width = W; F.height = H; F.className = 'xm-cvs'; F.style.zIndex = 60; document.body.appendChild(F);
+    var fx = F.getContext('2d'), spr = document.createElement('canvas'); spr.width = spr.height = 48;
+    var sx = spr.getContext('2d'), sg = sx.createRadialGradient(24, 24, 1, 24, 24, 24);
     sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(.55, 'rgba(250,252,255,.8)'); sg.addColorStop(1, 'rgba(240,247,255,0)'); sx.fillStyle = sg; sx.fillRect(0, 0, 48, 48);
-    document.body.appendChild(C); document.body.appendChild(F);
-    /* the snow forms right where it is: it builds up over the whole screen instead of sliding down from the top */
-    var a1 = C.animate([{ opacity: 0 }, { opacity: .55, offset: .5 }, { opacity: 1 }], { duration: 2000, easing: 'ease-in', fill: 'forwards' });
-    var dust = setInterval(function () { spray(Math.random() * W, Math.random() * H, 34 + Math.random() * 30); }, 90);
-    a1.onfinish = function () {
-      clearInterval(dust);
-      C.style.animation = 'none'; C.style.transform = 'none'; a1.cancel();
+    /* the hole each cell leaves: solid in the middle, so neighbouring holes join cleanly without rings in between */
+    var hole = document.createElement('canvas'); hole.width = hole.height = 48;
+    var hx = hole.getContext('2d'), hg = hx.createRadialGradient(24, 24, 1, 24, 24, 24);
+    hg.addColorStop(0, 'rgba(0,0,0,1)'); hg.addColorStop(.62, 'rgba(0,0,0,1)'); hg.addColorStop(1, 'rgba(0,0,0,0)'); hx.fillStyle = hg; hx.fillRect(0, 0, 48, 48);
+    var cells = [];
+    for (j = 0; j < rows; j++) for (i = 0; i < cols; i++) {
+      var x = i * cs + cs / 2, y = j * cs + cs / 2;
+      cells.push({ x: x, y: y, s: (y / H) * 2300 + (x / W) * 550 + Math.sin(y * .018 + x * .01) * 120 + Math.random() * 110,
+        vx: 30 + Math.random() * 70, ax: 1500 + Math.random() * 1100, vy: (Math.random() - .5) * 70, gy: 40 + Math.random() * 90, L: 1 + Math.random() * .9,
+        z: 1.8 + Math.random() * .8, ph: Math.random() * 6.28, on: 0, dead: 0 });
+    }
+    var left = cells.length, T0 = performance.now();
+    (function frame(now) {
+      var t = now - T0, k;
+      fx.clearRect(0, 0, W, H);
+      cx.globalCompositeOperation = 'destination-out';
+      for (k = 0; k < cells.length; k++) {
+        var c = cells[k]; if (c.dead) continue;
+        if (!c.on) { if (t < c.s) continue; c.on = 1; var rr = cs * 1.05; cx.drawImage(hole, c.x - rr, c.y - rr, rr * 2, rr * 2); }
+        var dt = (t - c.s) / 1000;
+        if (dt > c.L) { c.dead = 1; left--; continue; }
+        var u = dt / c.L, px = c.x + c.vx * dt + .5 * c.ax * dt * dt, py = c.y + c.vy * dt + c.gy * dt * dt + Math.sin(dt * 7 + c.ph) * 3,
+          sz = cs * c.z * (1 - .4 * u), spd = c.vx + c.ax * dt, st = 1 + Math.min(2.6, spd / 520);
+        if (px - sz * st > W) { c.dead = 1; left--; continue; }
+        fx.globalAlpha = Math.max(0, 1 - u * u * u);
+        fx.drawImage(spr, px - sz * st / 2, py - sz * .4, sz * st, sz * .8);
+      }
+      cx.globalCompositeOperation = 'source-over'; fx.globalAlpha = 1;
+      if (left > 0) requestAnimationFrame(frame); else { cv.C.remove(); F.remove(); if (onDone) onDone(); }
+    })(performance.now());
+  }
+  /* the giant ball: it pulls back for a split second, then rushes at you and smashes into the screen */
+  function bury(b) {
+    var d = dims(); busy = true; document.body.classList.add('xm-busy');
+    b.el.classList.remove('held'); b.el.style.transition = 'none';
+    var cv = (PREP && PREP.W === VW && PREP.H === VH) ? PREP : makeCover(VW, VH); PREP = null;
+    var R = Math.hypot(VW, VH) * .62, tx = VW / 2, ty = SY(VH * .45), rot = b.rot || 0;
+    b.el.style.zIndex = 61;
+    b.el.animate([
+      { transform: tf(b.r, b.x, b.y, rot), offset: 0, easing: 'cubic-bezier(.3,.7,.5,1)' },
+      { transform: tf(b.r * .86, b.x + (tx - b.x) * .1, b.y + (ty - b.y) * .1, rot - .12), offset: .28, easing: 'cubic-bezier(.62,0,.98,.4)' },
+      { transform: tf(R, tx, ty, rot + .8), offset: 1 }
+    ], { duration: 620, fill: 'forwards' }).onfinish = function () { impact(b, cv, d); };
+  }
+  function impact(b, cv, d) {
+    document.body.appendChild(cv.C);
+    b.el.remove(); live = Math.max(0, live - 1);
+    cv.C.animate([
+      { transform: 'translate(0,0) scale(1.035)' }, { transform: 'translate(-10px,7px) scale(1.02)', offset: .18 }, { transform: 'translate(8px,-6px)', offset: .38 },
+      { transform: 'translate(-5px,3px)', offset: .58 }, { transform: 'translate(2px,-1px)', offset: .8 }, { transform: 'translate(0,0) scale(1)' }
+    ], { duration: 460, easing: 'ease-out' });
+    clearTower(true);
+    setTimeout(function () {
+      rebase();
+      var sc = scene(dims());
+      SCN = { el: sc.el, gy: sc.gy, ending: 0, gr: null };
       setTimeout(function () {
-        onWind();
-        var cells = [], sd = 0;
-        for (j = 0; j < rows; j++) for (i = 0; i < cols; i++) {
-          var x = i * cs + cs / 2, y = j * cs + cs / 2;
-          cells.push({ x: x, y: y, s: (y / H) * 2300 + (x / W) * 550 + Math.sin(y * .018 + x * .01) * 170 + Math.random() * 260,
-            vx: 30 + Math.random() * 70, ax: 1500 + Math.random() * 1100, vy: (Math.random() - .5) * 70, gy: 40 + Math.random() * 90, L: 1 + Math.random() * .9,
-            z: 1.25 + Math.random() * .9, ph: Math.random() * 6.28, on: 0, dead: 0 });
-        }
-        var left = cells.length, T0 = performance.now(), end = false;
-        (function frame(now) {
-          var t = now - T0, k;
-          fx.clearRect(0, 0, W, H);
-          cx.globalCompositeOperation = 'destination-out';
-          for (k = 0; k < cells.length; k++) {
-            var c = cells[k]; if (c.dead) continue;
-            if (!c.on) {
-              if (t < c.s) continue;
-              c.on = 1; var rr = cs * 1.15; cx.drawImage(spr, c.x - rr, c.y - rr, rr * 2, rr * 2);
-            }
-            var dt = (t - c.s) / 1000;
-            if (dt > c.L) { c.dead = 1; left--; continue; }
-            var u = dt / c.L, x = c.x + c.vx * dt + .5 * c.ax * dt * dt, y = c.y + c.vy * dt + c.gy * dt * dt + Math.sin(dt * 7 + c.ph) * 3,
-              sz = cs * c.z * (1 - .4 * u), spd = c.vx + c.ax * dt, st = 1 + Math.min(2.6, spd / 520);
-            fx.globalAlpha = Math.max(0, 1 - u * u * u);
-            fx.drawImage(spr, x - sz * st / 2, y - sz * .8 / 2, sz * st, sz * .8);
-          }
-          cx.globalCompositeOperation = 'source-over'; fx.globalAlpha = 1;
-          if (left > 0) requestAnimationFrame(frame); else { C.remove(); F.remove(); if (onDone) onDone(); }
-        })(performance.now());
-      }, 1400);
-    };
+        gust(dims()); sc.extras(); SCN.gr = sc.el.__gr;
+        setTimeout(function () { if (SCN && !SCN.ending) sceneMan(dims(), sc.gy); }, 1700);
+        SCN.safety = setTimeout(endScene, 18000);
+        erode(cv, function () { busy = false; });
+      }, 1000);
+    }, 60);
   }
 
-  /* huge ball: the site is buried in snow, the wind erodes it away and a winter scene with a snowman,
-     Santa and a greeting is revealed underneath */
-  function bury(b, k) {
-    var d = dims(), sc;
-    busy = true; b.el.classList.remove('held');
-    b.el.style.transition = 'opacity .5s'; b.el.style.opacity = '0';
-    spray(b.x, b.y, 150); spray(d.W / 2, d.H * .4, 150);
-    sc = scene(d);
-    windCover(d, function () {
-      gust(d); sc.extras();
-      setTimeout(function () { sceneMan(d, sc.gy); }, 1700);
-      setTimeout(function () { fadeOut(sc.el, 1800); fadeOut(sc.el.__gr, 1800); }, 16000);
-    }, function () { b.el.remove(); live--; busy = false; });
-  }
-
+  /* ---------- touch / mouse ---------- */
+  function idle(fn) { if (window.requestIdleCallback) requestIdleCallback(fn, { timeout: 600 }); else setTimeout(fn, 30); }
   function start(e) {
-    var b = cur = newBall(e.clientX, e.clientY); b.id = e.pointerId; b.t0 = performance.now();
+    if (!tower.balls.length && !SCN) rebase();
+    var b = cur = newBall(e.clientX, SY(e.clientY)); b.id = e.pointerId; b.t0 = performance.now();
     document.body.classList.add('xm-hold');
     (function grow(t) {
       if (cur !== b) return;
@@ -771,40 +1021,25 @@
       if (t - (b.lf || 0) > 70 && b.r > 14) {
         b.lf = t;
         var an = Math.random() * 6.2832, d0 = b.r * (1.25 + Math.random() * .9), sz = 2.5 + Math.random() * Math.min(7, b.r / 14);
-        var q = document.createElement('i'); q.className = 'xm-bit'; q.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;left:' + (b.x + Math.cos(an) * d0) + 'px;top:' + (b.y + Math.sin(an) * d0 - b.r * .3) + 'px';
-        document.body.appendChild(q);
-        q.animate([{ transform: 'translate(0,0) scale(1)', opacity: 0 }, { opacity: 1, offset: .25 }, { transform: 'translate(' + (-Math.cos(an) * (d0 - b.r * .85)) + 'px,' + (-Math.sin(an) * (d0 - b.r * .85) + b.r * .3) + 'px) scale(.5)', opacity: .9 }],
-          { duration: 420 + Math.random() * 260, easing: 'ease-in', fill: 'forwards' }).onfinish = function () { q.remove(); };
+        var sx = b.x + Math.cos(an) * d0, sy = b.y + Math.sin(an) * d0 - b.r * .3, ex = b.x + Math.cos(an) * b.r * .85, ey = b.y + Math.sin(an) * b.r * .85;
+        var q = bit('xm-bit', sx, sy, sz, sz);
+        q.animate([{ transform: T(sx - sz / 2, sy - sz / 2, 1), opacity: 0 }, { opacity: 1, offset: .25 }, { transform: T(ex - sz / 2, ey - sz / 2, .5), opacity: .9 }],
+          { duration: 420 + Math.random() * 260, easing: 'ease-in', fill: 'forwards' }).onfinish = (function (q) { return function () { q.remove(); }; })(q);
       }
+      /* get the snow for the screen ready in a quiet moment, before a giant ball is let go */
+      if (k > .5 && !b.prep && !PREP) { b.prep = 1; idle(function () { if (!PREP) PREP = makeCover(VW, VH); }); }
       requestAnimationFrame(grow);
     })(performance.now());
   }
-  /* knock it over: a tap pushes it away from the finger, a swipe pushes it the way you swipe */
+  /* knock it over: a tap sends it over backwards, a swipe left or right tips it that way and it rolls */
   function hitTower(x, y) { return tower.balls.some(function (t) { return Math.hypot(x - t.x, y - t.y) < t.r * 1.05; }); }
-  function rollAway(dir) {
-    var B = tower.balls, base = B[0], sh = tower.shadow, sk = tower.skirt;
-    clearTimeout(tower.timer); tower = { balls: [], shadow: null, skirt: null, dress: null, timer: 0 };
-    B.forEach(function (t, i) {
-      var gy = base.y + base.r - t.r, dx = dir * (base.r * 2.2 + i * t.r * .5), dy = gy - t.y, tf = function (ax, ay, rot) { return 'translate3d(' + (t.x - S / 2 + ax) + 'px,' + (t.y - S / 2 + ay) + 'px,0) rotate(' + rot + 'rad) scale(' + t.r / R0 + ')'; };
-      t.el.style.transition = 'none';
-      var an = t.el.animate([
-        { transform: tf(0, 0, 0), offset: 0, easing: 'cubic-bezier(.5,0,.9,.6)' },
-        { transform: tf(dx * .3, dy, dir * 1.2), offset: .38, easing: 'cubic-bezier(.3,.7,.5,1)' },
-        { transform: tf(dx, dy, dir * (3.2 + i * .6)), offset: 1 }
-      ], { duration: 1300 + i * 120, delay: (B.length - 1 - i) * 90, fill: 'forwards' });
-      an.onfinish = function () { powder(t.x + dx, t.y + dy, t.r * 1.1, t.y + dy + t.r * .7, dir); fadeOut(t.el, 160); };
-    });
-    fadeOut(sh, 1200); fadeOut(sk, 1200);
-  }
-  function push(dir) {
-    if (!tower.balls.length) return;
-    if (tower.balls.length === 3 && tower.dress) collapse(dir, true); else rollAway(dir);
-  }
+  function push(dir) { if (!tower.balls.length) return; if (tower.dress) rollSide(dir); else rollAway(dir); }
   document.addEventListener('pointerdown', function (e) {
-    if (knock || cur || pend || busy || !e.isPrimary || !tower.balls.length || !document.body.classList.contains('tpl-index')) return;
+    if (knock || cur || pend || !e.isPrimary || !tower.balls.length || !document.body.classList.contains('tpl-index')) return;
+    if (busy && !SCN) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (e.target.closest && e.target.closest(SKIP)) return;
-    if (hitTower(e.clientX, e.clientY)) knock = { id: e.pointerId, x: e.clientX, y: e.clientY, done: 0 };
+    if (hitTower(e.clientX, SY(e.clientY))) { knock = { id: e.pointerId, x: e.clientX, y: e.clientY, done: 0 }; document.body.classList.add('xm-knock'); }
   }, { passive: true });
   document.addEventListener('pointermove', function (e) {
     if (!knock || e.pointerId !== knock.id || knock.done) return;
@@ -813,8 +1048,8 @@
   }, { passive: true });
   function knockEnd(e) {
     if (!knock || e.pointerId !== knock.id) return;
-    var k = knock; knock = null;
-    if (!k.done && e.type === 'pointerup' && tower.balls.length) { var cx = tower.balls[0].x; push(k.x < cx - 4 ? 1 : (k.x > cx + 4 ? -1 : (Math.random() < .5 ? -1 : 1))); }
+    var k = knock; knock = null; document.body.classList.remove('xm-knock');
+    if (!k.done && e.type === 'pointerup' && tower.balls.length) fallBack();
   }
   document.addEventListener('pointerup', knockEnd, { passive: true });
   document.addEventListener('pointercancel', knockEnd, { passive: true });
@@ -826,32 +1061,32 @@
   document.addEventListener('pointermove', function (e) {
     if (pend && e.pointerId === pend.id && Math.hypot(e.clientX - pend.x, e.clientY - pend.y) > 10) { clearTimeout(pend.tm); pend = null; }
     if (!cur || e.pointerId !== cur.id) return;
-    cur.tx = e.clientX; cur.ty = e.clientY;
+    cur.tx = e.clientX; cur.ty = SY(e.clientY);
   }, { passive: true });
   document.addEventListener('touchmove', function (e) { if ((cur || knock) && e.cancelable) e.preventDefault(); }, { passive: false });
   function end(e) {
     if (pend && e.pointerId === pend.id) { clearTimeout(pend.tm); pend = null; }
     if (!cur || e.pointerId !== cur.id) return;
-    var b = cur, d = dims(); cur = null; document.body.classList.remove('xm-hold');
+    var b = cur; cur = null; document.body.classList.remove('xm-hold');
     if (b.r < 12) { b.el.remove(); live--; return; }
-    if ((b.k || 0) >= .6) bury(b, b.k); else drop(b);
+    if ((b.k || 0) >= .6) bury(b); else drop(b);
   }
   document.addEventListener('pointerup', end, { passive: true });
   document.addEventListener('pointercancel', end, { passive: true });
-  document.addEventListener('contextmenu', function (e) { if (cur || pend) e.preventDefault(); });
+  document.addEventListener('contextmenu', function (e) { if (cur || pend || knock) e.preventDefault(); });
+  document.addEventListener('dragstart', function (e) { if (cur || pend || knock) e.preventDefault(); });
   /* safety net: a ball that got stranded on the screen (finger lifted outside the page, app switched, ...) is removed */
   function sweep() {
     var keep = tower.balls.map(function (t) { return t.el; }), n = 0;
     if (cur) keep.push(cur.el);
-    [].forEach.call(document.querySelectorAll('.xm-ball'), function (el) {
+    [].forEach.call(document.querySelectorAll('.xm-ball.held'), function (el) {
       if (keep.indexOf(el) > -1) return;
-      var age = Date.now() - (el.__t || 0);
-      if ((el.classList.contains('held') && !cur && !pend && age > 400) || (age > 45000 && !busy)) { el.remove(); return; }
+      if (!cur && !pend && Date.now() - (el.__t || 0) > 400) { el.remove(); return; }
       n++;
     });
-    live = n + (cur ? 1 : 0);
+    live = n + (cur ? 1 : 0) + (busy && !SCN ? 1 : 0);
   }
-  setInterval(function () { sweep(); [].forEach.call(document.querySelectorAll('.xm-chunk,.xm-drift,.xm-twig,.xm-mound,.xm-grp'), function (el) { if (!el.__t) el.__t = Date.now(); if (Date.now() - el.__t > 14000) el.remove(); }); }, 1200);
+  setInterval(sweep, 1200);
   function cancelAll() {
     if (pend) { clearTimeout(pend.tm); pend = null; }
     if (cur) { var b = cur; cur = null; document.body.classList.remove('xm-hold'); b.el.remove(); live = Math.max(0, live - 1); }

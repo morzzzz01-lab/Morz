@@ -31,6 +31,7 @@
       --blue:{{ settings.color_accent }};
     }
   </style>
+  <script>try{if(localStorage.getItem('morz_mode')==='light')document.documentElement.classList.add('xm-light');}catch(e){}</script>
   {{ 'theme.css' | asset_url | stylesheet_tag }}
   {{ 'xmas.css' | asset_url | stylesheet_tag }}
 

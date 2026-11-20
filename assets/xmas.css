@@ -398,3 +398,47 @@ body.xm-hold,body.xm-hold *{-webkit-user-select:none!important;user-select:none!
 
 /* v49: grainy real-snow mounds instead of flat discs */
 .xm-skirt{background:none;border-radius:0;filter:none}
+
+/* ---- v51: snow layer glued to the bottom of the screen, new winter scene, smoother snowball ---- */
+.xm-stage{position:fixed;left:0;top:0;width:100%;height:100%;z-index:58;pointer-events:none;transform:translate3d(0,0,0)}
+.xm-stage .xm-ball:not(.held){filter:brightness(1.22) contrast(1.05) saturate(.85)}
+.xm-drift,.xm-skirt{position:fixed;pointer-events:none;transform-origin:50% 100%}
+.xm-drift{z-index:58}.xm-skirt{z-index:59}
+.xm-gust .gst{filter:none}
+/* while a snowball is made, or the giant one covers the screen, the background decorations rest */
+body.xm-hold .xm-scene .xt-b,body.xm-hold .xm-scene .xt-glow{animation-play-state:paused}
+body.xm-busy .xm-scene{visibility:hidden}
+body.xm-busy .xm-scene *{animation-play-state:paused}
+/* the winter scene: twinkling stars, falling snow, chimney smoke */
+.xm-scene2{overflow:hidden}
+.xm-scene2 .xs-st{position:absolute;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:#fff;box-shadow:0 0 6px 1px rgba(255,255,255,.9);animation:xs-tw 2.4s ease-in-out infinite alternate;animation-delay:var(--d);will-change:opacity}
+@keyframes xs-tw{from{opacity:.2}to{opacity:1}}
+.xm-scene2 .xs-fl{position:absolute;top:-12px;width:var(--s);height:var(--s);border-radius:50%;background:#fff;opacity:var(--o);box-shadow:0 0 3px rgba(255,255,255,.6);animation:xs-fall var(--t) linear infinite;animation-delay:var(--d);will-change:transform}
+@keyframes xs-fall{from{transform:translate3d(0,0,0)}to{transform:translate3d(var(--dx),calc(100vh + 24px),0)}}
+.xm-scene2 .xs-smk{position:absolute;width:var(--w);height:var(--w);margin:calc(var(--w) / -2) 0 0 calc(var(--w) / -2);border-radius:50%;background:radial-gradient(closest-side,rgba(235,240,250,.6),rgba(235,240,250,0));animation:xs-smk 4.5s ease-out infinite;animation-delay:var(--d);will-change:transform,opacity}
+@keyframes xs-smk{0%{transform:translate(0,0) scale(.4);opacity:0}18%{opacity:.85}100%{transform:translate(22px,-110px) scale(2.2);opacity:0}}
+body.xm-knock,body.xm-knock *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none}
+
+/* ---- Light / Dark buttons in the header menu ---- */
+.xm-mode{display:inline-flex;flex:none;align-self:center;gap:2px;padding:2px;border-radius:2rem;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.07);margin-left:.2rem}
+.xm-mode button{display:inline-flex;align-items:center;gap:.3rem;height:1.65rem;padding:0 .6rem;border:0;border-radius:2rem;background:none;color:inherit;font:700 .76rem/1 var(--font,system-ui);cursor:pointer;opacity:.8;white-space:nowrap;transition:background-color .25s,color .25s,opacity .25s}
+.xm-mode button[aria-pressed=true]{background:#fff;color:#14181f;opacity:1}
+.xm-mode svg{width:13px;height:13px;flex:none}
+
+/* ---- Light mode: the shop turns white ---- */
+html.xm-light{--bg:#ffffff!important;--panel:#f4f6fa!important;--line:#e3e8ef!important;--ink:#151a22!important;--muted:#5b6574!important;color-scheme:light}
+html.xm-light,html.xm-light body{background:#ffffff}
+.xm-light .xm-mode{border-color:#d6dce5;background:#f1f4f8}
+.xm-light .xm-mode button[aria-pressed=true]{background:#14181f;color:#fff}
+.xm-light header.top{background:rgba(255,255,255,.94);border-color:#e3e8ef}
+.xm-light .cartb,.xm-light header.top .hb{background:#f1f4f8;color:#151a22;border-color:#d6dce5}
+.xm-light .btn{background:#14181f;color:#fff}
+.xm-light .btn:hover{background:var(--blue);color:#fff}
+.xm-light [data-hero] .btn{background:#fff;color:#000}
+.xm-light .wo{background:linear-gradient(120deg,#ffffff,color-mix(in srgb,var(--blue) 10%,#ffffff));border-color:#e3e8ef;box-shadow:0 14px 34px -22px rgba(20,30,50,.35)}
+.xm-light .wo-form input[type=email]{background:#fff;border-color:#d6dce5;color:#151a22}
+.xm-light .wo .ann-code{background:rgba(0,0,0,.05)}
+.xm-light .cat{background:linear-gradient(160deg,#ffffff,#eef2f7)}
+.xm-light .card{background:linear-gradient(120deg,#ffffff,#eaf1fb)}
+.xm-light dialog::backdrop,.xm-light .menu-dialog::backdrop{background:rgba(20,26,34,.35)}
+.xm-light .g-item,.xm-light .ph{background:radial-gradient(circle at 50% 40%,#ffffff,#e6edf6)}

@@ -447,6 +447,9 @@
     if (stage) {
       stage.addEventListener('pointerdown', function (e) { x0 = e.clientX; });
       stage.addEventListener('pointerup', function (e) {
+        /* a swipe that pushed the snowman over (or moved a snowball) is not a swipe to the next product */
+        var bc = document.body.classList;
+        if (bc.contains('xm-hold') || bc.contains('xm-knock')) { x0 = null; return; }
         if (x0 !== null && Math.abs(e.clientX - x0) > 40) step(e.clientX < x0 ? 1 : -1);
         x0 = null;
       });
@@ -602,8 +605,10 @@
 
   function update(it) {
     var o = it.o;
+    /* while a snowball is being made the finger belongs to the snowball: the product stays still */
+    if (it.active && document.body.classList.contains('xm-hold')) it.active = false;
     if (it.active) {
-      var r = it.anchor.getBoundingClientRect();
+      var r = it.r || it.anchor.getBoundingClientRect();
       var dx = it.px - (r.left + r.width / 2), dy = it.py - (r.top + r.height / 2);
       var dist = Math.hypot(dx, dy) || 1;
       var R = Math.max(r.width, r.height) * o.radius;
@@ -618,6 +623,8 @@
   function frame(now) {
     var dt = Math.min(64, now - last || 16); last = now;
     var more = false;
+    /* read every rectangle first, then write: one layout per frame instead of one per product */
+    items.forEach(function (it) { it.r = (!it.settled && it.active) ? it.anchor.getBoundingClientRect() : null; });
     items.forEach(function (it) {
       if (it.settled) return;
       update(it);
