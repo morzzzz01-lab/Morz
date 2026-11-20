@@ -1,0 +1,28 @@
+{
+  "name": "solar-candles-ad",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MORZ, Solar LED Candles: 15 s 9:16 ad for TikTok, Reels and Facebook Reels (Remotion + procedural sound).",
+  "scripts": {
+    "studio": "remotion studio",
+    "draft": "remotion render CandleAd out/draft.mp4 --scale=0.5 --crf=28",
+    "still": "remotion still CandleAd",
+    "render": "remotion render CandleAd out/candle-silent.mp4",
+    "sfx": "node scripts/py.mjs -m sfx sfx/cues/candle.py",
+    "mux": "ffmpeg -loglevel error -y -i out/candle-silent.mp4 -i public/candle.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 256k -movflags +faststart -shortest solar_candles_ad.mp4",
+    "build": "npm run sfx && npm run render && npm run mux",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource/instrument-serif": "5.3.0",
+    "@remotion/cli": "4.0.529",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.529"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}
