@@ -532,18 +532,54 @@
     if (!cv || !cv.getContext) { begin(); return; }
     var ctx = cv.getContext('2d'), S = cv.width / 434, p = 0, w = 0, t0 = 0;
     ctx.fillStyle = '#1a1717';
-    /* the string of lights is revealed along the wire like a snake; every new dot only paints its own small patch (cheap) */
+    /* the string of lights (the same picture, same bulbs) is wrapped around the logo by a small glowing spark that flies
+       in and runs along the wire; the string appears softly behind it, never in hard round patches */
     var wc = el.querySelector('.xi-wire'), wx = wc && wc.getContext ? wc.getContext('2d') : null;
-    var limg = new Image(), lready = false, queue = [];
-    limg.onload = function () { lready = true; queue.forEach(reveal); queue = []; };
+    var limg = new Image(), lready = false, dirty = false, mask = null, mx = null, brush = null, trail = [], sparkOn = true;
+    if (wx) {
+      mask = document.createElement('canvas'); mask.width = wc.width; mask.height = wc.height; mx = mask.getContext('2d');
+      brush = document.createElement('canvas'); brush.width = brush.height = 64;
+      var bx = brush.getContext('2d'), bg = bx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      bg.addColorStop(0, 'rgba(0,0,0,1)'); bg.addColorStop(.55, 'rgba(0,0,0,.95)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
+      bx.fillStyle = bg; bx.fillRect(0, 0, 64, 64);
+    }
+    limg.onload = function () { lready = true; dirty = true; };
     limg.src = wc ? wc.getAttribute('data-src') : '';
-    function reveal(c) {
-      if (!wx) return;
-      if (!lready) { queue.push(c); return; }
-      var k = limg.naturalWidth / wc.width, rad = 28 * S, x0 = Math.max(0, c[0] - rad), y0 = Math.max(0, c[1] - rad), sz = rad * 2;
-      wx.save(); wx.beginPath(); wx.arc(c[0], c[1], rad, 0, 6.2832); wx.clip();
-      wx.drawImage(limg, x0 * k, y0 * k, sz * k, sz * k, x0, y0, sz, sz);
-      wx.restore();
+    function reveal(c) { if (!mx) return; var rad = 30 * S; mx.drawImage(brush, c[0] - rad, c[1] - rad, rad * 2, rad * 2); dirty = true; }
+    /* the spark's path along the wire, in the same time units as the reveal (negative = flying in from the right) */
+    var SPK = [[-650, 432, 316], [-330, 398, 336], [0, 352, 362], [60, 330, 392], [200, 300, 412], [430, 245, 418], [600, 205, 421], [800, 165, 424], [960, 135, 408],
+      [1080, 127, 385], [1220, 138, 350], [1360, 150, 320], [1500, 185, 306], [1650, 225, 294], [1800, 262, 281], [1950, 295, 271], [2080, 305, 250], [2200, 301, 222], [2320, 299, 198], [2400, 304, 183]];
+    function sparkAt(t) {
+      if (t <= SPK[0][0]) return null;
+      for (var i = 1; i < SPK.length; i++) if (t <= SPK[i][0]) {
+        var a = SPK[i - 1], b = SPK[i], u = (t - a[0]) / (b[0] - a[0]);
+        return [a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
+      }
+      return [SPK[SPK.length - 1][1], SPK[SPK.length - 1][2]];
+    }
+    function glow(x, y, r, a) {
+      var g = wx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(255,255,255,' + a + ')'); g.addColorStop(.18, 'rgba(255,246,200,' + (a * .95) + ')');
+      g.addColorStop(.45, 'rgba(255,196,96,' + (a * .38) + ')'); g.addColorStop(1, 'rgba(255,180,80,0)');
+      wx.fillStyle = g; wx.beginPath(); wx.arc(x, y, r, 0, 6.2832); wx.fill();
+    }
+    function paint(e) {
+      if (!wx) return false;
+      var t = e / TS - WSTART, end = SPK[SPK.length - 1][0], fade = t > end ? Math.max(0, 1 - (t - end) / 420) : 1, sp = sparkAt(t);
+      var live = sparkOn && sp && fade > 0;
+      if (!dirty && !live && !trail.length) return false;
+      dirty = false;
+      wx.clearRect(0, 0, wc.width, wc.height);
+      if (lready) { wx.globalCompositeOperation = 'source-over'; wx.drawImage(mask, 0, 0); wx.globalCompositeOperation = 'source-in'; wx.drawImage(limg, 0, 0, wc.width, wc.height); wx.globalCompositeOperation = 'source-over'; }
+      if (live) {
+        trail.push([sp[0] * S, sp[1] * S]); if (trail.length > 9) trail.shift();
+        for (var i = 0; i < trail.length - 1; i++) glow(trail[i][0], trail[i][1], (4 + i * 1.1) * S, (.12 + i * .05) * fade);
+        glow(sp[0] * S, sp[1] * S, 20 * S, .95 * fade);
+        glow(sp[0] * S, sp[1] * S, 5.5 * S, fade);
+        return true;
+      }
+      if (sp && fade <= 0) { sparkOn = false; trail = []; dirty = true; }
+      return !!(sp && sparkOn);
     }
     function frame(now) {
       if (done) return;
@@ -556,7 +592,8 @@
       }
       ctx.fill();
       while (w < SNAKE.length && (SNAKE[w][2] + WSTART) * TS <= e) { reveal([(SNAKE[w][0] + .5) * S, (SNAKE[w][1] + .5) * S]); w++; }
-      if (p < PEN.length || w < SNAKE.length) raf = requestAnimationFrame(frame);
+      var busy = paint(e);
+      if (p < PEN.length || w < SNAKE.length || busy || dirty) raf = requestAnimationFrame(frame);
     }
     begin();
     t0 = performance.now();

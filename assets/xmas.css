@@ -483,3 +483,18 @@ html.xm-light,html.xm-light body{background:#ffffff}
 .xm-fly2:has(.xm-sg2){width:min(96vw,480px)}
 .xm-fly:has(.xm-sg2){width:min(58vw,410px)}
 @media(max-width:640px){.xm-fly:has(.xm-sg2){width:76vw}}
+
+/* ---- intro lights: same bulbs, same places, same colours; only how they arrive and how they glow ---- */
+/* the black lead line is replaced by a glowing spark that wraps the string around the logo (drawn in theme.js) */
+.xi-lead{display:none}
+/* each bulb: a bright little core and a soft halo in its own colour (no rays); it pops on when the spark reaches it, then twinkles gently */
+.xi-b::after{width:3.6rem;height:3.6rem;left:0;top:0;transform:translate(-50%,-50%) scale(.2);
+  background:radial-gradient(circle,color-mix(in srgb,var(--c) 70%,#fff) 0,color-mix(in srgb,var(--c) 58%,transparent) 18%,color-mix(in srgb,var(--c) 22%,transparent) 44%,transparent 68%);
+  animation:xi-glow-on .6s cubic-bezier(.2,.9,.3,1.3) var(--arr) both,xi-glow-tw 2.4s ease-in-out calc(var(--arr) + .6s + var(--g) * .5s) infinite;will-change:transform,opacity}
+.xi-b::before{width:1.5rem;height:1.5rem;left:-.75rem;top:-.75rem;-webkit-mask:none;mask:none;
+  background:radial-gradient(circle,rgba(255,255,255,.95) 0,color-mix(in srgb,var(--c) 70%,#fff) 26%,color-mix(in srgb,var(--c) 30%,transparent) 55%,transparent 72%);
+  animation:xi-core-on .45s ease-out var(--arr) both,xi-core-tw 1.6s ease-in-out calc(var(--arr) + .45s + var(--g) * .4s) infinite;will-change:opacity}
+@keyframes xi-glow-on{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}100%{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
+@keyframes xi-glow-tw{0%,100%{opacity:.9}50%{opacity:.5}}
+@keyframes xi-core-on{0%{opacity:0}40%{opacity:1}100%{opacity:.85}}
+@keyframes xi-core-tw{0%,100%{opacity:.85}50%{opacity:.55}}
