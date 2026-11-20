@@ -1,0 +1,18 @@
+{%- comment -%} Outputs a link URL that cannot dead-end: Usage: {% render 'safe-url', link: link %} {%- endcomment -%}
+{%- liquid
+  assign out = link.url
+  if link.type == 'catalog_link'
+    assign out = routes.all_products_collection_url
+  elsif link.type == 'http_link' and link.url contains '/collections/'
+    assign tail = link.url | split: '/collections/' | last | split: '?' | first | split: '#' | first | split: '/' | first
+    if tail != blank and tail != 'all' and tail != 'vendors' and tail != 'types'
+      assign tcol = collections[tail]
+      if tcol == blank
+        assign out = routes.search_url | append: '?type=product&q=' | append: tail
+      endif
+    endif
+  elsif link.type == 'page_link' and link.object == blank
+    assign out = routes.root_url
+  endif
+  echo out
+-%}

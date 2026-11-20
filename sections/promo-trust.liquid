@@ -1,0 +1,49 @@
+<section id="promo">
+  <div class="wrap promo">
+    <div class="card">
+      <h3>{{ section.settings.heading }}</h3>
+      <p>{{ section.settings.text }}</p>
+      {%- if section.settings.button_label != blank -%}
+        <a class="btn" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">{{ section.settings.button_label }}</a>
+      {%- endif -%}
+    </div>
+    <div class="trust">
+      {%- for block in section.blocks -%}
+        <div {{ block.shopify_attributes }}>
+          {%- if block.settings.link != blank -%}
+            <b><a href="{{ block.settings.link }}">{{ block.settings.title }}</a></b>
+          {%- else -%}
+            <b>{{ block.settings.title }}</b>
+          {%- endif -%}
+          <span>{{ block.settings.text }}</span>
+          {%- if block.settings.show_payment_icons -%}{% render 'payment-icons' %}{%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Promo + trust badges",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Gifts that glow" },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "Music boxes, trains and cozy lights for everyone on your list." },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop gifts" },
+    { "type": "url", "id": "button_link", "label": "Button link" }
+  ],
+  "blocks": [
+    {
+      "type": "badge",
+      "name": "Badge",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Delivery" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Shipping rates and delivery times are shown at checkout." },
+        { "type": "url", "id": "link", "label": "Link (optional)" },
+        { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": false }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Promo + trust badges", "blocks": [ { "type": "badge" } ] } ]
+}
+{% endschema %}

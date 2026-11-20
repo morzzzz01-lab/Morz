@@ -1,0 +1,62 @@
+{
+  "general": {
+    "skip": "Hoppa till innehåll",
+    "close": "Stäng",
+    "shop_now": "Köp nu",
+    "language": "Språk",
+    "country": "Land / valuta",
+    "search": "Sök",
+    "search_placeholder": "Sök produkter…",
+    "view_all": "Visa alla",
+    "back_home": "Tillbaka till startsidan",
+    "read_more": "Läs mer",
+    "menu": "Meny",
+    "menu_search_placeholder": "Sök produkter och kategorier…",
+    "menu_all_products": "Alla produkter",
+    "menu_no_results": "Inget hittades. Prova ett annat ord.",
+    "on_sale": "På rea",
+    "best_sellers": "Bästsäljare"
+  },
+  "cart": {
+    "title": "Varukorg",
+    "empty": "Din varukorg är tom.",
+    "subtotal": "Delsumma",
+    "checkout": "Till kassan",
+    "view": "Visa varukorg",
+    "remove": "Ta bort",
+    "continue": "Fortsätt handla",
+    "taxes_shipping": "Skatt och frakt beräknas i kassan.",
+    "add_named": "Lägg till {{ title }} i varukorgen",
+    "quantity": "Antal"
+  },
+  "products": {
+    "view": "Visa",
+    "add": "Lägg i varukorg",
+    "buy_now": "Köp nu",
+    "sold_out": "Slutsåld",
+    "choose_options": "Välj alternativ",
+    "size": "Storlek"
+  },
+  "collection": {
+    "filter": "Filtrera",
+    "sort": "Sortera efter",
+    "clear": "Rensa filter",
+    "no_products": "Inga produkter matchar. Prova ett annat filter.",
+    "apply": "Använd"
+  },
+  "countdown": {
+    "title": "Julnedräkning",
+    "days": "Dagar",
+    "hours": "Timmar",
+    "minutes": "Min",
+    "seconds": "Sek",
+    "merry": "God jul!"
+  },
+  "music": {
+    "button": "Julsånger",
+    "title": "Dagens julhits",
+    "prev": "Föregående låt",
+    "next": "Nästa låt",
+    "play": "Spela / pausa"
+  }
+}

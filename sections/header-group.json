@@ -1,0 +1,27 @@
+{
+  "name": "Header group",
+  "type": "header",
+  "sections": {
+    "announcement": {
+      "type": "announcement-bar",
+      "settings": {
+        "text": "Merry Christmas! Gifts for everyone you love",
+        "link_label": "Shop gifts",
+        "link": "/collections/all"
+      }
+    },
+    "header": {
+      "type": "header",
+      "settings": {
+        "menu": "main-menu",
+        "show_search": true,
+        "show_localization": true,
+        "show_currency": true
+      }
+    }
+  },
+  "order": [
+    "announcement",
+    "header"
+  ]
+}

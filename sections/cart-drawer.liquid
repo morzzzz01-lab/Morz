@@ -1,0 +1,53 @@
+<dialog id="CartDrawer" class="cart-dialog" aria-labelledby="CartDrawerTitle">
+  <div class="cd-head">
+    <h2 id="CartDrawerTitle">{{ 'cart.title' | t }}</h2>
+    <button type="button" class="cartb" data-cart-close>{{ 'general.close' | t }}</button>
+  </div>
+
+  <div id="cart-drawer-body">
+    <div class="cd-items">
+      {%- if cart.item_count == 0 -%}
+        <p class="none">{{ 'cart.empty' | t }}</p>
+      {%- else -%}
+        {%- for item in cart.items -%}
+          <div class="li">
+            <a class="li-img" href="{{ item.url }}">
+              {%- if item.image -%}{{ item.image | image_url: width: 160 | image_tag: loading: 'lazy', alt: item.product.title }}{%- endif -%}
+            </a>
+            <div class="li-info">
+              <a href="{{ item.url }}">{{ item.product.title }}</a>
+              {%- unless item.product.has_only_default_variant -%}<small>{{ item.variant.title }}</small>{%- endunless -%}
+              <div class="qty">
+                <button type="button" data-qty="{{ item.quantity | minus: 1 }}" data-line="{{ forloop.index }}" aria-label="{{ 'cart.decrease' | t }}">&minus;</button>
+                <span>{{ item.quantity }}</span>
+                <button type="button" data-qty="{{ item.quantity | plus: 1 }}" data-line="{{ forloop.index }}" aria-label="{{ 'cart.increase' | t }}">+</button>
+                <button type="button" class="rm" data-qty="0" data-line="{{ forloop.index }}">{{ 'cart.remove' | t }}</button>
+              </div>
+            </div>
+            <span class="li-price">{{ item.final_line_price | money }}</span>
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+
+    <div class="cd-foot">
+      <div class="tot"><span>{{ 'cart.subtotal' | t }}</span><span>{{ cart.total_price | money }}</span></div>
+      <p class="note">{{ 'cart.taxes_shipping' | t }}</p>
+      {% render 'secure-note' %}
+      {% render 'payment-icons' %}
+      {%- if cart.item_count == 1 -%}
+        <p class="co-note">Checkout is for 2 or more items. Buying just 1 item? Use <b>Buy now with card</b> on the product page.</p>
+      {%- endif -%}
+      <form action="{{ routes.cart_url }}" method="post" class="cd-actions">
+        <button class="btn" type="submit" name="checkout" {% if cart.item_count < 2 %}disabled{% endif %}>{{ 'cart.checkout' | t }}</button>
+        <a class="cartb" href="{{ routes.cart_url }}">{{ 'cart.view' | t }}</a>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+{% schema %}
+{
+  "name": "Cart drawer"
+}
+{% endschema %}

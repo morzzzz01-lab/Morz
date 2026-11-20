@@ -1,0 +1,122 @@
+{
+  "general": {
+    "skip": "Saltar al contenido",
+    "close": "Cerrar",
+    "shop_now": "Comprar ahora",
+    "language": "Idioma",
+    "country": "País / moneda",
+    "search": "Buscar",
+    "search_placeholder": "Buscar productos…",
+    "payment_methods": "Métodos de pago aceptados",
+    "view_all": "Ver todo",
+    "back_home": "Volver al inicio",
+    "read_more": "Leer más",
+    "password_title": "Abrimos pronto",
+    "password_enter": "Entrar a la tienda con contraseña",
+    "password_label": "Contraseña",
+    "password_submit": "Entrar",
+    "password_error": "Contraseña incorrecta",
+    "menu": "Menú",
+    "menu_search_placeholder": "Buscar productos y categorías…",
+    "menu_categories": "Menú",
+    "menu_all_categories": "Todas las categorías",
+    "menu_no_results": "No se encontró nada. Prueba con otra palabra.",
+    "menu_products": "Productos",
+    "menu_see_all": "Ver todos los resultados",
+    "skip_intro": "Omitir",
+    "secure_checkout": "Pago seguro. Tus datos de pago están cifrados.",
+    "on_sale": "En oferta",
+    "best_sellers": "Más vendidos"
+  },
+  "cart": {
+    "title": "Carrito",
+    "empty": "Tu carrito está vacío.",
+    "subtotal": "Subtotal",
+    "checkout": "Pagar",
+    "view": "Ver carrito",
+    "remove": "Eliminar",
+    "update": "Actualizar carrito",
+    "continue": "Seguir comprando",
+    "taxes_shipping": "Los impuestos y el envío se calculan al pagar.",
+    "add_named": "Añadir {{ title }} al carrito",
+    "quantity": "Cantidad",
+    "decrease": "Reducir cantidad",
+    "increase": "Aumentar cantidad",
+    "error": "No se pudo añadir este artículo al carrito.",
+    "item_total": "Total"
+  },
+  "products": {
+    "view": "Ver",
+    "add": "Añadir al carrito",
+    "sold_out": "Agotado",
+    "unavailable": "No disponible",
+    "choose_options": "Elegir opciones",
+    "size": "Talla",
+    "from": "Desde",
+    "vendor": "Marca",
+    "shipping_policy": "Política de envío",
+    "refund_policy": "Política de reembolso",
+    "no_media": "Sin imagen"
+  },
+  "collection": {
+    "filter": "Filtrar",
+    "sort": "Ordenar por",
+    "clear": "Borrar filtros",
+    "no_products": "Ningún producto coincide. Prueba con otro filtro.",
+    "apply": "Aplicar",
+    "price_from": "Desde",
+    "price_to": "Hasta",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "all_collections": "Colecciones"
+  },
+  "search": {
+    "title": "Buscar",
+    "results": {
+      "one": "{{ count }} resultado para «{{ terms }}»",
+      "other": "{{ count }} resultados para «{{ terms }}»"
+    },
+    "no_results": "No hay resultados para «{{ terms }}». Prueba con otra palabra.",
+    "prompt": "Escribe lo que buscas."
+  },
+  "errors": {
+    "title": "Página no encontrada",
+    "text": "La página que buscas no existe."
+  },
+  "blog": {
+    "no_articles": "Aún no hay artículos.",
+    "by": "Por {{ author }}"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados."
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "intro": "¿Dudas sobre un pedido, una talla o un producto? Escríbenos y te responderemos por correo.",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "phone": "Teléfono (opcional)",
+    "message": "Mensaje",
+    "send": "Enviar mensaje",
+    "success": "¡Gracias! Tu mensaje fue enviado. Responderemos pronto.",
+    "reply_note": "Respondemos por correo electrónico.",
+    "info": "Datos de contacto",
+    "hours": "Horario"
+  },
+  "countdown": {
+    "title": "Faltan para Navidad",
+    "days": "Días",
+    "hours": "Horas",
+    "minutes": "Min",
+    "seconds": "Seg",
+    "merry": "¡Feliz Navidad!"
+  },
+  "music": {
+    "button": "Christmas songs",
+    "title": "Today's Christmas hits",
+    "prev": "Previous song",
+    "next": "Next song",
+    "play": "Play / pause",
+    "note": "The song order changes every day."
+  }
+}

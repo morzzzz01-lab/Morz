@@ -1,0 +1,45 @@
+{%- if section.blocks.size > 0 or request.design_mode -%}
+<section id="reviews" class="sp-sec">
+  <div class="wrap">
+    {%- if section.settings.heading != blank -%}<h2>{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.blocks.size > 0 -%}
+      <div class="sp-grid">
+        {%- for block in section.blocks -%}
+          <figure class="sp-card" {{ block.shopify_attributes }}>
+            <div class="sp-stars" role="img" aria-label="{{ block.settings.stars }} / 5">
+              {%- for i in (1..5) -%}<span {% if i <= block.settings.stars %}class="on"{% endif %}>&#9733;</span>{%- endfor -%}
+            </div>
+            <blockquote>{{ block.settings.quote }}</blockquote>
+            <figcaption><b>{{ block.settings.name }}</b>{% if block.settings.detail != blank %} <span>{{ block.settings.detail }}</span>{% endif %}</figcaption>
+          </figure>
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <p class="none">Add review blocks here. Use only real customer reviews you have permission to show.</p>
+    {%- endif -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Customer reviews",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "What our customers say" },
+    { "type": "paragraph", "content": "Add only real customer reviews you have permission to show. The section stays hidden until you add one." }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        { "type": "textarea", "id": "quote", "label": "Review" },
+        { "type": "text", "id": "name", "label": "Name" },
+        { "type": "text", "id": "detail", "label": "Detail (optional)", "info": "For example: Verified buyer, Basketball." },
+        { "type": "range", "id": "stars", "label": "Stars", "min": 1, "max": 5, "step": 1, "default": 5 }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Customer reviews", "blocks": [ { "type": "review" } ] } ]
+}
+{% endschema %}

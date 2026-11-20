@@ -1,0 +1,38 @@
+{%- assign ex_list = section.settings.exclude_handles | remove: ' ' | strip_newlines | split: ',' -%}
+{%- assign shown = 0 -%}
+{%- capture more_cards -%}
+  {%- for product in collections['all'].products -%}
+    {%- unless ex_list contains product.handle -%}
+      {%- unless product.compare_at_price > product.price -%}
+        {%- if shown < section.settings.limit -%}
+          {%- assign shown = shown | plus: 1 -%}
+          {% render 'product-card', product: product, index: shown %}
+        {%- endif -%}
+      {%- endunless -%}
+    {%- endunless -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- if shown > 0 -%}
+<section id="more-gifts">
+  <div class="wrap">
+    <div class="sec-head">
+      {%- if section.settings.heading != blank -%}<h2>{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.subheading != blank -%}<p class="sec-sub">{{ section.settings.subheading }}</p>{%- endif -%}
+    </div>
+    <div class="prods">{{ more_cards }}</div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "More products",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "More gift ideas" },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Cosy, bright and festive finds." },
+    { "type": "textarea", "id": "exclude_handles", "label": "Do not show these products (handles, comma separated)", "info": "Products already shown in another section. Products on sale are never shown here." },
+    { "type": "range", "id": "limit", "label": "Products to show", "min": 2, "max": 20, "step": 1, "default": 6 }
+  ],
+  "presets": [ { "name": "More products" } ]
+}
+{% endschema %}

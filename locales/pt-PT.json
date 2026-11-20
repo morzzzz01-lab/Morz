@@ -1,0 +1,62 @@
+{
+  "general": {
+    "skip": "Ir para o conteúdo",
+    "close": "Fechar",
+    "shop_now": "Comprar agora",
+    "language": "Idioma",
+    "country": "País / moeda",
+    "search": "Buscar",
+    "search_placeholder": "Buscar produtos…",
+    "view_all": "Ver tudo",
+    "back_home": "Voltar ao início",
+    "read_more": "Ler mais",
+    "menu": "Menu",
+    "menu_search_placeholder": "Buscar produtos e categorias…",
+    "menu_all_products": "Todos os produtos",
+    "menu_no_results": "Nada encontrado. Tente outra palavra.",
+    "on_sale": "Em promoção",
+    "best_sellers": "Mais vendidos"
+  },
+  "cart": {
+    "title": "Carrinho",
+    "empty": "Seu carrinho está vazio.",
+    "subtotal": "Subtotal",
+    "checkout": "Finalizar compra",
+    "view": "Ver carrinho",
+    "remove": "Remover",
+    "continue": "Continuar comprando",
+    "taxes_shipping": "Impostos e frete são calculados no checkout.",
+    "add_named": "Adicionar {{ title }} ao carrinho",
+    "quantity": "Quantidade"
+  },
+  "products": {
+    "view": "Ver",
+    "add": "Adicionar ao carrinho",
+    "buy_now": "Comprar agora",
+    "sold_out": "Esgotado",
+    "choose_options": "Escolher opções",
+    "size": "Tamanho"
+  },
+  "collection": {
+    "filter": "Filtrar",
+    "sort": "Ordenar por",
+    "clear": "Limpar filtros",
+    "no_products": "Nenhum produto encontrado. Tente outro filtro.",
+    "apply": "Aplicar"
+  },
+  "countdown": {
+    "title": "Contagem regressiva para o Natal",
+    "days": "Dias",
+    "hours": "Horas",
+    "minutes": "Min",
+    "seconds": "Seg",
+    "merry": "Feliz Natal!"
+  },
+  "music": {
+    "button": "Músicas de Natal",
+    "title": "Sucessos de Natal de hoje",
+    "prev": "Música anterior",
+    "next": "Próxima música",
+    "play": "Tocar / pausar"
+  }
+}

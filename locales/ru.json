@@ -1,0 +1,124 @@
+{
+  "general": {
+    "skip": "Перейти к содержимому",
+    "close": "Закрыть",
+    "shop_now": "Купить",
+    "language": "Язык",
+    "country": "Страна / валюта",
+    "search": "Поиск",
+    "search_placeholder": "Поиск товаров…",
+    "payment_methods": "Способы оплаты",
+    "view_all": "Показать все",
+    "back_home": "На главную",
+    "read_more": "Читать далее",
+    "password_title": "Скоро открытие",
+    "password_enter": "Войти в магазин по паролю",
+    "password_label": "Пароль",
+    "password_submit": "Войти",
+    "password_error": "Неверный пароль",
+    "menu": "Меню",
+    "menu_search_placeholder": "Поиск товаров и категорий…",
+    "menu_categories": "Меню",
+    "menu_all_categories": "Все категории",
+    "menu_no_results": "Ничего не найдено. Попробуйте другое слово.",
+    "menu_products": "Товары",
+    "menu_see_all": "Все результаты",
+    "skip_intro": "Пропустить",
+    "secure_checkout": "Безопасная оплата. Ваши платёжные данные зашифрованы.",
+    "on_sale": "Скидки",
+    "best_sellers": "Хиты продаж"
+  },
+  "cart": {
+    "title": "Корзина",
+    "empty": "Ваша корзина пуста.",
+    "subtotal": "Подытог",
+    "checkout": "Оформить заказ",
+    "view": "Открыть корзину",
+    "remove": "Удалить",
+    "update": "Обновить корзину",
+    "continue": "Продолжить покупки",
+    "taxes_shipping": "Налоги и доставка рассчитываются при оформлении заказа.",
+    "add_named": "Добавить {{ title }} в корзину",
+    "quantity": "Количество",
+    "decrease": "Уменьшить количество",
+    "increase": "Увеличить количество",
+    "error": "Не удалось добавить товар в корзину.",
+    "item_total": "Итого"
+  },
+  "products": {
+    "view": "Смотреть",
+    "add": "В корзину",
+    "sold_out": "Распродано",
+    "unavailable": "Недоступно",
+    "choose_options": "Выбрать параметры",
+    "size": "Размер",
+    "from": "От",
+    "vendor": "Бренд",
+    "shipping_policy": "Условия доставки",
+    "refund_policy": "Условия возврата",
+    "no_media": "Нет изображения"
+  },
+  "collection": {
+    "filter": "Фильтр",
+    "sort": "Сортировать",
+    "clear": "Сбросить фильтры",
+    "no_products": "Нет подходящих товаров. Попробуйте другой фильтр.",
+    "apply": "Применить",
+    "price_from": "От",
+    "price_to": "До",
+    "previous": "Назад",
+    "next": "Далее",
+    "all_collections": "Коллекции"
+  },
+  "search": {
+    "title": "Поиск",
+    "results": {
+      "one": "{{ count }} результат по запросу «{{ terms }}»",
+      "other": "{{ count }} результатов по запросу «{{ terms }}»",
+      "few": "{{ count }} результата по запросу «{{ terms }}»",
+      "many": "{{ count }} результатов по запросу «{{ terms }}»"
+    },
+    "no_results": "Ничего не найдено по запросу «{{ terms }}». Попробуйте другое слово.",
+    "prompt": "Введите, что вы ищете."
+  },
+  "errors": {
+    "title": "Страница не найдена",
+    "text": "Такой страницы не существует."
+  },
+  "blog": {
+    "no_articles": "Статей пока нет.",
+    "by": "Автор: {{ author }}"
+  },
+  "footer": {
+    "rights": "Все права защищены."
+  },
+  "contact": {
+    "title": "Свяжитесь с нами",
+    "intro": "Вопросы о заказе, размере или товаре? Напишите нам, и мы ответим по электронной почте.",
+    "name": "Имя",
+    "email": "Эл. почта",
+    "phone": "Телефон (необязательно)",
+    "message": "Сообщение",
+    "send": "Отправить сообщение",
+    "success": "Спасибо! Ваше сообщение отправлено. Мы скоро ответим.",
+    "reply_note": "Мы отвечаем по электронной почте.",
+    "info": "Контактные данные",
+    "hours": "Часы работы"
+  },
+  "countdown": {
+    "title": "До Рождества осталось",
+    "days": "Дн.",
+    "hours": "Ч.",
+    "minutes": "Мин",
+    "seconds": "Сек",
+    "merry": "С Рождеством!"
+  },
+  "music": {
+    "button": "Christmas songs",
+    "title": "Today's Christmas hits",
+    "prev": "Previous song",
+    "next": "Next song",
+    "play": "Play / pause",
+    "note": "The song order changes every day."
+  }
+}

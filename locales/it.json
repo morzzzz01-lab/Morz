@@ -1,0 +1,62 @@
+{
+  "general": {
+    "skip": "Vai al contenuto",
+    "close": "Chiudi",
+    "shop_now": "Acquista ora",
+    "language": "Lingua",
+    "country": "Paese / valuta",
+    "search": "Cerca",
+    "search_placeholder": "Cerca prodotti…",
+    "view_all": "Vedi tutto",
+    "back_home": "Torna alla home",
+    "read_more": "Leggi di più",
+    "menu": "Menu",
+    "menu_search_placeholder": "Cerca prodotti e categorie…",
+    "menu_all_products": "Tutti i prodotti",
+    "menu_no_results": "Nessun risultato. Prova un'altra parola.",
+    "on_sale": "In offerta",
+    "best_sellers": "I più venduti"
+  },
+  "cart": {
+    "title": "Carrello",
+    "empty": "Il tuo carrello è vuoto.",
+    "subtotal": "Subtotale",
+    "checkout": "Procedi al pagamento",
+    "view": "Vedi carrello",
+    "remove": "Rimuovi",
+    "continue": "Continua gli acquisti",
+    "taxes_shipping": "Tasse e spedizione sono calcolate al checkout.",
+    "add_named": "Aggiungi {{ title }} al carrello",
+    "quantity": "Quantità"
+  },
+  "products": {
+    "view": "Vedi",
+    "add": "Aggiungi al carrello",
+    "buy_now": "Acquista ora",
+    "sold_out": "Esaurito",
+    "choose_options": "Scegli le opzioni",
+    "size": "Taglia"
+  },
+  "collection": {
+    "filter": "Filtra",
+    "sort": "Ordina per",
+    "clear": "Cancella filtri",
+    "no_products": "Nessun prodotto trovato. Prova un altro filtro.",
+    "apply": "Applica"
+  },
+  "countdown": {
+    "title": "Conto alla rovescia per Natale",
+    "days": "Giorni",
+    "hours": "Ore",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "merry": "Buon Natale!"
+  },
+  "music": {
+    "button": "Canzoni di Natale",
+    "title": "I successi natalizi di oggi",
+    "prev": "Brano precedente",
+    "next": "Brano successivo",
+    "play": "Riproduci / pausa"
+  }
+}

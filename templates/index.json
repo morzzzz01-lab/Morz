@@ -1,0 +1,165 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero-slider",
+      "blocks": {
+        "slide_1": {
+          "type": "slide",
+          "settings": {
+            "c1": "#ff4a4a",
+            "c2": "#8d0f1c",
+            "fg": "#ffffff",
+            "fgi": "#8d0f1c",
+            "accent": "#ff3b4a",
+            "bg": "#14060a",
+            "panel": "#231014",
+            "line": "#4a1b24"
+          }
+        },
+        "slide_2": {
+          "type": "slide",
+          "settings": {
+            "c1": "#34d27a",
+            "c2": "#0a5a2c",
+            "fg": "#ffffff",
+            "fgi": "#0a3d1f",
+            "accent": "#3be58a",
+            "bg": "#04140b",
+            "panel": "#0b2216",
+            "line": "#1c4a2f"
+          }
+        },
+        "slide_3": {
+          "type": "slide",
+          "settings": {
+            "c1": "#ffd24a",
+            "c2": "#b36b00",
+            "fg": "#ffffff",
+            "fgi": "#3a2300",
+            "accent": "#ffd24a",
+            "bg": "#140d02",
+            "panel": "#231808",
+            "line": "#4a3510"
+          }
+        },
+        "slide_4": {
+          "type": "slide",
+          "settings": {
+            "c1": "#ff4a4a",
+            "c2": "#8d0f1c",
+            "fg": "#ffffff",
+            "fgi": "#8d0f1c",
+            "accent": "#ff3b4a",
+            "bg": "#14060a",
+            "panel": "#231014",
+            "line": "#4a1b24"
+          }
+        },
+        "slide_5": {
+          "type": "slide",
+          "settings": {
+            "c1": "#34d27a",
+            "c2": "#0a5a2c",
+            "fg": "#ffffff",
+            "fgi": "#0a3d1f",
+            "accent": "#3be58a",
+            "bg": "#04140b",
+            "panel": "#0b2216",
+            "line": "#1c4a2f"
+          }
+        },
+        "slide_6": {
+          "type": "slide",
+          "settings": {
+            "c1": "#ffd24a",
+            "c2": "#b36b00",
+            "fg": "#ffffff",
+            "fgi": "#3a2300",
+            "accent": "#ffd24a",
+            "bg": "#140d02",
+            "panel": "#231808",
+            "line": "#4a3510"
+          }
+        }
+      },
+      "block_order": [
+        "slide_1",
+        "slide_2",
+        "slide_3",
+        "slide_4",
+        "slide_5",
+        "slide_6"
+      ],
+      "settings": {
+        "heading": "Merry Christmas.",
+        "subheading": "Gifts that glow.",
+        "text": "Music boxes, trains and cozy lights for everyone on your list.",
+        "button_label": "Shop gifts",
+        "source": "new",
+        "auto_products": true,
+        "auto_color": false,
+        "shift_theme": true
+      }
+    },
+    "about": {
+      "type": "rich-text",
+      "settings": {
+        "anchor": "about"
+      }
+    },
+    "sale": {
+      "type": "sale-products",
+      "settings": {
+        "heading": "On sale now",
+        "limit": 3,
+        "exclude_handles": "what-cat-christmas-tree-hoodie,wearable-heated-blanket-hooded-lazy-blanket-flannel-couple-home-wear-heating-blanket,ceiling-decorations-for-decorating-the-home-with-christmas-projection-lights,electric-heating-blanket-fleece-lamb-velvet-wearable-heated-blanket-with-sleeves-for-home-and-office-use,christmas-decorations-led-santa-claus-snowman-ornaments,christmas-candle-lights-led-small-lanterns-wind-lights-electronic,handmade-christmas-mug-set-with-holiday-motifs-for-festive-season,christmas-eve-apple-candle,i-ll-be-gnome-for-christmas-hoodie,christmas-stockings-xmas-tree-fireplace-decorative-socks,solar-powered-led-candle-lights-for-wedding-party-christmas-decoration",
+        "subheading": "Limited-time Christmas prices."
+      }
+    },
+    "reviews": {
+      "type": "social-proof",
+      "settings": {
+        "heading": "What our customers say"
+      }
+    },
+    "xmas": {
+      "type": "xmas-banner",
+      "settings": {}
+    },
+    "welcome": {
+      "type": "welcome-offer",
+      "settings": {}
+    },
+    "ranked": {
+      "type": "ranked-products",
+      "settings": {
+        "heading": "Christmas gifts",
+        "subheading": "Our top picks, in order.",
+        "handles": "what-cat-christmas-tree-hoodie,wearable-heated-blanket-hooded-lazy-blanket-flannel-couple-home-wear-heating-blanket,ceiling-decorations-for-decorating-the-home-with-christmas-projection-lights,electric-heating-blanket-fleece-lamb-velvet-wearable-heated-blanket-with-sleeves-for-home-and-office-use,christmas-decorations-led-santa-claus-snowman-ornaments,christmas-candle-lights-led-small-lanterns-wind-lights-electronic,handmade-christmas-mug-set-with-holiday-motifs-for-festive-season,christmas-eve-apple-candle,i-ll-be-gnome-for-christmas-hoodie,christmas-stockings-xmas-tree-fireplace-decorative-socks,solar-powered-led-candle-lights-for-wedding-party-christmas-decoration",
+        "label_1": "Best Seller",
+        "label_2": "Trending",
+        "label_3": "New",
+        "show_view_all": true
+      }
+    },
+    "more": {
+      "type": "more-products",
+      "settings": {
+        "heading": "More gift ideas",
+        "subheading": "Cosy, bright and festive finds.",
+        "exclude_handles": "what-cat-christmas-tree-hoodie,wearable-heated-blanket-hooded-lazy-blanket-flannel-couple-home-wear-heating-blanket,ceiling-decorations-for-decorating-the-home-with-christmas-projection-lights,electric-heating-blanket-fleece-lamb-velvet-wearable-heated-blanket-with-sleeves-for-home-and-office-use,christmas-decorations-led-santa-claus-snowman-ornaments,christmas-candle-lights-led-small-lanterns-wind-lights-electronic,handmade-christmas-mug-set-with-holiday-motifs-for-festive-season,christmas-eve-apple-candle,i-ll-be-gnome-for-christmas-hoodie,christmas-stockings-xmas-tree-fireplace-decorative-socks,solar-powered-led-candle-lights-for-wedding-party-christmas-decoration",
+        "limit": 6
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "ranked",
+    "more",
+    "xmas",
+    "sale",
+    "reviews",
+    "welcome",
+    "about"
+  ]
+}

@@ -1,0 +1,31 @@
+<section>
+  <div class="wrap narrow">
+    <h1 class="ptitle">{{ page.title }}</h1>
+    {%- if page.content != blank -%}<div class="rte">{{ page.content }}</div>{%- endif -%}
+
+    {%- if section.settings.email != blank or section.settings.phone != blank or section.settings.hours != blank or section.settings.address != blank -%}
+      <ul class="cf-info" role="list">
+        {%- if section.settings.email != blank -%}<li><b>{{ 'contact.email' | t }}</b><a href="mailto:{{ section.settings.email }}">{{ section.settings.email }}</a></li>{%- endif -%}
+        {%- if section.settings.phone != blank -%}<li><b>{{ 'contact.phone' | t }}</b><a href="tel:{{ section.settings.phone | replace: ' ', '' }}">{{ section.settings.phone }}</a></li>{%- endif -%}
+        {%- if section.settings.address != blank -%}<li><b>{{ section.settings.address_label }}</b><span>{{ section.settings.address }}</span></li>{%- endif -%}
+        {%- if section.settings.hours != blank -%}<li><b>{{ 'contact.hours' | t }}</b><span>{{ section.settings.hours }}</span></li>{%- endif -%}
+      </ul>
+    {%- endif -%}
+
+    {% render 'contact-form', id: section.id %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contact page",
+  "settings": [
+    { "type": "paragraph", "content": "Optional details shown above the form. Leave empty to hide." },
+    { "type": "text", "id": "email", "label": "Public email" },
+    { "type": "text", "id": "phone", "label": "Phone" },
+    { "type": "text", "id": "address_label", "label": "Address label", "default": "Address" },
+    { "type": "textarea", "id": "address", "label": "Address" },
+    { "type": "text", "id": "hours", "label": "Hours", "info": "For example: Mon-Fri 10:00-18:00" }
+  ]
+}
+{% endschema %}

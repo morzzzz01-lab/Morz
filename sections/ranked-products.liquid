@@ -1,0 +1,42 @@
+{%- assign handles = section.settings.handles | split: ',' -%}
+{%- assign labels = section.settings.label_1 | append: '|' | append: section.settings.label_2 | append: '|' | append: section.settings.label_3 | split: '|' -%}
+<section id="best-sellers">
+  <div class="wrap">
+    <div class="sec-head">
+      {%- if section.settings.heading != blank -%}<h2>{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.subheading != blank -%}<p class="sec-sub">{{ section.settings.subheading }}</p>{%- endif -%}
+    </div>
+    <div class="prods">
+      {%- assign shown = 0 -%}
+      {%- for h in handles -%}
+        {%- assign handle = h | strip -%}
+        {%- assign product = all_products[handle] -%}
+        {%- if product != blank and product.published_at != blank -%}
+          {%- assign badge = nil -%}
+          {%- if shown < 3 -%}{%- assign badge = labels[shown] -%}{%- endif -%}
+          {% render 'product-card', product: product, index: forloop.index, badge: badge, badge_n: shown %}
+          {%- assign shown = shown | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+    {%- if section.settings.show_view_all -%}
+      <p class="view-all"><a class="btn" href="{{ routes.all_products_collection_url }}">{{ 'general.view_all' | t }}</a></p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ranked products",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Christmas gifts" },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Our top picks, in order." },
+    { "type": "textarea", "id": "handles", "label": "Product handles (in display order, comma separated)", "info": "The first 3 products get the badges below.", "default": "what-cat-christmas-tree-hoodie,wearable-heated-blanket-hooded-lazy-blanket-flannel-couple-home-wear-heating-blanket,ceiling-decorations-for-decorating-the-home-with-christmas-projection-lights" },
+    { "type": "text", "id": "label_1", "label": "Badge on product 1", "default": "Best Seller" },
+    { "type": "text", "id": "label_2", "label": "Badge on product 2", "default": "Trending" },
+    { "type": "text", "id": "label_3", "label": "Badge on product 3", "default": "New" },
+    { "type": "checkbox", "id": "show_view_all", "label": "Show “View all” button", "default": true }
+  ],
+  "presets": [ { "name": "Ranked products" } ]
+}
+{% endschema %}

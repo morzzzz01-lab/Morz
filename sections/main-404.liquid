@@ -1,0 +1,21 @@
+<section>
+  <div class="wrap narrow center">
+    <h1 class="ptitle">404</h1>
+    <p class="lead">{{ 'errors.title' | t }}</p>
+    <p class="muted">{{ 'errors.text' | t }}</p>
+    <a class="btn" href="{{ routes.root_url }}">{{ 'general.back_home' | t }}</a>
+    <form class="e404-search" action="{{ routes.search_url }}" method="get" role="search">
+      <input class="search" type="search" name="q" placeholder="{{ 'general.search_placeholder' | t }}" aria-label="{{ 'general.search' | t }}">
+      <input type="hidden" name="type" value="product">
+    </form>
+    {%- if collections.size > 0 -%}
+      <p class="e404-chips">
+        {%- for collection in collections limit: 10 -%}{%- if collection.products_count > 0 -%}<a href="{{ collection.url }}">{{ collection.title }}</a>{%- endif -%}{%- endfor -%}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "404 page" }
+{% endschema %}

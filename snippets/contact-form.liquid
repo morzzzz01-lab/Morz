@@ -1,0 +1,26 @@
+{%- comment -%} Usage: {% render 'contact-form', id: section.id %} {%- endcomment -%}
+<div class="cf-wrap">
+  <p class="cf-intro">{{ 'contact.intro' | t }}</p>
+  {%- form 'contact', class: 'contact-form', id: 'ContactForm' -%}
+    {%- if form.posted_successfully? -%}<p class="cf-ok" role="status">{{ 'contact.success' | t }}</p>{%- endif -%}
+    {%- if form.errors -%}<p class="cf-err" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+    <div class="cf-row">
+      <label for="CF-name-{{ id }}">{{ 'contact.name' | t }}</label>
+      <input id="CF-name-{{ id }}" type="text" name="contact[name]" autocomplete="name" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}">
+    </div>
+    <div class="cf-row">
+      <label for="CF-email-{{ id }}">{{ 'contact.email' | t }}</label>
+      <input id="CF-email-{{ id }}" type="email" name="contact[email]" required autocomplete="email" value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}">
+    </div>
+    <div class="cf-row">
+      <label for="CF-phone-{{ id }}">{{ 'contact.phone' | t }}</label>
+      <input id="CF-phone-{{ id }}" type="tel" name="contact[phone]" autocomplete="tel" value="{{ form.phone }}">
+    </div>
+    <div class="cf-row">
+      <label for="CF-body-{{ id }}">{{ 'contact.message' | t }}</label>
+      <textarea id="CF-body-{{ id }}" name="contact[body]" rows="6" required>{{ form.body }}</textarea>
+    </div>
+    <button class="btn" type="submit">{{ 'contact.send' | t }}</button>
+    <p class="cf-note">{{ 'contact.reply_note' | t }}</p>
+  {%- endform -%}
+</div>

@@ -1,0 +1,62 @@
+{
+  "general": {
+    "skip": "Langsung ke konten",
+    "close": "Tutup",
+    "shop_now": "Beli sekarang",
+    "language": "Bahasa",
+    "country": "Negara / mata uang",
+    "search": "Cari",
+    "search_placeholder": "Cari produk…",
+    "view_all": "Lihat semua",
+    "back_home": "Kembali ke beranda",
+    "read_more": "Baca selengkapnya",
+    "menu": "Menu",
+    "menu_search_placeholder": "Cari produk dan kategori…",
+    "menu_all_products": "Semua produk",
+    "menu_no_results": "Tidak ditemukan. Coba kata lain.",
+    "on_sale": "Diskon",
+    "best_sellers": "Terlaris"
+  },
+  "cart": {
+    "title": "Keranjang",
+    "empty": "Keranjang Anda kosong.",
+    "subtotal": "Subtotal",
+    "checkout": "Checkout",
+    "view": "Lihat keranjang",
+    "remove": "Hapus",
+    "continue": "Lanjut belanja",
+    "taxes_shipping": "Pajak dan ongkos kirim dihitung saat checkout.",
+    "add_named": "Tambahkan {{ title }} ke keranjang",
+    "quantity": "Jumlah"
+  },
+  "products": {
+    "view": "Lihat",
+    "add": "Tambah ke keranjang",
+    "buy_now": "Beli sekarang",
+    "sold_out": "Habis",
+    "choose_options": "Pilih opsi",
+    "size": "Ukuran"
+  },
+  "collection": {
+    "filter": "Filter",
+    "sort": "Urutkan",
+    "clear": "Hapus filter",
+    "no_products": "Tidak ada produk yang cocok. Coba filter lain.",
+    "apply": "Terapkan"
+  },
+  "countdown": {
+    "title": "Hitung mundur Natal",
+    "days": "Hari",
+    "hours": "Jam",
+    "minutes": "Menit",
+    "seconds": "Detik",
+    "merry": "Selamat Natal!"
+  },
+  "music": {
+    "button": "Lagu Natal",
+    "title": "Hit Natal hari ini",
+    "prev": "Lagu sebelumnya",
+    "next": "Lagu berikutnya",
+    "play": "Putar / jeda"
+  }
+}

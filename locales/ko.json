@@ -1,0 +1,121 @@
+{
+  "general": {
+    "skip": "본문으로 건너뛰기",
+    "close": "닫기",
+    "shop_now": "지금 구매",
+    "language": "언어",
+    "country": "국가 / 통화",
+    "search": "검색",
+    "search_placeholder": "상품 검색…",
+    "payment_methods": "결제 수단",
+    "view_all": "전체 보기",
+    "back_home": "홈으로 돌아가기",
+    "read_more": "더 보기",
+    "password_title": "곧 오픈합니다",
+    "password_enter": "비밀번호로 스토어 입장",
+    "password_label": "비밀번호",
+    "password_submit": "입장",
+    "password_error": "비밀번호가 올바르지 않습니다",
+    "menu": "메뉴",
+    "menu_search_placeholder": "상품 및 카테고리 검색…",
+    "menu_categories": "메뉴",
+    "menu_all_categories": "전체 카테고리",
+    "menu_no_results": "검색 결과가 없습니다. 다른 단어로 시도해 보세요.",
+    "menu_products": "상품",
+    "menu_see_all": "모든 결과 보기",
+    "skip_intro": "건너뛰기",
+    "secure_checkout": "안전한 결제입니다. 결제 정보는 암호화됩니다.",
+    "on_sale": "세일",
+    "best_sellers": "베스트셀러"
+  },
+  "cart": {
+    "title": "장바구니",
+    "empty": "장바구니가 비어 있습니다.",
+    "subtotal": "소계",
+    "checkout": "결제하기",
+    "view": "장바구니 보기",
+    "remove": "삭제",
+    "update": "장바구니 업데이트",
+    "continue": "쇼핑 계속하기",
+    "taxes_shipping": "세금과 배송비는 결제 시 계산됩니다.",
+    "add_named": "{{ title }}을(를) 장바구니에 담기",
+    "quantity": "수량",
+    "decrease": "수량 줄이기",
+    "increase": "수량 늘리기",
+    "error": "이 상품을 장바구니에 담을 수 없습니다.",
+    "item_total": "합계"
+  },
+  "products": {
+    "view": "보기",
+    "add": "장바구니에 담기",
+    "sold_out": "품절",
+    "unavailable": "구매 불가",
+    "choose_options": "옵션 선택",
+    "size": "사이즈",
+    "from": "최저가",
+    "vendor": "브랜드",
+    "shipping_policy": "배송 정책",
+    "refund_policy": "환불 정책",
+    "no_media": "이미지 없음"
+  },
+  "collection": {
+    "filter": "필터",
+    "sort": "정렬",
+    "clear": "필터 초기화",
+    "no_products": "조건에 맞는 상품이 없습니다. 다른 필터를 사용해 보세요.",
+    "apply": "적용",
+    "price_from": "최소",
+    "price_to": "최대",
+    "previous": "이전",
+    "next": "다음",
+    "all_collections": "컬렉션"
+  },
+  "search": {
+    "title": "검색",
+    "results": {
+      "other": "“{{ terms }}” 검색 결과 {{ count }}건"
+    },
+    "no_results": "“{{ terms }}”에 대한 결과가 없습니다. 다른 단어로 시도해 보세요.",
+    "prompt": "찾으시는 내용을 입력하세요."
+  },
+  "errors": {
+    "title": "페이지를 찾을 수 없습니다",
+    "text": "찾으시는 페이지가 존재하지 않습니다."
+  },
+  "blog": {
+    "no_articles": "아직 게시글이 없습니다.",
+    "by": "작성자: {{ author }}"
+  },
+  "footer": {
+    "rights": "모든 권리 보유."
+  },
+  "contact": {
+    "title": "문의하기",
+    "intro": "주문, 사이즈, 상품에 대해 궁금하신가요? 메시지를 보내주시면 이메일로 답변드리겠습니다.",
+    "name": "이름",
+    "email": "이메일",
+    "phone": "전화번호 (선택)",
+    "message": "메시지",
+    "send": "메시지 보내기",
+    "success": "감사합니다! 메시지가 전송되었습니다. 곧 답변드리겠습니다.",
+    "reply_note": "이메일로 답변드립니다.",
+    "info": "연락처 정보",
+    "hours": "운영 시간"
+  },
+  "countdown": {
+    "title": "크리스마스까지",
+    "days": "일",
+    "hours": "시간",
+    "minutes": "분",
+    "seconds": "초",
+    "merry": "메리 크리스마스!"
+  },
+  "music": {
+    "button": "Christmas songs",
+    "title": "Today's Christmas hits",
+    "prev": "Previous song",
+    "next": "Next song",
+    "play": "Play / pause",
+    "note": "The song order changes every day."
+  }
+}

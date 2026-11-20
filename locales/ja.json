@@ -1,0 +1,121 @@
+{
+  "general": {
+    "skip": "コンテンツへスキップ",
+    "close": "閉じる",
+    "shop_now": "今すぐ購入",
+    "language": "言語",
+    "country": "国 / 通貨",
+    "search": "検索",
+    "search_placeholder": "商品を検索…",
+    "payment_methods": "ご利用可能なお支払い方法",
+    "view_all": "すべて見る",
+    "back_home": "ホームに戻る",
+    "read_more": "続きを読む",
+    "password_title": "まもなくオープン",
+    "password_enter": "パスワードでストアに入る",
+    "password_label": "パスワード",
+    "password_submit": "入る",
+    "password_error": "パスワードが違います",
+    "menu": "メニュー",
+    "menu_search_placeholder": "商品・カテゴリーを検索…",
+    "menu_categories": "メニュー",
+    "menu_all_categories": "すべてのカテゴリー",
+    "menu_no_results": "見つかりませんでした。別の言葉をお試しください。",
+    "menu_products": "商品",
+    "menu_see_all": "すべての結果を見る",
+    "skip_intro": "スキップ",
+    "secure_checkout": "安全なお会計。お支払い情報は暗号化されます。",
+    "on_sale": "セール中",
+    "best_sellers": "売れ筋"
+  },
+  "cart": {
+    "title": "カート",
+    "empty": "カートは空です。",
+    "subtotal": "小計",
+    "checkout": "お会計へ",
+    "view": "カートを見る",
+    "remove": "削除",
+    "update": "カートを更新",
+    "continue": "買い物を続ける",
+    "taxes_shipping": "税金と送料はお会計時に計算されます。",
+    "add_named": "{{ title }} をカートに追加",
+    "quantity": "数量",
+    "decrease": "数量を減らす",
+    "increase": "数量を増やす",
+    "error": "この商品をカートに追加できませんでした。",
+    "item_total": "合計"
+  },
+  "products": {
+    "view": "見る",
+    "add": "カートに追加",
+    "sold_out": "売り切れ",
+    "unavailable": "在庫なし",
+    "choose_options": "オプションを選択",
+    "size": "サイズ",
+    "from": "最低価格",
+    "vendor": "ブランド",
+    "shipping_policy": "配送ポリシー",
+    "refund_policy": "返金ポリシー",
+    "no_media": "画像なし"
+  },
+  "collection": {
+    "filter": "絞り込み",
+    "sort": "並び替え",
+    "clear": "絞り込みを解除",
+    "no_products": "一致する商品がありません。別の条件をお試しください。",
+    "apply": "適用",
+    "price_from": "下限",
+    "price_to": "上限",
+    "previous": "前へ",
+    "next": "次へ",
+    "all_collections": "コレクション"
+  },
+  "search": {
+    "title": "検索",
+    "results": {
+      "other": "「{{ terms }}」の検索結果：{{ count }}件"
+    },
+    "no_results": "「{{ terms }}」に一致する結果はありません。別の言葉をお試しください。",
+    "prompt": "お探しのものを入力してください。"
+  },
+  "errors": {
+    "title": "ページが見つかりません",
+    "text": "お探しのページは存在しません。"
+  },
+  "blog": {
+    "no_articles": "記事はまだありません。",
+    "by": "投稿者：{{ author }}"
+  },
+  "footer": {
+    "rights": "無断転載を禁じます。"
+  },
+  "contact": {
+    "title": "お問い合わせ",
+    "intro": "ご注文、サイズ、商品についてのご質問はメッセージをお送りください。メールでご返信します。",
+    "name": "お名前",
+    "email": "メール",
+    "phone": "電話番号（任意）",
+    "message": "メッセージ",
+    "send": "送信",
+    "success": "ありがとうございます。送信しました。まもなくご返信します。",
+    "reply_note": "メールでご返信します。",
+    "info": "連絡先",
+    "hours": "営業時間"
+  },
+  "countdown": {
+    "title": "クリスマスまで",
+    "days": "日",
+    "hours": "時間",
+    "minutes": "分",
+    "seconds": "秒",
+    "merry": "メリークリスマス！"
+  },
+  "music": {
+    "button": "Christmas songs",
+    "title": "Today's Christmas hits",
+    "prev": "Previous song",
+    "next": "Next song",
+    "play": "Play / pause",
+    "note": "The song order changes every day."
+  }
+}

@@ -1,0 +1,35 @@
+{%- assign col = section.settings.collection -%}
+{%- if col == blank -%}{%- assign col = collections['best-sellers'] -%}{%- endif -%}
+{%- if col != blank and col.products.size > 0 -%}
+<section id="best-sellers">
+  <div class="wrap">
+    <div class="sec-head">
+      {%- if section.settings.heading != blank -%}<h2>{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.subheading != blank -%}<p class="sec-sub">{{ section.settings.subheading }}</p>{%- endif -%}
+    </div>
+    {%- if col.products.size > 0 -%}
+      <div class="prods">
+        {%- for product in col.products limit: section.settings.limit -%}
+          {% render 'product-card', product: product, index: forloop.index %}
+        {%- endfor -%}
+      </div>
+      <p class="view-all"><a class="btn" href="{{ col.url }}?sort_by=best-selling">{{ 'general.view_all' | t }}</a></p>
+    {%- else -%}
+      <p class="none">{{ 'collection.no_products' | t }}</p>
+    {%- endif -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Best sellers",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Best sellers" },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "The gifts everyone is buying most." },
+    { "type": "collection", "id": "collection", "label": "Collection", "info": "Pick a collection sorted by “Best selling”. If empty, a collection with the handle “best-sellers” is used, otherwise all products." },
+    { "type": "range", "id": "limit", "label": "Products to show", "min": 4, "max": 20, "step": 1, "default": 8 }
+  ],
+  "presets": [ { "name": "Best sellers" } ]
+}
+{% endschema %}

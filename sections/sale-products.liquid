@@ -1,0 +1,41 @@
+{%- assign col = section.settings.collection -%}
+{%- if col == blank -%}{%- assign col = collections['all'] -%}{%- endif -%}
+{%- assign ex_list = section.settings.exclude_handles | remove: ' ' | strip_newlines | split: ',' -%}
+{%- assign shown = 0 -%}
+{%- capture sale_cards -%}
+  {%- for product in col.products -%}
+    {%- unless ex_list contains product.handle -%}
+      {%- if shown < section.settings.limit and product.compare_at_price > product.price -%}
+        {%- assign shown = shown | plus: 1 -%}
+        {% render 'product-card', product: product, index: shown %}
+      {%- endif -%}
+    {%- endunless -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- if shown > 0 -%}
+<section id="sale" class="sale-sec">
+  <div class="wrap">
+    <div class="sec-head">
+      {%- if section.settings.heading != blank -%}<h2>{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.subheading != blank -%}<p class="sec-sub">{{ section.settings.subheading }}</p>{%- endif -%}
+    </div>
+    <div class="prods">{{ sale_cards }}</div>
+  </div>
+</section>
+{%- elsif request.design_mode -%}
+<section id="sale" class="sale-sec"><div class="wrap"><p class="none">Sale products: no discounted products yet. Set a “Compare-at price” higher than the price on a product and it appears here.</p></div></section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Sale products",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "On sale now" },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Limited-time Christmas prices." },
+    { "type": "collection", "id": "collection", "label": "Collection", "info": "Leave empty to check all products. Only products with a compare-at price higher than the price are shown." },
+    { "type": "textarea", "id": "exclude_handles", "label": "Do not show these products (handles, comma separated)", "info": "Use this to avoid repeating products already shown in another home page section." },
+    { "type": "range", "id": "limit", "label": "Products to show", "min": 2, "max": 20, "step": 1, "default": 5 }
+  ],
+  "presets": [ { "name": "Sale products" } ]
+}
+{% endschema %}
