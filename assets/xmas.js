@@ -663,7 +663,7 @@
   function lifeMs() { return tower.scene || SCN ? 60000 : 4300; }
 
   function ok(e) {
-    if (knock) return false;
+    if (knock && knock.done) return false;
     if (!document.body.classList.contains('tpl-index') || busy) return false;
     if (document.documentElement.classList.contains('intro-on')) return false;
     if (e.pointerType === 'mouse' && e.button !== 0) return false;
@@ -789,9 +789,11 @@
 
   function plan(b) {
     var d = dims(), n = tower.balls.length, top = tower.balls[n - 1];
-    if (n && n < 3 && b.r <= top.r * .95 && Math.abs(b.x - top.x) < top.r * 1.1 + b.r * .5 && b.y < top.y + top.r * .3) {
-      var ty = top.y - (top.r + b.r) * .93;
-      if (ty - b.r > 12) return { stack: true, x: top.x, y: ty };
+    /* let go anywhere over the snowman (not only exactly on top) and the ball goes onto it; a ball that is too big
+       is pressed smaller while it drops (always a little smaller than the one below, and it must fit under the top of the screen) */
+    if (n && n < 3 && Math.abs(b.x - top.x) < top.r * 1.6 + b.r * .5 && b.y < top.y + top.r * 1.1) {
+      var fit = (top.y - top.r * .93 - 12) / 1.93, rt = Math.min(b.r, top.r * .84, fit);
+      if (rt >= 14) return { stack: true, x: top.x, y: top.y - (top.r + rt) * .93, r: rt };
     }
     if (n) clearTower(true);
     return { stack: false, x: Math.max(b.r + 4, Math.min(d.W - b.r - 4, b.x)), y: d.H - b.r - 6 };
@@ -799,13 +801,15 @@
   function drop(b) {
     var pl = plan(b), vy = 0, last = performance.now(), bounced = 0;
     b.el.classList.remove('held');
-    if (b.y > pl.y) b.y = pl.y - 2;
+    /* let go below its place on the snowman: it hops up softly first (no jump), then drops onto it */
+    if (b.y > pl.y - 4) vy = -Math.sqrt(2 * .0019 * (b.y - pl.y + 16));
     (function step(t) {
       var dt = Math.min(32, t - last); last = t;
       vy += .0019 * dt; b.y += vy * dt;
       b.x += (pl.x - b.x) * Math.min(1, .01 * dt * (pl.stack ? 1.6 : 1)); b.rot += (pl.x - b.x) * .0004;
-      if (b.y >= pl.y) {
-        b.y = pl.y; b.x = pl.x;
+      if (pl.r) b.r += (pl.r - b.r) * Math.min(1, .012 * dt);
+      if (vy > 0 && b.y >= pl.y) {
+        b.y = pl.y; b.x = pl.x; if (pl.r) b.r = pl.r;
         spray(b.x, b.y + b.r * .75, b.r * (pl.stack ? 1 : 1.35));
         if (bounced < 1 && vy > .35) { vy = -vy * .2; bounced++; b.sy = .92; b.sx = 1.05; place(b); requestAnimationFrame(step); return; }
         b.el.style.transition = 'transform .28s cubic-bezier(.3,1.6,.5,1)'; b.sx = b.sy = 1; place(b);
@@ -1464,7 +1468,13 @@
   document.addEventListener('pointerdown', function (e) {
     if (cur || pend || !e.isPrimary || !ok(e)) return;
     var q = pend = { id: e.pointerId, x: e.clientX, y: e.clientY };
-    q.tm = setTimeout(function () { if (pend === q) { pend = null; start({ clientX: q.x, clientY: q.y, pointerId: q.id }); } }, 140);
+    /* on the snowman a short tap still knocks it over; holding a moment longer starts the next ball instead */
+    q.tm = setTimeout(function () {
+      if (pend !== q) return;
+      pend = null;
+      if (knock && knock.id === q.id && !knock.done) { knock = null; document.body.classList.remove('xm-knock'); }
+      start({ clientX: q.x, clientY: q.y, pointerId: q.id });
+    }, knock && knock.id === e.pointerId ? 220 : 140);
   }, { passive: true });
   document.addEventListener('pointermove', function (e) {
     if (pend && e.pointerId === pend.id && Math.hypot(e.clientX - pend.x, e.clientY - pend.y) > 10) { clearTimeout(pend.tm); pend = null; }

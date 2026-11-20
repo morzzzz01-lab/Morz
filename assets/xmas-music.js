@@ -46,14 +46,41 @@
   }
   function clean(t) { return (t || '').replace(/\s*[\(\[](official|lyric|audio|video|visuali|hd|4k)[^\)\]]*[\)\]]/gi, '').trim(); }
   function setIcon(p) { elPlay.innerHTML = p ? ICON_PAUSE : ICON_PLAY; fab.classList.toggle('on', p); }
+  /* the song is always identified by its video id (never by its position: YouTube can leave out a video that may not be
+     embedded, and then every position after it shifts, so names, the song played on a tap and the lyrics would not match) */
+  function liOf(id) { return id ? elList.querySelector('li[data-id="' + id + '"]') : null; }
   function info() {
     if (!player || !player.getVideoData) return;
-    var d = player.getVideoData() || {};
-    var cur = player.getPlaylistIndex ? player.getPlaylistIndex() : -1;
-    var li = elList.children[cur], fixed = li && li.getAttribute('data-name');
-    elTitle.textContent = fixed || clean(d.title || '');
+    syncList();
+    var d = player.getVideoData() || {}, id = d.video_id, li = liOf(id);
+    elTitle.textContent = clean(d.title || '') || (li && li.getAttribute('data-name')) || clean(TITLES[id] || '') || '\u00a0';
     elArtist.textContent = '';
-    [].forEach.call(elList.children, function (li, n) { li.classList.toggle('cur', n === cur); });
+    [].forEach.call(elList.children, function (x) { x.classList.toggle('cur', x === li); });
+  }
+  /* the list shows exactly the songs the player really has, in its order */
+  var listIds = '';
+  function buildList(arr) {
+    listIds = arr.join(',');
+    elList.innerHTML = '';
+    arr.forEach(function (id, n) {
+      var li = document.createElement('li');
+      li.setAttribute('data-id', id);
+      li.innerHTML = '<span>' + (n + 1) + '</span><span></span>';
+      var t = TITLES[id] ? clean(TITLES[id]) : '';
+      if (t) li.setAttribute('data-name', t);
+      li.children[1].textContent = t || '\u2026';
+      li.addEventListener('click', function () {
+        var pl = []; try { pl = player.getPlaylist() || []; } catch (e) {}
+        var k = pl.indexOf(id);
+        userPaused = false;
+        if (k > -1) player.playVideoAt(k); else player.loadPlaylist({ playlist: pl.length ? pl : ids, index: 0 });
+      });
+      elList.appendChild(li);
+    });
+  }
+  function syncList() {
+    var pl = []; try { pl = player.getPlaylist() || []; } catch (e) {}
+    if (pl.length && pl.join(',') !== listIds) buildList(pl);
   }
   /* ---- lyrics: the words of the song that is playing, in time with it (synced lyrics from lrclib.net) ----
      shown as a soft karaoke line at the bottom of the screen: the line being sung fills in, the next one waits below */
@@ -90,45 +117,51 @@
     out.sort(function (a, b) { return a.t - b.t; });
     return out;
   }
-  function norm(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
-  function lyQuery(title, author) {
-    var t = (title || '').replace(/[\(\[][^\)\]]*[\)\]]/g, ' ').replace(/\s(ft|feat|featuring)\.?\s.*$/i, '').replace(/\|.*$/, '').replace(/["“”]/g, '').replace(/\s+/g, ' ').trim();
-    var a = (author || '').replace(/vevo$/i, '').replace(/\s*-\s*topic$/i, '').trim(), artist = '', track = t;
-    var parts = t.split(/\s[-–—]\s/);
-    if (parts.length > 1) { artist = parts[0].trim(); track = parts.slice(1).join(' ').trim(); } else artist = a;
-    return { artist: artist, track: track };
+  function norm(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim(); }
+  function cleanT(t) {
+    return (t || '').replace(/[\(\[][^\)\]]*[\)\]]/g, ' ').replace(/\|.*$/, ' ').replace(/\blyrics?\b.*$/i, ' ')
+      .replace(/\b(official|music|video|audio|hd|4k|remaster(ed)?|version)\b/gi, ' ').replace(/["“”]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  /* only lyrics of this very song: its name must be in the video title, and the recording must be as long as the video
+     (within 6 s), so the words stay in time; anything less certain shows no lyrics rather than wrong ones */
+  function lyPick(list, title, author, dur) {
+    var T = ' ' + norm(cleanT(title)) + ' ', A = norm(author), best = null, bs = 1e9;
+    (Array.isArray(list) ? list : []).forEach(function (r) {
+      if (!r || !r.syncedLyrics || r.instrumental) return;
+      var tn = norm(r.trackName).replace(/\b(feat|ft)\b.*$/, '').trim(), an = norm(r.artistName);
+      if (tn.length < 3 || T.indexOf(' ' + tn + ' ') < 0) return;
+      var am = an.split(' ').filter(function (w) { return w.length > 2 && w !== 'the' && w !== 'and'; })
+        .some(function (w) { return T.indexOf(' ' + w + ' ') > -1 || (A && A.indexOf(w) > -1); });
+      var dd = dur > 0 && r.duration ? Math.abs(r.duration - dur) : 3;
+      if (dd > 6) return;
+      var sc = dd + (am ? 0 : 10) - tn.length * .05;
+      if (sc < bs) { bs = sc; best = r; }
+    });
+    return best ? lyParse(best.syncedLyrics) : null;
   }
   function lyFetch(id, title, author, dur) {
-    var key = 'morz_lyr_' + id;
+    var key = 'morz_lyr2_' + id;
     try { var c = sessionStorage.getItem(key); if (c) return Promise.resolve(JSON.parse(c)); } catch (e) {}
-    var Q = lyQuery(title, author), nt = norm(Q.track), na = norm(Q.artist);
-    function pick(list) {
-      var best = null, bs = 1e9;
-      (list || []).forEach(function (r) {
-        if (!r || !r.syncedLyrics || r.instrumental) return;
-        var tn = norm(r.trackName), an = norm(r.artistName);
-        var tm = nt && (tn === nt || tn.indexOf(nt) > -1 || nt.indexOf(tn) > -1), am = !na || an.indexOf(na) > -1 || na.indexOf(an) > -1;
-        var dd = dur > 0 && r.duration ? Math.abs(r.duration - dur) : 6;
-        if (dd > 15) return;
-        var sc = dd + (tm ? 0 : 25) + (am ? 0 : 6);
-        if (sc < bs) { bs = sc; best = r; }
-      });
-      return best && bs < 40 ? lyParse(best.syncedLyrics) : null;
+    var base = 'https://lrclib.net/api/search?', ct = cleanT(title);
+    var tries = ['q=' + encodeURIComponent(ct)];
+    ct.split(/\s[-–—:]\s?/).forEach(function (part) { part = part.trim(); if (part.length > 2 && part !== ct) tries.push('track_name=' + encodeURIComponent(part)); });
+    function next(i) {
+      if (i >= tries.length) return Promise.resolve(null);
+      return fetch(base + tries[i]).then(function (r) { if (!r.ok) throw 0; return r.json(); })
+        .then(function (list) { return lyPick(list, title, author, dur); }, function () { return null; })
+        .then(function (res) { return res || next(i + 1); });
     }
-    function get(u) { return fetch(u).then(function (r) { if (!r.ok) throw 0; return r.json(); }); }
-    var base = 'https://lrclib.net/api/search?';
-    return get(base + 'q=' + encodeURIComponent((Q.artist + ' ' + Q.track).trim())).then(pick).catch(function () { return null; })
-      .then(function (res) { return res || get(base + 'track_name=' + encodeURIComponent(Q.track)).then(pick).catch(function () { return null; }); })
-      .then(function (res) { try { sessionStorage.setItem(key, JSON.stringify(res || [])); } catch (e) {} return res || []; });
+    return next(0).then(function (res) { try { sessionStorage.setItem(key, JSON.stringify(res || [])); } catch (e) {} return res || []; });
   }
   function lyLoad() {
     if (!player || !player.getVideoData) return;
     var d = player.getVideoData() || {}, id = d.video_id;
     if (!id || id === LY.id) return;
     LY.id = id; LY.lines = null; LY.idx = -2; lyIn.innerHTML = ''; lyCur = lyNext = null; lyShow();
-    var cur = player.getPlaylistIndex ? player.getPlaylistIndex() : -1, li = elList.children[cur];
-    var title = (li && li.getAttribute('data-name')) || TITLES[id] || clean(d.title || ''), dur = 0;
+    /* the title of the video that is really playing (not a list position) */
+    var title = d.title || TITLES[id] || '', dur = 0;
     try { dur = player.getDuration() || 0; } catch (e) {}
+    if (!title || !dur) { LY.id = null; if (LY.playing) setTimeout(lyLoad, 700); return; }
     lyFetch(id, title, d.author || '', dur).then(function (lines) {
       if (LY.id !== id) return;
       LY.lines = lines && lines.length ? lines : null; LY.idx = -2; lyShow(); lyLoop();
@@ -194,7 +227,7 @@
         var st = player.getPlayerState(), S = window.YT.PlayerState, now2 = player.getPlaylistIndex();
         if (userPaused || st === S.PLAYING || st === S.BUFFERING) return;
         if (now2 !== at && st !== S.ENDED) return;
-        var n = (at + 1) % Math.max(1, ids.length); player.playVideoAt(n);
+        var pl = player.getPlaylist() || ids, n = (at + 1) % Math.max(1, pl.length); player.playVideoAt(n);
       } catch (x) {}
     }, 1500);
   }
@@ -219,18 +252,11 @@
       wasPlaying = at > -1 && !saved.paused;
       player.loadPlaylist({ playlist: ids, index: start.n, startSeconds: start.t || 0 });
       player.setLoop(true);
-      elList.innerHTML = '';
-      ids.forEach(function (id, n) {
-        var li = document.createElement('li');
-        li.innerHTML = '<span>' + (n + 1) + '</span><span></span>';
-        li.children[1].textContent = '…';
-        li.addEventListener('click', function () { player.playVideoAt(n); });
-        elList.appendChild(li);
-      });
+      buildList(ids);
     }
     ids.forEach(function (id, n) {
       var u = 'https://www.youtube.com/watch?v=' + id;
-      var set = function (d) { var li = elList.children[n]; if (d && d.title && li && !li.getAttribute('data-name')) { var t = clean(d.title); li.setAttribute('data-name', t); li.children[1].textContent = t; if (n === (player.getPlaylistIndex ? player.getPlaylistIndex() : -1)) elTitle.textContent = t; } };
+      var set = function (d) { if (!d || !d.title) return; TITLES[id] = TITLES[id] || d.title; var li = liOf(id); if (li && !li.getAttribute('data-name')) { var t = clean(d.title); li.setAttribute('data-name', t); li.children[1].textContent = t; } };
       fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent(u)).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(set)
         .catch(function () { return fetch('https://noembed.com/embed?url=' + encodeURIComponent(u)).then(function (r) { return r.json(); }).then(set); })
         .catch(function () {});
