@@ -253,8 +253,14 @@
       o = o || selected();
       var one = !qtyEl || Number(qtyEl.value) <= 1;
       if (cardLinks.length && cardBtn) {
-        var L = (cardLinks.length > 1 && bigSize(o)) ? cardLinks[cardLinks.length - 1] : cardLinks[0];
-        cardBtn.href = L.href; cardBtn.textContent = 'Buy now';
+        /* XXL / XXXL have their own card link (they cost a little more): the button switches to it and says so */
+        var big = cardLinks.length > 1 && bigSize(o), L = big ? cardLinks[cardLinks.length - 1] : cardLinks[0];
+        var was = cardBtn.getAttribute('href');
+        cardBtn.href = L.href;
+        cardBtn.classList.toggle('is-big', big);
+        cardBtn.innerHTML = big ? '<span class="bn-t">Buy now</span><small class="bn-s">XXL / XXXL size</small>' : '<span class="bn-t">Buy now</span>';
+        if (cardBtn.__ready && was !== L.href) { cardBtn.classList.remove('bn-swap'); void cardBtn.offsetWidth; cardBtn.classList.add('bn-swap'); }
+        cardBtn.__ready = true;
         cardBtn.hidden = !one;
         if (noteEl) { noteEl.hidden = !one; if (selEl) selEl.textContent = o.filter(Boolean).join(' / '); }
       } else if (coBtn) { coBtn.hidden = false; }   // no card link on this product -> plain Buy now (checkout)
@@ -447,6 +453,9 @@
     if (stage) {
       stage.addEventListener('pointerdown', function (e) { x0 = e.clientX; });
       stage.addEventListener('pointerup', function (e) {
+        /* a swipe that pushed the snowman over (or moved a snowball) is not a swipe to the next product */
+        var bc = document.body.classList;
+        if (bc.contains('xm-hold') || bc.contains('xm-knock')) { x0 = null; return; }
         if (x0 !== null && Math.abs(e.clientX - x0) > 40) step(e.clientX < x0 ? 1 : -1);
         x0 = null;
       });
@@ -503,13 +512,77 @@
   var root = document.documentElement;
   var el = document.getElementById('XIntro');
   if (!el) { root.classList.remove('intro-on'); return; }
+  /* the intro plays once per visit: on every other page it is hidden, and nothing of it may run (no late snow storm) */
+  if (!root.classList.contains('intro-on')) { if (el.parentNode) el.parentNode.removeChild(el); return; }
   var done = false, endTimer = null, started = false, raf = 0;
+  /* the end of the intro: a snow storm builds up, blows the logo away and keeps blowing for a few seconds;
+     the shop appears behind it while it dies down */
+  var STORM = 3200;
+  function blowSnow() {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return 0;
+    var W = window.innerWidth, H = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+    var c = document.createElement('canvas'); c.className = 'xi-gust'; c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+    var x = c.getContext && c.getContext('2d'); if (!x) return 0;
+    x.scale(dpr, dpr); document.body.appendChild(c);
+    var spr = document.createElement('canvas'); spr.width = spr.height = 64;
+    var sx = spr.getContext('2d'), sg = sx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(.45, 'rgba(244,248,253,.92)'); sg.addColorStop(.78, 'rgba(176,196,224,.38)'); sg.addColorStop(1, 'rgba(176,196,224,0)');
+    sx.fillStyle = sg; sx.fillRect(0, 0, 64, 64);
+    /* how hard it snows over time: builds up quickly, blows hard, then thins out */
+    function power(t) { return t < 350 ? t / 350 : t < 1900 ? 1 : Math.max(0, 1 - (t - 1900) / (STORM - 2300)); }
+    var P = [], S2 = [], i, rate = Math.min(1.25, W * H / 600000) * 1.1, acc = 0, last = 0;
+    function spawn(t, k) {
+      var big = Math.random() < .12;
+      P.push({ s: t, y: Math.random() * H * 1.1 - H * .05, v: (big ? 760 : 1050) + Math.random() * 950, sz: big ? 22 + Math.random() * 54 : 2.4 + Math.random() * 7.5,
+        a: big ? .32 + Math.random() * .3 : .8 + Math.random() * .2, w: Math.random() * 6.28, dy: (Math.random() - .25) * 110, big: big, x0: k ? -Math.random() * W * .4 - 60 : -80 });
+    }
+    for (i = 0; i < 26; i++) S2.push({ s: Math.random() * (STORM - 900), y: Math.random() * H, v: 1700 + Math.random() * 900, L: 120 + Math.random() * 180, w: Math.random() * 6.28 });
+    var t0 = performance.now();
+    (function frame(now) {
+      var t = now - t0, k;
+      /* new flakes keep blowing in for as long as the storm lasts */
+      acc += (t - last) * rate * power(t); last = t;
+      while (acc >= 1) { spawn(t - Math.random() * 16, P.length < 40); acc -= 1; }
+      x.clearRect(0, 0, W, H);
+      /* the air itself turns white in the thick of it */
+      var veil = .26 * Math.min(1, power(t) * 1.4) * (t < 1900 ? 1 : power(t));
+      if (veil > .005) { x.fillStyle = 'rgba(244,248,253,' + veil.toFixed(3) + ')'; x.fillRect(0, 0, W, H); }
+      for (k = 0; k < S2.length; k++) {
+        var q = S2[k], dq = (t - q.s) / 1000; if (dq < 0) continue;
+        var qx = -q.L + q.v * dq, qy = q.y + Math.sin(dq * 4 + q.w) * 14; if (qx > W + q.L) continue;
+        var lg = x.createLinearGradient(qx - q.L, 0, qx, 0); lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(.7, 'rgba(255,255,255,.75)'); lg.addColorStop(1, 'rgba(255,255,255,0)');
+        x.strokeStyle = 'rgba(120,145,180,.18)'; x.lineWidth = 2.6; x.beginPath(); x.moveTo(qx - q.L, qy + 1.5); x.quadraticCurveTo(qx - q.L / 2, qy - 6, qx, qy + 1.5); x.stroke();
+        x.strokeStyle = lg; x.lineWidth = 1.6; x.beginPath(); x.moveTo(qx - q.L, qy); x.quadraticCurveTo(qx - q.L / 2, qy - 7.5, qx, qy); x.stroke();
+      }
+      var alive = [];
+      for (k = 0; k < P.length; k++) {
+        var p = P[k], d = (t - p.s) / 1000; if (d < 0) { alive.push(p); continue; }
+        var px = p.x0 + p.v * d + 40 * Math.sin(d * 5 + p.w), py = p.y + p.dy * d + Math.sin(d * 7 + p.w) * 9;
+        if (px > W + 100) continue;
+        alive.push(p);
+        var st = 1 + Math.min(1.8, p.v / 900), fade = Math.min(1, d * 6);
+        x.globalAlpha = p.a * fade;
+        if (!p.big) { x.fillStyle = 'rgba(105,130,168,.32)'; x.fillRect(px - p.sz * st * .3 + 1, py - p.sz * .15 + 1.4, p.sz * st * .6, p.sz * .38); }
+        x.drawImage(spr, px - p.sz * st / 2, py - p.sz / 2, p.sz * st, p.sz);
+      }
+      P = alive; x.globalAlpha = 1;
+      if (t < STORM || P.length) requestAnimationFrame(frame); else c.remove();
+    })(t0);
+    return 1;
+  }
   function finish() {
     if (done) return; done = true;
     clearTimeout(endTimer); cancelAnimationFrame(raf);
-    el.classList.add('is-out');
-    root.classList.remove('intro-on');
-    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1300);
+    var gust = blowSnow();
+    if (gust) {
+      /* the logo is blown away first, the storm keeps blowing, then the shop shows through as it dies down */
+      setTimeout(function () { el.classList.add('is-blown'); }, 380);
+      setTimeout(function () { el.classList.add('is-out'); root.classList.remove('intro-on'); }, 1700);
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 3200);
+    } else {
+      el.classList.add('is-out'); root.classList.remove('intro-on');
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1300);
+    }
   }
   el.addEventListener('click', finish);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') finish(); });
@@ -529,28 +602,54 @@
     if (!cv || !cv.getContext) { begin(); return; }
     var ctx = cv.getContext('2d'), S = cv.width / 434, p = 0, w = 0, t0 = 0;
     ctx.fillStyle = '#1a1717';
-    /* the string of lights is revealed along the wire like a snake; every new dot only paints its own small patch (cheap) */
+    /* the string of lights (the same picture, same bulbs) is wrapped around the logo by a small glowing spark that flies
+       in and runs along the wire; the string appears softly behind it, never in hard round patches */
     var wc = el.querySelector('.xi-wire'), wx = wc && wc.getContext ? wc.getContext('2d') : null;
-    var limg = new Image(), lready = false, queue = [];
-    limg.onload = function () { lready = true; queue.forEach(reveal); queue = []; };
-    limg.src = wc ? wc.getAttribute('data-src') : '';
-    function reveal(c) {
-      if (!wx) return;
-      if (!lready) { queue.push(c); return; }
-      var k = limg.naturalWidth / wc.width, rad = 28 * S, x0 = Math.max(0, c[0] - rad), y0 = Math.max(0, c[1] - rad), sz = rad * 2;
-      wx.save(); wx.beginPath(); wx.arc(c[0], c[1], rad, 0, 6.2832); wx.clip();
-      wx.drawImage(limg, x0 * k, y0 * k, sz * k, sz * k, x0, y0, sz, sz);
-      wx.restore();
+    var limg = new Image(), lready = false, dirty = false, mask = null, mx = null, brush = null, trail = [], sparkOn = true;
+    if (wx) {
+      mask = document.createElement('canvas'); mask.width = wc.width; mask.height = wc.height; mx = mask.getContext('2d');
+      brush = document.createElement('canvas'); brush.width = brush.height = 64;
+      var bx = brush.getContext('2d'), bg = bx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      bg.addColorStop(0, 'rgba(0,0,0,1)'); bg.addColorStop(.55, 'rgba(0,0,0,.95)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
+      bx.fillStyle = bg; bx.fillRect(0, 0, 64, 64);
     }
-    /* paint the wire along the segment from sample i towards sample i+1 up to fraction f, in small overlapping steps */
-    var lastX = null, lastY = 0;
-    function stepTo(i, f) {
-      var a = SNAKE[i], b = SNAKE[i + 1] || a;
-      var x = (a[0] + (b[0] - a[0]) * f + .5) * S, y = (a[1] + (b[1] - a[1]) * f + .5) * S;
-      if (lastX === null) { reveal([x, y]); lastX = x; lastY = y; return; }
-      var dx = x - lastX, dy = y - lastY, d = Math.sqrt(dx * dx + dy * dy), n = Math.ceil(d / (7 * S));
-      for (var k = 1; k <= n; k++) reveal([lastX + dx * k / n, lastY + dy * k / n]);
-      lastX = x; lastY = y;
+    limg.onload = function () { lready = true; dirty = true; };
+    limg.src = wc ? wc.getAttribute('data-src') : '';
+    function reveal(c) { if (!mx) return; var rad = 30 * S; mx.drawImage(brush, c[0] - rad, c[1] - rad, rad * 2, rad * 2); dirty = true; }
+    /* the spark's path along the wire, in the same time units as the reveal (negative = flying in from the right) */
+    var SPK = [[-650, 432, 316], [-330, 398, 336], [0, 352, 362], [60, 330, 392], [200, 300, 412], [430, 245, 418], [600, 205, 421], [800, 165, 424], [960, 135, 408],
+      [1080, 127, 385], [1220, 138, 350], [1360, 150, 320], [1500, 185, 306], [1650, 225, 294], [1800, 262, 281], [1950, 295, 271], [2080, 305, 250], [2200, 301, 222], [2320, 299, 198], [2400, 304, 183]];
+    function sparkAt(t) {
+      if (t <= SPK[0][0]) return null;
+      for (var i = 1; i < SPK.length; i++) if (t <= SPK[i][0]) {
+        var a = SPK[i - 1], b = SPK[i], u = (t - a[0]) / (b[0] - a[0]);
+        return [a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
+      }
+      return [SPK[SPK.length - 1][1], SPK[SPK.length - 1][2]];
+    }
+    function glow(x, y, r, a) {
+      var g = wx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(255,255,255,' + a + ')'); g.addColorStop(.18, 'rgba(255,246,200,' + (a * .95) + ')');
+      g.addColorStop(.45, 'rgba(255,196,96,' + (a * .38) + ')'); g.addColorStop(1, 'rgba(255,180,80,0)');
+      wx.fillStyle = g; wx.beginPath(); wx.arc(x, y, r, 0, 6.2832); wx.fill();
+    }
+    function paint(e) {
+      if (!wx) return false;
+      var t = e / TS - WSTART, end = SPK[SPK.length - 1][0], fade = t > end ? Math.max(0, 1 - (t - end) / 420) : 1, sp = sparkAt(t);
+      var live = sparkOn && sp && fade > 0;
+      if (!dirty && !live && !trail.length) return false;
+      dirty = false;
+      wx.clearRect(0, 0, wc.width, wc.height);
+      if (lready) { wx.globalCompositeOperation = 'source-over'; wx.drawImage(mask, 0, 0); wx.globalCompositeOperation = 'source-in'; wx.drawImage(limg, 0, 0, wc.width, wc.height); wx.globalCompositeOperation = 'source-over'; }
+      if (live) {
+        trail.push([sp[0] * S, sp[1] * S]); if (trail.length > 9) trail.shift();
+        for (var i = 0; i < trail.length - 1; i++) glow(trail[i][0], trail[i][1], (4 + i * 1.1) * S, (.12 + i * .05) * fade);
+        glow(sp[0] * S, sp[1] * S, 20 * S, .95 * fade);
+        glow(sp[0] * S, sp[1] * S, 5.5 * S, fade);
+        return true;
+      }
+      if (sp && fade <= 0) { sparkOn = false; trail = []; dirty = true; }
+      return !!(sp && sparkOn);
     }
     function frame(now) {
       if (done) return;
@@ -562,22 +661,9 @@
         p++;
       }
       ctx.fill();
-      /* the snake glides: time is eased (slow start, smooth finish) and the head is interpolated between the recorded
-         points, so the wire is revealed as one continuous line instead of in jumps */
-      if (w < SNAKE.length - 1) {
-        var tt = Math.max(0, e / TS - WSTART), T = SNAKE[SNAKE.length - 1][2], u = Math.min(1, tt / T);
-        u = u * .55 + (u * u * (3 - 2 * u)) * .45;
-        var target = u * T;
-        while (w < SNAKE.length - 1 && SNAKE[w + 1][2] <= target) {
-          stepTo(w, 1); w++;
-        }
-        if (w < SNAKE.length - 1) {
-          var a0 = SNAKE[w], b0 = SNAKE[w + 1], f = (target - a0[2]) / Math.max(1, b0[2] - a0[2]);
-          stepTo(w, Math.min(1, Math.max(0, f)));
-        }
-        if (u >= 1) { while (w < SNAKE.length - 1) { stepTo(w, 1); w++; } }
-      }
-      if (p < PEN.length || w < SNAKE.length - 1) raf = requestAnimationFrame(frame);
+      while (w < SNAKE.length && (SNAKE[w][2] + WSTART) * TS <= e) { reveal([(SNAKE[w][0] + .5) * S, (SNAKE[w][1] + .5) * S]); w++; }
+      var busy = paint(e);
+      if (p < PEN.length || w < SNAKE.length || busy || dirty) raf = requestAnimationFrame(frame);
     }
     begin();
     t0 = performance.now();
@@ -626,8 +712,10 @@
 
   function update(it) {
     var o = it.o;
+    /* while a snowball is being made the finger belongs to the snowball: the product stays still */
+    if (it.active && document.body.classList.contains('xm-hold')) it.active = false;
     if (it.active) {
-      var r = it.anchor.getBoundingClientRect();
+      var r = it.r || it.anchor.getBoundingClientRect();
       var dx = it.px - (r.left + r.width / 2), dy = it.py - (r.top + r.height / 2);
       var dist = Math.hypot(dx, dy) || 1;
       var R = Math.max(r.width, r.height) * o.radius;
@@ -642,6 +730,8 @@
   function frame(now) {
     var dt = Math.min(64, now - last || 16); last = now;
     var more = false;
+    /* read every rectangle first, then write: one layout per frame instead of one per product */
+    items.forEach(function (it) { it.r = (!it.settled && it.active) ? it.anchor.getBoundingClientRect() : null; });
     items.forEach(function (it) {
       if (it.settled) return;
       update(it);

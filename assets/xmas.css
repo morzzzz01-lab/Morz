@@ -396,32 +396,142 @@ body.xm-hold,body.xm-hold *{-webkit-user-select:none!important;user-select:none!
 .xm-chunk{position:fixed;z-index:58;pointer-events:none;border-radius:46% 54% 52% 48%/55% 45% 55% 45%;will-change:transform,opacity;
   background:radial-gradient(circle at 34% 28%,#fff 0,#f2f7fd 55%,#cfdff1 100%);box-shadow:inset -2px -3px 6px rgba(120,150,190,.35),0 3px 6px rgba(20,45,90,.2)}
 
+/* v49: grainy real-snow mounds instead of flat discs */
+.xm-skirt{background:none;border-radius:0;filter:none}
 
-/* =====================================================================
-   v59: smoother logo + animation polish (shapes and colours unchanged)
-   ===================================================================== */
-/* header / footer logo: soft entrance, gentle lift on hover, smoother hat pop */
-.xm-logo{transition:transform .6s var(--ease),filter .6s var(--ease)}
-.xm-logo .mark--xm{transition:filter .6s var(--ease);backface-visibility:hidden}
-@media(hover:hover){.xm-logo:hover{transform:translateY(-2px) scale(1.035)}.xm-logo:hover .mark--xm{filter:drop-shadow(0 6px 12px rgba(0,0,0,.4))}}
-.xm-logo:active{transform:scale(.97);transition-duration:.15s}
-.xm-hat{will-change:transform}
-.xm-hat--intro{animation:xm-hatpop 1s cubic-bezier(.22,1,.36,1) 3.75s forwards}
-@keyframes xm-hatpop{0%{opacity:0;transform:translate3d(0,-60%,0) rotate(-22deg) scale(.7)}60%{opacity:1}100%{opacity:1;transform:rotate(-14deg)}}
-header.top .xm-logo{animation:xm-logo-in 1s var(--ease) .1s both}
-@keyframes xm-logo-in{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
+/* ---- v51: snow layer glued to the bottom of the screen, new winter scene, smoother snowball ---- */
+.xm-stage{position:fixed;left:0;top:0;width:100%;height:100%;z-index:58;pointer-events:none;transform:translate3d(0,0,0)}
+.xm-stage .xm-ball:not(.held){filter:brightness(1.22) contrast(1.05) saturate(.85)}
+.xm-drift,.xm-skirt{position:fixed;pointer-events:none;transform-origin:50% 100%}
+.xm-drift{z-index:58}.xm-skirt{z-index:59}
+.xm-gust .gst{filter:none}
+/* while a snowball is made, or the giant one covers the screen, the background decorations rest */
+body.xm-hold .xm-scene .xt-b,body.xm-hold .xm-scene .xt-glow{animation-play-state:paused}
+body.xm-busy .xm-scene{visibility:hidden}
+body.xm-busy .xm-scene *{animation-play-state:paused}
+/* the winter scene: twinkling stars, falling snow, chimney smoke */
+.xm-scene2{overflow:hidden}
+.xm-scene2 .xs-st{position:absolute;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:#fff;box-shadow:0 0 6px 1px rgba(255,255,255,.9);animation:xs-tw 2.4s ease-in-out infinite alternate;animation-delay:var(--d);will-change:opacity}
+@keyframes xs-tw{from{opacity:.2}to{opacity:1}}
+.xm-scene2 .xs-fl{position:absolute;top:-12px;width:var(--s);height:var(--s);border-radius:50%;background:#fff;opacity:var(--o);box-shadow:0 0 3px rgba(255,255,255,.6);animation:xs-fall var(--t) linear infinite;animation-delay:var(--d);will-change:transform}
+@keyframes xs-fall{from{transform:translate3d(0,0,0)}to{transform:translate3d(var(--dx),calc(100vh + 24px),0)}}
+.xm-scene2 .xs-smk{position:absolute;width:var(--w);height:var(--w);margin:calc(var(--w) / -2) 0 0 calc(var(--w) / -2);border-radius:50%;background:radial-gradient(closest-side,rgba(235,240,250,.6),rgba(235,240,250,0));animation:xs-smk 4.5s ease-out infinite;animation-delay:var(--d);will-change:transform,opacity}
+@keyframes xs-smk{0%{transform:translate(0,0) scale(.4);opacity:0}18%{opacity:.85}100%{transform:translate(22px,-110px) scale(2.2);opacity:0}}
+body.xm-knock,body.xm-knock *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none}
 
-/* loading screen: the hat settles with a soft spring, the pompom swings with a smoother decay */
-.xi-hat{animation:xi-hat-drop .95s cubic-bezier(.22,1,.36,1) 2.5s forwards}
-@keyframes xi-hat-drop{0%{opacity:0;transform:translate3d(0,-125%,0)}14%{opacity:1}72%{transform:translate3d(0,1.2%,0)}100%{opacity:1;transform:none}}
-.xi-hat .xi-pom{animation:xi-pom-swing 2.6s cubic-bezier(.37,0,.63,1) 3.2s both}
-.xi-b::after,.xi-b::before{animation:xi-halo-on .8s cubic-bezier(.22,1,.36,1) var(--arr) both,xi-halo 2.2s cubic-bezier(.45,0,.55,1) calc(var(--arr) + .8s + var(--g) * .55s) infinite}
+/* ---- Light / Dark buttons in the header menu ---- */
+.xm-mode{display:inline-flex;flex:none;align-self:center;gap:2px;padding:2px;border-radius:2rem;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.07);margin-left:.2rem}
+.xm-mode button{display:inline-flex;align-items:center;gap:.3rem;height:1.65rem;padding:0 .6rem;border:0;border-radius:2rem;background:none;color:inherit;font:700 .76rem/1 var(--font,system-ui);cursor:pointer;opacity:.8;white-space:nowrap;transition:background-color .25s,color .25s,opacity .25s}
+.xm-mode button[aria-pressed=true]{background:#fff;color:#14181f;opacity:1}
+.xm-mode svg{width:13px;height:13px;flex:none}
 
-/* snowman: smoother arm waving, softer Santa gallop */
-.xm-dress .xa-r{animation-timing-function:cubic-bezier(.45,0,.55,1);animation-duration:1.5s}
-.xm-dress .xa-l{animation-timing-function:cubic-bezier(.45,0,.55,1)}
-.xm-sg .b i{animation-timing-function:cubic-bezier(.45,0,.55,1)}
-.xm-fly2 img,.xm-fly2 svg{animation-timing-function:cubic-bezier(.45,0,.55,1);animation-duration:4s}
-.xm-chunk,.xm-bit,.xm-puff,.xm-twig,.xm-mound,.xm-skirt{backface-visibility:hidden}
-.xtb{animation-timing-function:cubic-bezier(.45,0,.55,1)}
-@media(prefers-reduced-motion:reduce){.xm-logo,.xm-logo .mark--xm{transition:none}header.top .xm-logo{animation:none}}
+/* ---- Light mode: the shop turns white ---- */
+html.xm-light{--bg:#ffffff!important;--panel:#f4f6fa!important;--line:#e3e8ef!important;--ink:#151a22!important;--muted:#5b6574!important;color-scheme:light}
+html.xm-light,html.xm-light body{background:#ffffff}
+.xm-light .xm-mode{border-color:#d6dce5;background:#f1f4f8}
+.xm-light .xm-mode button[aria-pressed=true]{background:#14181f;color:#fff}
+.xm-light header.top{background:rgba(255,255,255,.94);border-color:#e3e8ef}
+.xm-light .cartb,.xm-light header.top .hb{background:#f1f4f8;color:#151a22;border-color:#d6dce5}
+.xm-light .btn{background:#14181f;color:#fff}
+.xm-light .btn:hover{background:var(--blue);color:#fff}
+.xm-light [data-hero] .btn{background:#fff;color:#000}
+.xm-light .wo{background:linear-gradient(120deg,#ffffff,color-mix(in srgb,var(--blue) 10%,#ffffff));border-color:#e3e8ef;box-shadow:0 14px 34px -22px rgba(20,30,50,.35)}
+.xm-light .wo-form input[type=email]{background:#fff;border-color:#d6dce5;color:#151a22}
+.xm-light .wo .ann-code{background:rgba(0,0,0,.05)}
+.xm-light .cat{background:linear-gradient(160deg,#ffffff,#eef2f7)}
+.xm-light .card{background:linear-gradient(120deg,#ffffff,#eaf1fb)}
+.xm-light dialog::backdrop,.xm-light .menu-dialog::backdrop{background:rgba(20,26,34,.35)}
+.xm-light .g-item,.xm-light .ph{background:radial-gradient(circle at 50% 40%,#ffffff,#e6edf6)}
+/* while the giant ball's snow and the winter scene fill the screen, a tap must not reach the shop hidden underneath */
+.xm-cvs,.xm-scene2{pointer-events:auto;touch-action:none}
+
+/* ---- Santa: real photo Santa and reindeer, sleigh drawn in code ---- */
+.xm-sg .xr{position:absolute;inset:0;display:block;transform-origin:14% 88%;animation:xm-sway 1.24s ease-in-out infinite alternate;will-change:transform}
+.xm-sg .xrp{position:absolute;left:0;top:0;width:28.5715%;height:100%;display:block;background-size:100% 100%;background-repeat:no-repeat}
+.xm-sg .xsl{position:absolute;left:0;top:0;width:100%;height:100%;display:block;overflow:visible}
+@keyframes xm-sway{from{transform:rotate(-1.1deg) translateY(.6%)}to{transform:rotate(1.2deg) translateY(-1.2%)}}
+.xm-sg .xtr{position:absolute;left:1%;top:86%;width:0;height:0;display:block}
+.xm-sg .xtr s{position:absolute;left:0;top:var(--y);width:5px;height:5px;margin:-2.5px;border-radius:50%;background:#fff6c8;box-shadow:0 0 6px 2px rgba(255,214,102,.75);text-decoration:none;opacity:0;animation:xm-dust 1.35s linear infinite;animation-delay:var(--d);will-change:transform,opacity}
+@keyframes xm-dust{0%{transform:translate(0,0) scale(1);opacity:0}12%{opacity:1}100%{transform:translate(-90px,14px) scale(.15);opacity:0}}
+@media(prefers-reduced-motion:reduce){.xm-sg .xr,.xm-sg .xtr s{animation:none}}
+.xm-sg2 .xsd{position:absolute;width:0;height:0;overflow:hidden}
+.xm-sg2 .xrp{width:22.857%}
+/* the whole team glides as one, rising and dipping like flying reindeer (no strips, no seams) */
+.xm-sg2 .xtm{position:absolute;left:22.857%;top:0;width:77.143%;height:100%;display:block;background-size:129.63% 100%;background-position:100% 0;background-repeat:no-repeat;transform-origin:0 72%;animation:xm-team .92s ease-in-out infinite alternate;will-change:transform}
+@keyframes xm-team{from{transform:translateY(1.4%) rotate(.5deg)}to{transform:translateY(-2.2%) rotate(-.7deg)}}
+@media(prefers-reduced-motion:reduce){.xm-sg2 .xtm{animation:none}}
+/* Santa waves */
+.xm-sg2 .xsa .xwv{animation:xm-wave .7s ease-in-out infinite alternate}
+@keyframes xm-wave{from{transform:rotate(-10deg)}to{transform:rotate(12deg)}}
+@media(prefers-reduced-motion:reduce){.xm-sg2 .xsa .xwv{animation:none}}
+/* the code-drawn team: the whole team glides, each reindeer bobs and gallops with its legs */
+.xm-sg2 .xtm2{position:absolute;inset:0;display:block;transform-origin:30% 72%;animation:xm-team .92s ease-in-out infinite alternate;will-change:transform}
+.xm-sg2 .xdr{animation:xm-bob2 .56s ease-in-out infinite alternate}
+.xm-sg2 .xlf{transform-box:fill-box;transform-origin:0 0;animation:xm-lf .56s ease-in-out infinite alternate}
+.xm-sg2 .xlh{transform-box:fill-box;transform-origin:100% 0;animation:xm-lh .56s ease-in-out infinite alternate}
+.xm-sg2 .xnz{animation:xm-nose 1.1s ease-in-out infinite alternate}
+@keyframes xm-bob2{from{transform:translateY(-1.6px)}to{transform:translateY(1.6px)}}
+@keyframes xm-lf{from{transform:rotate(-18deg)}to{transform:rotate(14deg)}}
+@keyframes xm-lh{from{transform:rotate(16deg)}to{transform:rotate(-12deg)}}
+@keyframes xm-nose{from{opacity:.45}to{opacity:1}}
+/* the background Santa behind the page only glides (cheaper); the one in the winter scene gallops and waves */
+.xm-fly .xm-sg2 .xdr,.xm-fly .xm-sg2 .xlf,.xm-fly .xm-sg2 .xlh,.xm-fly .xm-sg2 .xwv,.xm-fly .xm-sg2 .xnz{animation:none}
+@media(prefers-reduced-motion:reduce){.xm-sg2 .xdr,.xm-sg2 .xlf,.xm-sg2 .xlh,.xm-sg2 .xnz,.xm-sg2 .xtm2{animation:none}}
+/* the wider flight (sleigh + bigger reindeer) */
+.xm-sg.xm-sg2{aspect-ratio:700/230}
+.xm-sg2 .xtm2{transform-origin:25% 72%}
+.xm-fly2:has(.xm-sg2){width:min(96vw,480px)}
+.xm-fly:has(.xm-sg2){width:min(58vw,410px)}
+@media(max-width:640px){.xm-fly:has(.xm-sg2){width:76vw}}
+
+/* ---- intro lights: same bulbs, same places, same colours; only how they arrive and how they glow ---- */
+/* the black lead line is replaced by a glowing spark that wraps the string around the logo (drawn in theme.js) */
+.xi-lead{display:none}
+/* each bulb: a bright little core and a soft halo in its own colour (no rays); it pops on when the spark reaches it, then twinkles gently */
+.xi-b::after{width:3.6rem;height:3.6rem;left:0;top:0;transform:translate(-50%,-50%) scale(.2);
+  background:radial-gradient(circle,color-mix(in srgb,var(--c) 70%,#fff) 0,color-mix(in srgb,var(--c) 58%,transparent) 18%,color-mix(in srgb,var(--c) 22%,transparent) 44%,transparent 68%);
+  animation:xi-glow-on .6s cubic-bezier(.2,.9,.3,1.3) var(--arr) both,xi-glow-tw 2.4s ease-in-out calc(var(--arr) + .6s + var(--g) * .5s) infinite;will-change:transform,opacity}
+.xi-b::before{width:1.5rem;height:1.5rem;left:-.75rem;top:-.75rem;-webkit-mask:none;mask:none;
+  background:radial-gradient(circle,rgba(255,255,255,.95) 0,color-mix(in srgb,var(--c) 70%,#fff) 26%,color-mix(in srgb,var(--c) 30%,transparent) 55%,transparent 72%);
+  animation:xi-core-on .45s ease-out var(--arr) both,xi-core-tw 1.6s ease-in-out calc(var(--arr) + .45s + var(--g) * .4s) infinite;will-change:opacity}
+@keyframes xi-glow-on{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}100%{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
+@keyframes xi-glow-tw{0%,100%{opacity:.9}50%{opacity:.5}}
+@keyframes xi-core-on{0%{opacity:0}40%{opacity:1}100%{opacity:.85}}
+@keyframes xi-core-tw{0%,100%{opacity:.85}50%{opacity:.55}}
+
+/* ---- hero: old price crossed out and how much is saved, next to the price ---- */
+.hpr{display:flex;align-items:baseline;flex-wrap:wrap;gap:.15rem .6rem}
+.hpr-was{font-size:.58em;opacity:.78;text-decoration-thickness:2px}
+.hpr-off{align-self:center;font-family:var(--font,system-ui);font-size:.5em;font-weight:800;line-height:1;letter-spacing:.02em;background:#fff;color:#d4202a;padding:.38em .7em;border-radius:2rem;box-shadow:0 6px 14px -6px rgba(0,0,0,.45);text-shadow:none;animation:xm-off-in .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes xm-off-in{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+
+/* ---- dark mode: the product cards on the home page are dark too (light mode keeps them snow-white) ---- */
+html:not(.xm-light) .tpl-index .p{background:linear-gradient(180deg,#1c1416 0%,#0c0909 100%);border-color:#35262a;color:#f5efe9;box-shadow:0 18px 40px -26px rgba(0,0,0,.9)}
+html:not(.xm-light) .tpl-index .p h3,html:not(.xm-light) .tpl-index .p h3 a,html:not(.xm-light) .tpl-index .p .pr,html:not(.xm-light) .tpl-index .p .pr span{color:#f5efe9}
+html:not(.xm-light) .tpl-index .p .was{color:#8f7f83}
+html:not(.xm-light) .tpl-index .p .cur{color:#bfaeb2}
+html:not(.xm-light) .tpl-index .ph{background:radial-gradient(circle at 50% 32%,#2e2326 0%,#151011 72%);box-shadow:inset 0 0 0 1px #35262a}
+html:not(.xm-light) .tpl-index .ph::before{opacity:.45}
+html:not(.xm-light) .tpl-index .p .pimg{filter:drop-shadow(0 12px 14px rgba(0,0,0,.6))}
+
+/* ---- real-looking snow caps (painted by xmas.js; the old drawn caps stay until it is ready) ---- */
+html.xm-caps .prods .p::after{top:-21px;height:56px;left:-2%;right:-2%;background:var(--xm-cap) 0 0/auto 100% repeat-x;filter:drop-shadow(0 3px 2.5px rgba(10,20,40,.28))}
+html.xm-caps .prods .p:nth-child(3n+2)::after{background-position-x:-160px}
+html.xm-caps .prods .p:nth-child(3n)::after{background-position-x:-320px}
+html.xm-caps .prods .p::before{display:none}
+html.xm-caps .btn-card::before,html.xm-caps .btn-cart::before,html.xm-caps .bundle::before{top:-15px;height:40px;background:var(--xm-cap) 0 0/auto 100% repeat-x;filter:drop-shadow(0 2px 2px rgba(10,20,40,.3))}
+html.xm-caps .bundle:nth-child(2)::before{background-position-x:-130px}
+html.xm-caps .bundle:nth-child(3)::before{background-position-x:-260px}
+
+/* ---- end of the intro: the snow wave blows across and the shop appears ---- */
+.xi-gust{position:fixed;left:0;top:0;width:100%;height:100%;z-index:10001;pointer-events:none}
+
+/* ---- Buy now: XXL / XXXL sizes use their own card link, and the button shows it ---- */
+.btn-card .bn-t{display:block}
+.btn-card.is-big{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;gap:.18rem}
+.btn-card .bn-s{display:block;font-size:.66em;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#ffe08a}
+.btn-card.bn-swap{animation:bn-swap .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bn-swap{0%{transform:scale(.9)}55%{transform:scale(1.06)}100%{transform:none}}
+/* longer storm: the logo is carried off first, the cream background stays a moment longer, then the shop shows through */
+.xi.is-blown .xi-logo{transform:translateX(16vw) rotate(4deg) scale(.96);opacity:0;transition:transform 1.1s cubic-bezier(.5,0,.75,0),opacity .9s ease .1s}
+.xi.is-blown{transition:opacity 1.2s cubic-bezier(.4,0,.2,1),visibility 1.2s cubic-bezier(.4,0,.2,1)}

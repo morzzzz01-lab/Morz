@@ -31,6 +31,7 @@
       --blue:{{ settings.color_accent }};
     }
   </style>
+  <script>try{if(localStorage.getItem('morz_mode')==='light')document.documentElement.classList.add('xm-light');}catch(e){}</script>
   {{ 'theme.css' | asset_url | stylesheet_tag }}
   {{ 'xmas.css' | asset_url | stylesheet_tag }}
 
@@ -138,11 +139,8 @@
       assign sn_scarf_url = sn_scarf.featured_image | image_url: width: 500
     endif
   -%}
-  <script>window.MORZ_SNOW={ball:{{ 'snowball.png' | asset_url | json }},twig:{{ 'twig-arm.png' | asset_url | json }},santa:{{ 'santa-sleigh.png' | asset_url | json }},hat:{{ sn_hat_url | json }},scarf:{{ sn_scarf_url | json }}};</script>
+  <script>window.MORZ_SNOW={ball:{{ 'snowball.png' | asset_url | json }},twig:{{ 'twig-arm.png' | asset_url | json }},hat:{{ sn_hat_url | json }},scarf:{{ sn_scarf_url | json }}};</script>
   {% render 'xmas-music' %}
-  <script src="{{ 'gsap.min.js' | asset_url }}" defer></script>
-  <script src="{{ 'ScrollTrigger.min.js' | asset_url }}" defer></script>
-  <script src="{{ 'lenis.min.js' | asset_url }}" defer></script>
   <script src="{{ 'xmas.js' | asset_url }}" defer></script>
   <script src="{{ 'theme.js' | asset_url }}" defer></script>
 </body>
