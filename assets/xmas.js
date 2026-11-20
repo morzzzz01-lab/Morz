@@ -205,6 +205,7 @@
   function abs(u) { return u && u.indexOf('//') === 0 ? 'https:' + u : u; }
   var BALL = abs(CFG.ball) || '', TWIG = abs(CFG.twig) || '';
   var S = 512, R0 = 253, GROW = 14000, cur = null, pend = null, live = 0, busy = false, PAT = null;
+  var knock = null;
   var tower = { balls: [], shadow: null, skirt: null, dress: null, timer: 0 }, ACC = {};
   if (BALL) { var pre = new Image(); pre.src = BALL; }
 
@@ -222,6 +223,7 @@
     return { W: W, H: H, Rmax: big * .75, Rbury: Math.min(big * .35, H * .4) };
   }
   function ok(e) {
+    if (knock) return false;
     if (!document.body.classList.contains('tpl-index') || busy) return false;
     if (document.documentElement.classList.contains('intro-on')) return false;
     if (e.pointerType === 'mouse' && e.button !== 0) return false;
@@ -275,11 +277,56 @@
     fadeOut(tower.shadow, quick ? 500 : 1500); fadeOut(tower.skirt, quick ? 500 : 1500); fadeOut(tower.dress, quick ? 500 : 1500);
     tower = { balls: [], shadow: null, skirt: null, dress: null, timer: 0 };
   }
+
+  /* real-looking snow: a soft mound made of thousands of tiny grains (no round balls) */
+  function snowCanvas(w, h, peak) {
+    var c = document.createElement('canvas'), dpr = Math.min(2, window.devicePixelRatio || 1), i;
+    c.width = Math.max(2, Math.round(w * dpr)); c.height = Math.max(2, Math.round(h * dpr)); c.style.width = w + 'px'; c.style.height = h + 'px';
+    var x = c.getContext('2d'), ph = Math.random() * 6.28, N = Math.min(2600, Math.round(w * h / 11));
+    x.scale(dpr, dpr);
+    function top(u) { return h * (1 - peak * Math.pow(Math.max(0, 1 - u * u), .7) * (1 + .06 * Math.sin(u * 11 + ph))); }
+    var g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#ffffff'); g.addColorStop(.5, '#f3f8fd'); g.addColorStop(1, '#d6e4f3');
+    x.fillStyle = g; x.beginPath(); x.moveTo(0, h);
+    for (i = 0; i <= 48; i++) x.lineTo(i / 48 * w, top(i / 24 - 1));
+    x.lineTo(w, h); x.closePath(); x.fill();
+    for (i = 0; i < N; i++) {
+      var px = Math.random() * w, ty = top(px / w * 2 - 1), py = ty - 5 + Math.random() * (h - ty + 5), dark = Math.random() < .3;
+      x.fillStyle = dark ? 'rgba(130,160,200,' + (.07 + Math.random() * .13) + ')' : 'rgba(255,255,255,' + (.45 + Math.random() * .5) + ')';
+      x.beginPath(); x.arc(px, py, .5 + Math.random() * 1.5, 0, 6.2832); x.fill();
+    }
+    return c;
+  }
+  /* the fallen snowman becomes fine powder that flies, drifts down and settles */
+  function powder(x, y, r, py, dir) {
+    var n = Math.min(80, Math.round(34 + r / 2)), k;
+    for (k = 0; k < n; k++) {
+      var sz = 1.4 + Math.random() * Math.max(2, r / 24), c = document.createElement('i'); c.className = 'xm-bit xm-tw';
+      c.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;left:' + (x - sz / 2) + 'px;top:' + (y - sz / 2) + 'px;z-index:60';
+      document.body.appendChild(c);
+      var dx = dir * r * (.2 + Math.random() * 2.2) + (Math.random() - .5) * r, up = r * (.2 + Math.random() * 1.1), gd = Math.max(8, py - y - Math.random() * 6), sw = (Math.random() - .5) * r * .5;
+      c.animate([
+        { transform: 'translate(0,0)', opacity: 1, offset: 0, easing: 'cubic-bezier(.2,.8,.4,1)' },
+        { transform: 'translate(' + (dx * .6) + 'px,' + (-up) + 'px)', opacity: 1, offset: .35, easing: 'cubic-bezier(.45,.1,.8,.7)' },
+        { transform: 'translate(' + (dx * .9 + sw) + 'px,' + gd + 'px)', opacity: .95, offset: .85 },
+        { transform: 'translate(' + (dx + sw) + 'px,' + gd + 'px)', opacity: 0, offset: 1 }
+      ], { duration: 1000 + Math.random() * 1400, delay: Math.random() * 260, fill: 'forwards' }).onfinish = (function (c) { return function () { c.remove(); }; })(c);
+    }
+  }
+  /* a low drift of real snow that grows where the snowman fell and melts away again */
+  function drift(cx, py, w, h, delay, life) {
+    var el = snowCanvas(w, h, .9); el.className = 'xm-drift xm-tw'; el.__t = Date.now();
+    el.style.cssText += ';position:fixed;pointer-events:none;z-index:58;left:' + (cx - w / 2) + 'px;top:' + (py - h * .86) + 'px;transform-origin:50% 100%';
+    document.body.appendChild(el);
+    el.animate([{ transform: 'scale(.55,.05)', opacity: 0 }, { transform: 'scale(1.03,1.06)', opacity: 1, offset: .65 }, { transform: 'scale(1)', opacity: 1 }], { duration: 900, delay: delay, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'backwards' });
+    setTimeout(function () { fadeOut(el, 2400); }, delay + life);
+  }
   /* soft snow skirt around the foot of the bottom ball, so it sinks smoothly into the snow */
   function mkSkirt(x, y, r) {
-    var k = document.createElement('i'); k.className = 'xm-skirt xm-tw';
-    k.style.cssText = 'left:' + (x - r * 1.35) + 'px;top:' + (y + r * .48) + 'px;width:' + r * 2.7 + 'px;height:' + r * .7 + 'px';
-    document.body.appendChild(k); return k;
+    var k = snowCanvas(r * 3.1, r * .85, .88); k.className = 'xm-skirt xm-tw';
+    k.style.cssText += ';position:fixed;pointer-events:none;z-index:59;left:' + (x - r * 1.55) + 'px;top:' + (y + r * .5) + 'px;transform-origin:50% 100%';
+    document.body.appendChild(k);
+    try { k.animate([{ transform: 'scale(.6,.15)', opacity: 0 }, { transform: 'scale(1.04,1.08)', opacity: 1, offset: .6 }, { transform: 'scale(1)', opacity: 1 }], { duration: 700, easing: 'cubic-bezier(.2,.8,.3,1)' }); } catch (e) {}
+    return k;
   }
   function plan(b) {
     var d = dims(), n = tower.balls.length, top = tower.balls[n - 1];
@@ -300,7 +347,7 @@
       b.x += (pl.x - b.x) * Math.min(1, .01 * dt * (pl.stack ? 1.6 : 1)); b.rot += (pl.x - b.x) * .0004;
       if (b.y >= pl.y) {
         b.y = pl.y; b.x = pl.x;
-        spray(b.x, b.y + b.r * .75, b.r);
+        spray(b.x, b.y + b.r * .75, b.r * (pl.stack ? 1 : 1.35));
         if (bounced < 1 && vy > .35) { vy = -vy * .2; bounced++; b.sy = .92; b.sx = 1.05; place(b); requestAnimationFrame(step); return; }
         b.el.style.transition = 'transform .28s cubic-bezier(.3,1.6,.5,1)'; b.sx = b.sy = 1; place(b);
         settle(b, pl);
@@ -388,16 +435,16 @@
     var armMeta = [];
     function arm(sx, sy, ex, ey, cls, side) {
       var ix = sx - side * mr * .2, dx = ex - ix, dy = ey - sy, L = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dx, -dy) * 180 / Math.PI;
-      var th = L * 1.02, tw = th * .3;
+      var th = L * 1.1, tw = th * .46;
       armMeta.push({ cls: cls, w: tw, h: th, ang: ang, side: side });
       /* a real twig (thin end pushed into the snow, branches pointing outwards) that wiggles around its socket */
       return '<g class="' + cls + '" style="transform-origin:' + f(ix) + 'px ' + f(sy) + 'px">' +
         '<g transform="translate(' + f(ix) + ' ' + f(sy) + ') rotate(' + f(ang) + ')">' +
         '<image href="' + TWIG + '" x="' + f(-tw / 2) + '" y="' + f(-th) + '" width="' + f(tw) + '" height="' + f(th) + '" preserveAspectRatio="none" filter="url(#xf)"/></g></g>' +
-        '<ellipse cx="' + f(sx) + '" cy="' + f(sy + mr * .02) + '" rx="' + f(mr * .085) + '" ry="' + f(mr * .1) + '" fill="url(#xw)" opacity=".95"/>';
+        '<ellipse cx="' + f(sx) + '" cy="' + f(sy + mr * .02) + '" rx="' + f(mr * .12) + '" ry="' + f(mr * .13) + '" fill="url(#xw)" opacity=".95"/>';
     }
-    g += arm(mx - mr * .86, my - mr * .12, mx - mr * 1.95, my - mr * .72, 'xa-l', -1);
-    g += arm(mx + mr * .86, my - mr * .12, mx + mr * 1.95, my - mr * .78, 'xa-r', 1);
+    g += arm(mx - mr * .86, my - mr * .12, mx - mr * 2.15, my - mr * .8, 'xa-l', -1);
+    g += arm(mx + mr * .86, my - mr * .12, mx + mr * 2.15, my - mr * .86, 'xa-r', 1);
     /* buttons */
     g += coal(mx, my - mr * .4, mr * .075) + coal(mx, my + mr * .02, mr * .08) + coal(mx, my + mr * .44, mr * .075);
     /* scarf */
@@ -530,11 +577,11 @@
     });
   }
   /* the snowman creaks, leans to one side, then falls with its full weight (faster and faster) and smashes into a heap of snow on that side */
-  function collapse() {
+  function collapse(dirArg, pushed) {
     var B = tower.balls, dr = tower.dress;
     if (B.length < 3 || !dr) { clearTower(false); return; }
     clearTimeout(tower.timer);
-    var base = B[0], px = base.x, py = base.y + base.r * .82, dir = Math.random() < .5 ? -1 : 1;
+    var base = B[0], px = base.x, py = base.y + base.r * .82, dir = dirArg || (Math.random() < .5 ? -1 : 1);
     var pvx = px + dir * base.r * .35, DEG = 66, SLIDE = .35;
     var grp = document.createElement('div'); grp.className = 'xm-grp xm-tw';
     grp.style.cssText = 'position:fixed;inset:0;z-index:58;pointer-events:none;transform-origin:' + pvx + 'px ' + py + 'px';
@@ -542,18 +589,21 @@
     B.forEach(function (t) { grp.appendChild(t.el); }); grp.appendChild(dr);
     var shadow = tower.shadow, skirt = tower.skirt, meta = tower.armMeta, balls = B.map(function (t) { return { x: t.x, y: t.y, r: t.r }; });
     tower = { balls: [], shadow: null, skirt: null, dress: null, timer: 0 };
-    setTimeout(function () { dropArms(grp, py, dir, meta); }, 1900);
+    setTimeout(function () { dropArms(grp, py, dir, meta); }, pushed ? 900 : 1900);
     var A = function (v) { return 'translateX(' + (dir * v * SLIDE).toFixed(1) + 'px) rotate(' + dir * v + 'deg)'; };
-    var an = grp.animate([
+    var an = grp.animate(pushed ? [
+      { transform: A(0), offset: 0 }, { transform: A(-1.5), offset: .1, easing: 'ease-in' }, { transform: A(8), offset: .38, easing: 'cubic-bezier(.45,0,.95,.7)' },
+      { transform: A(34), offset: .72, easing: 'cubic-bezier(.5,0,.95,.6)' }, { transform: A(DEG), offset: 1 }
+    ] : [
       { transform: A(0), offset: 0 }, { transform: A(-1.6), offset: .1, easing: 'ease-in-out' }, { transform: A(2.4), offset: .22, easing: 'ease-in-out' },
       { transform: A(-2.2), offset: .34, easing: 'ease-in-out' }, { transform: A(4.5), offset: .5, easing: 'ease-in' }, { transform: A(10), offset: .64, easing: 'cubic-bezier(.45,0,.95,.7)' },
       { transform: A(34), offset: .84, easing: 'cubic-bezier(.5,0,.95,.6)' }, { transform: A(DEG), offset: 1 }
-    ], { duration: 2500, fill: 'forwards' });
+    ], { duration: pushed ? 1500 : 2500, fill: 'forwards' });
     an.onfinish = function () {
       var th = dir * DEG * Math.PI / 180, cs = Math.cos(th), sn = Math.sin(th), tr = dir * DEG * SLIDE;
       balls.forEach(function (b, i) {
         var dx = b.x - pvx, dy = b.y - py, x = pvx + dx * cs - dy * sn + tr, y = py + dx * sn + dy * cs;
-        setTimeout(function () { spray(x, Math.min(y, py - 4), b.r * 1.1); chunks(x, Math.min(y, py - 4), b.r * 1.15, py, dir); }, i * 90);
+        setTimeout(function () { spray(x, Math.min(y, py - 4), b.r * 1.1); powder(x, Math.min(y, py - 4), b.r * 1.3, py, dir); }, i * 90);
       });
       heap(pvx + tr * .5, py, base.r, dir);
       try { grp.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, delay: 40, fill: 'forwards' }); } catch (e) {}
@@ -563,20 +613,10 @@
   }
   /* the pile of snow lumps that the fallen snowman leaves behind; it melts away again by itself */
   function heap(cx0, py, r, dir) {
-    var rows = [[9, 0], [6, 1], [3, 2]], W = r * 4.6, cx = cx0 + dir * r * 1.3;
-    rows.forEach(function (rw) {
-      var n = rw[0], lv = rw[1], k;
-      for (k = 0; k < n; k++) {
-        var u = n > 1 ? k / (n - 1) * 2 - 1 : 0, sz = r * (.42 + Math.random() * .3) * (1 - lv * .08), w = W * (1 - lv * .3);
-        var x = cx + u * w / 2 + (Math.random() - .5) * r * .25, y = py - sz * .42 - lv * sz * .62 + (Math.random() - .5) * 4;
-        var c = document.createElement('i'); c.className = 'xm-chunk xm-heap xm-tw'; c.__t = Date.now();
-        c.style.cssText = 'left:' + (x - sz / 2) + 'px;top:' + (y - sz / 2) + 'px;width:' + sz + 'px;height:' + sz * .88 + 'px;z-index:58';
-        document.body.appendChild(c);
-        c.animate([{ transform: 'scale(.15)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .7 }, { transform: 'scale(1)', opacity: 1 }],
-          { duration: 420, delay: 500 + lv * 260 + Math.random() * 420, easing: 'cubic-bezier(.3,1.4,.5,1)', fill: 'backwards' });
-        setTimeout((function (c) { return function () { fadeOut(c, 2200); }; })(c), 4200 + lv * 300 + Math.random() * 600);
-      }
-    });
+    var cx = cx0 + dir * r * 1.2;
+    drift(cx, py + 2, r * 5, r * 1.05, 450, 4300);
+    drift(cx - dir * r * 1.1, py + 2, r * 3, r * .6, 700, 4100);
+    drift(cx + dir * r * 1.3, py + 2, r * 2.6, r * .5, 850, 3900);
   }
 
   /* lumps of snow that break off, tumble through the air and roll to a stop */
@@ -661,14 +701,9 @@
     var spr = document.createElement('canvas'); spr.width = spr.height = 48; var sx = spr.getContext('2d'), sg = sx.createRadialGradient(24, 24, 1, 24, 24, 24);
     sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(.55, 'rgba(250,252,255,.8)'); sg.addColorStop(1, 'rgba(240,247,255,0)'); sx.fillStyle = sg; sx.fillRect(0, 0, 48, 48);
     document.body.appendChild(C); document.body.appendChild(F);
-    var a1 = C.animate([{ transform: 'translateY(-' + (H + EDGE + 10) + 'px)' }, { transform: 'translateY(0)' }], { duration: 1700, easing: 'cubic-bezier(.55,.06,.75,.9)', fill: 'forwards' });
-    /* powder thrown up in front of the sliding cloud */
-    var dust = setInterval(function () {
-      try {
-        var ly = new DOMMatrixReadOnly(getComputedStyle(C).transform).f + H + EDGE * .45;
-        if (ly > -20 && ly < H + 40) spray(Math.random() * W, Math.max(10, Math.min(H - 10, ly)), 36 + Math.random() * 26);
-      } catch (e) {}
-    }, 110);
+    /* the snow forms right where it is: it builds up over the whole screen instead of sliding down from the top */
+    var a1 = C.animate([{ opacity: 0 }, { opacity: .55, offset: .5 }, { opacity: 1 }], { duration: 2000, easing: 'ease-in', fill: 'forwards' });
+    var dust = setInterval(function () { spray(Math.random() * W, Math.random() * H, 34 + Math.random() * 30); }, 90);
     a1.onfinish = function () {
       clearInterval(dust);
       C.style.animation = 'none'; C.style.transform = 'none'; a1.cancel();
@@ -744,6 +779,45 @@
       requestAnimationFrame(grow);
     })(performance.now());
   }
+  /* knock it over: a tap pushes it away from the finger, a swipe pushes it the way you swipe */
+  function hitTower(x, y) { return tower.balls.some(function (t) { return Math.hypot(x - t.x, y - t.y) < t.r * 1.05; }); }
+  function rollAway(dir) {
+    var B = tower.balls, base = B[0], sh = tower.shadow, sk = tower.skirt;
+    clearTimeout(tower.timer); tower = { balls: [], shadow: null, skirt: null, dress: null, timer: 0 };
+    B.forEach(function (t, i) {
+      var gy = base.y + base.r - t.r, dx = dir * (base.r * 2.2 + i * t.r * .5), dy = gy - t.y, tf = function (ax, ay, rot) { return 'translate3d(' + (t.x - S / 2 + ax) + 'px,' + (t.y - S / 2 + ay) + 'px,0) rotate(' + rot + 'rad) scale(' + t.r / R0 + ')'; };
+      t.el.style.transition = 'none';
+      var an = t.el.animate([
+        { transform: tf(0, 0, 0), offset: 0, easing: 'cubic-bezier(.5,0,.9,.6)' },
+        { transform: tf(dx * .3, dy, dir * 1.2), offset: .38, easing: 'cubic-bezier(.3,.7,.5,1)' },
+        { transform: tf(dx, dy, dir * (3.2 + i * .6)), offset: 1 }
+      ], { duration: 1300 + i * 120, delay: (B.length - 1 - i) * 90, fill: 'forwards' });
+      an.onfinish = function () { powder(t.x + dx, t.y + dy, t.r * 1.1, t.y + dy + t.r * .7, dir); fadeOut(t.el, 160); };
+    });
+    fadeOut(sh, 1200); fadeOut(sk, 1200);
+  }
+  function push(dir) {
+    if (!tower.balls.length) return;
+    if (tower.balls.length === 3 && tower.dress) collapse(dir, true); else rollAway(dir);
+  }
+  document.addEventListener('pointerdown', function (e) {
+    if (knock || cur || pend || busy || !e.isPrimary || !tower.balls.length || !document.body.classList.contains('tpl-index')) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.target.closest && e.target.closest(SKIP)) return;
+    if (hitTower(e.clientX, e.clientY)) knock = { id: e.pointerId, x: e.clientX, y: e.clientY, done: 0 };
+  }, { passive: true });
+  document.addEventListener('pointermove', function (e) {
+    if (!knock || e.pointerId !== knock.id || knock.done) return;
+    var dx = e.clientX - knock.x;
+    if (Math.abs(dx) > 14) { knock.done = 1; push(dx > 0 ? 1 : -1); }
+  }, { passive: true });
+  function knockEnd(e) {
+    if (!knock || e.pointerId !== knock.id) return;
+    var k = knock; knock = null;
+    if (!k.done && e.type === 'pointerup' && tower.balls.length) { var cx = tower.balls[0].x; push(k.x < cx - 4 ? 1 : (k.x > cx + 4 ? -1 : (Math.random() < .5 ? -1 : 1))); }
+  }
+  document.addEventListener('pointerup', knockEnd, { passive: true });
+  document.addEventListener('pointercancel', knockEnd, { passive: true });
   document.addEventListener('pointerdown', function (e) {
     if (cur || pend || !e.isPrimary || !ok(e)) return;
     var q = pend = { id: e.pointerId, x: e.clientX, y: e.clientY };
@@ -754,7 +828,7 @@
     if (!cur || e.pointerId !== cur.id) return;
     cur.tx = e.clientX; cur.ty = e.clientY;
   }, { passive: true });
-  document.addEventListener('touchmove', function (e) { if (cur && e.cancelable) e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', function (e) { if ((cur || knock) && e.cancelable) e.preventDefault(); }, { passive: false });
   function end(e) {
     if (pend && e.pointerId === pend.id) { clearTimeout(pend.tm); pend = null; }
     if (!cur || e.pointerId !== cur.id) return;
@@ -777,7 +851,7 @@
     });
     live = n + (cur ? 1 : 0);
   }
-  setInterval(function () { sweep(); [].forEach.call(document.querySelectorAll('.xm-chunk,.xm-twig,.xm-mound,.xm-grp'), function (el) { if (!el.__t) el.__t = Date.now(); if (Date.now() - el.__t > 14000) el.remove(); }); }, 1200);
+  setInterval(function () { sweep(); [].forEach.call(document.querySelectorAll('.xm-chunk,.xm-drift,.xm-twig,.xm-mound,.xm-grp'), function (el) { if (!el.__t) el.__t = Date.now(); if (Date.now() - el.__t > 14000) el.remove(); }); }, 1200);
   function cancelAll() {
     if (pend) { clearTimeout(pend.tm); pend = null; }
     if (cur) { var b = cur; cur = null; document.body.classList.remove('xm-hold'); b.el.remove(); live = Math.max(0, live - 1); }

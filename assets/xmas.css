@@ -395,3 +395,6 @@ body.xm-hold,body.xm-hold *{-webkit-user-select:none!important;user-select:none!
 .xm-fly2 .xm-sg{filter:drop-shadow(0 0 8px rgba(255,230,150,.35))}
 .xm-chunk{position:fixed;z-index:58;pointer-events:none;border-radius:46% 54% 52% 48%/55% 45% 55% 45%;will-change:transform,opacity;
   background:radial-gradient(circle at 34% 28%,#fff 0,#f2f7fd 55%,#cfdff1 100%);box-shadow:inset -2px -3px 6px rgba(120,150,190,.35),0 3px 6px rgba(20,45,90,.2)}
+
+/* v49: grainy real-snow mounds instead of flat discs */
+.xm-skirt{background:none;border-radius:0;filter:none}
