@@ -370,7 +370,7 @@ body.xm-hold,body.xm-hold *{-webkit-user-select:none!important;user-select:none!
 @keyframes xa-wave{from{transform:rotate(5deg)}to{transform:rotate(-9deg)}}
 @keyframes xa-wave2{from{transform:rotate(-3deg)}to{transform:rotate(4deg)}}
 
-.xm-ball.xm-tw{filter:brightness(1.12) contrast(1.03)}
+.xm-ball.xm-tw{filter:brightness(1.22) contrast(1.05) saturate(.85)}
 
 /* ---- v31: Santa photo-sleigh, twig arms, smooth snow ---- */
 .xm-fly2 img{display:block;width:100%;height:auto;filter:drop-shadow(0 0 10px rgba(255,230,150,.45));animation:xm-bob 3.2s ease-in-out infinite}

@@ -374,6 +374,17 @@
     /* arms (sticks with twigs); the right one waves */
     var neck = function (u) { return '<ellipse cx="' + f(u.x) + '" cy="' + f(u.y + u.r * .9) + '" rx="' + f(u.r * .8) + '" ry="' + f(u.r * .14) + '" fill="#47688f" opacity=".3" filter="url(#xb)"/>'; };
     g += neck(h) + neck(m);
+    /* volume: light from the top-left, cool shade bottom-right, so each ball reads as a round lump of snow */
+    defs = defs.replace('</defs>', '<radialGradient id="xl" cx=".34" cy=".28" r=".85"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity=".08"/><stop offset=".78" stop-color="#7f9cc4" stop-opacity=".12"/><stop offset="1" stop-color="#4a6c9c" stop-opacity=".42"/></radialGradient></defs>');
+    [base, m, h].forEach(function (u) { g += '<circle cx="' + f(u.x) + '" cy="' + f(u.y) + '" r="' + f(u.r * .985) + '" fill="url(#xl)"/>'; });
+    /* snow packed into the joints between the balls */
+    [[h, m], [m, base]].forEach(function (pr, jn) {
+      var up = pr[0], lo = pr[1], jy = up.y + up.r * .86, k, nn = 17;
+      for (k = 0; k < nn; k++) {
+        var u2 = k / (nn - 1) * 2 - 1, rr = up.r * (.085 + ((k * 37 + jn * 11) % 10) / 10 * .05), cx2 = up.x + u2 * up.r * .72, cy2 = jy - Math.abs(u2) * up.r * .09 + ((k * 53) % 7 - 3) * .8;
+        g += '<circle cx="' + f(cx2) + '" cy="' + f(cy2) + '" r="' + f(rr) + '" fill="url(#xw)" opacity=".92"/><circle cx="' + f(cx2 + rr * .1) + '" cy="' + f(cy2 + rr * .55) + '" r="' + f(rr * .75) + '" fill="#9db6d6" opacity=".18" filter="url(#xb)"/>';
+      }
+    });
     var armMeta = [];
     function arm(sx, sy, ex, ey, cls, side) {
       var ix = sx - side * mr * .2, dx = ex - ix, dy = ey - sy, L = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dx, -dy) * 180 / Math.PI;
@@ -398,11 +409,24 @@
         '<rect x="' + f(hx - hr * .92) + '" y="' + f(j - hr * .17) + '" width="' + f(hr * 1.84) + '" height="' + f(hr * .36) + '" rx="' + f(hr * .17) + '" fill="url(#xp)" transform="rotate(-3 ' + f(hx) + ' ' + f(j) + ')"/>' +
         '<rect x="' + f(hx - hr * .92) + '" y="' + f(j - hr * .17) + '" width="' + f(hr * 1.84) + '" height="' + f(hr * .36) + '" rx="' + f(hr * .17) + '" fill="none" stroke="#7d0716" stroke-opacity=".35" stroke-width="1.2" transform="rotate(-3 ' + f(hx) + ' ' + f(j) + ')"/></g>';
     }
-    /* face */
-    g += coal(hx - hr * .33, hy - hr * .2, hr * .09) + coal(hx + hr * .33, hy - hr * .2, hr * .09);
-    g += '<g filter="url(#xf)"><path d="M' + f(hx - hr * .08) + ' ' + f(hy - hr * .04) + ' Q' + f(hx + hr * .35) + ' ' + f(hy + hr * .02) + ' ' + f(hx + hr * .72) + ' ' + f(hy + hr * .17) + ' Q' + f(hx + hr * .3) + ' ' + f(hy + hr * .27) + ' ' + f(hx - hr * .08) + ' ' + f(hy + hr * .2) + 'Z" fill="url(#xn)" stroke="#b83f00" stroke-opacity=".5" stroke-width=".8" stroke-linejoin="round"/>' +
-      '<path d="M' + f(hx + hr * .15) + ' ' + f(hy + hr * .02) + ' l' + f(hr * .02) + ' ' + f(hr * .17) + 'M' + f(hx + hr * .32) + ' ' + f(hy + hr * .05) + ' l' + f(hr * .02) + ' ' + f(hr * .15) + 'M' + f(hx + hr * .48) + ' ' + f(hy + hr * .09) + ' l' + f(hr * .01) + ' ' + f(hr * .1) + '" stroke="#c24a00" stroke-opacity=".55" stroke-width="1" fill="none"/></g>';
-    for (var q = 0; q < 6; q++) { var an = (0.18 + q * 0.128) * Math.PI; g += coal(hx + Math.cos(an) * hr * .46, hy + hr * .26 + Math.sin(an) * hr * .3, hr * .045); }
+    /* face: eyes pressed into the snow, a long carrot, a coal smile and rosy cheeks */
+    var eyY = hy - hr * .16, eyX = hr * .34;
+    [-1, 1].forEach(function (sd) {
+      g += '<ellipse cx="' + f(hx + sd * eyX) + '" cy="' + f(eyY + hr * .035) + '" rx="' + f(hr * .17) + '" ry="' + f(hr * .15) + '" fill="#4f6f98" opacity=".28" filter="url(#xb)"/>';
+      g += '<ellipse cx="' + f(hx + sd * eyX) + '" cy="' + f(eyY) + '" rx="' + f(hr * .115) + '" ry="' + f(hr * .125) + '" fill="url(#xc)"/>';
+      g += '<ellipse cx="' + f(hx + sd * eyX - hr * .035) + '" cy="' + f(eyY - hr * .045) + '" rx="' + f(hr * .034) + '" ry="' + f(hr * .026) + '" fill="#fff" opacity=".85"/>';
+    });
+    g += '<ellipse cx="' + f(hx - hr * .6) + '" cy="' + f(hy + hr * .17) + '" rx="' + f(hr * .17) + '" ry="' + f(hr * .1) + '" fill="#ff8aa0" opacity=".32" filter="url(#xb)"/>' +
+      '<ellipse cx="' + f(hx + hr * .6) + '" cy="' + f(hy + hr * .17) + '" rx="' + f(hr * .17) + '" ry="' + f(hr * .1) + '" fill="#ff8aa0" opacity=".32" filter="url(#xb)"/>';
+    var nx0 = hx - hr * .05, ny0 = hy + hr * .07, nl = hr * .8;
+    g += '<path d="M' + f(nx0 + hr * .05) + ' ' + f(ny0 + hr * .1) + ' Q' + f(nx0 + nl * .5) + ' ' + f(ny0 + hr * .2) + ' ' + f(nx0 + nl) + ' ' + f(ny0 + hr * .3) + ' Q' + f(nx0 + nl * .4) + ' ' + f(ny0 + hr * .24) + ' ' + f(nx0 + hr * .05) + ' ' + f(ny0 + hr * .2) + 'Z" fill="#7a2a00" opacity=".25" filter="url(#xb)"/>';
+    g += '<g><path d="M' + f(nx0) + ' ' + f(ny0 - hr * .13) + ' Q' + f(nx0 + nl * .55) + ' ' + f(ny0 - hr * .05) + ' ' + f(nx0 + nl) + ' ' + f(ny0 + hr * .2) + ' Q' + f(nx0 + nl * .5) + ' ' + f(ny0 + hr * .2) + ' ' + f(nx0) + ' ' + f(ny0 + hr * .14) + 'Z" fill="url(#xn)" stroke="#a93800" stroke-opacity=".6" stroke-width="1" stroke-linejoin="round"/>' +
+      '<path d="M' + f(nx0 + hr * .02) + ' ' + f(ny0 - hr * .1) + ' Q' + f(nx0 + nl * .5) + ' ' + f(ny0 - hr * .045) + ' ' + f(nx0 + nl * .9) + ' ' + f(ny0 + hr * .15) + '" stroke="#fff" stroke-opacity=".5" stroke-width="' + f(hr * .025) + '" fill="none" stroke-linecap="round"/>' +
+      '<path d="M' + f(nx0 + nl * .2) + ' ' + f(ny0 - hr * .06) + ' l' + f(hr * .02) + ' ' + f(hr * .17) + 'M' + f(nx0 + nl * .4) + ' ' + f(ny0 - hr * .02) + ' l' + f(hr * .02) + ' ' + f(hr * .15) + 'M' + f(nx0 + nl * .6) + ' ' + f(ny0 + hr * .03) + ' l' + f(hr * .015) + ' ' + f(hr * .12) + '" stroke="#b34100" stroke-opacity=".6" stroke-width="1.1" fill="none"/></g>';
+    for (var q = 0; q < 7; q++) {
+      var an = (0.14 + q * 0.12) * Math.PI;
+      g += coal(hx + Math.cos(an) * hr * .55, hy + hr * .2 + Math.sin(an) * hr * .3, hr * .058);
+    }
     /* hat */
     if (ACC.hat) {
       var hw = hr * 2.1, hh = hw * ACC.hat.h / ACC.hat.w;
@@ -557,7 +581,7 @@
 
   /* lumps of snow that break off, tumble through the air and roll to a stop */
   function chunks(x, y, r, py, dir) {
-    var n = Math.min(12, Math.round(5 + r / 12)), k;
+    var n = Math.min(22, Math.round(9 + r / 7)), k;
     for (k = 0; k < n; k++) {
       var sz = r * (.16 + Math.random() * .26), c = document.createElement('i'); c.className = 'xm-chunk xm-tw';
       c.style.cssText = 'left:' + (x - sz / 2) + 'px;top:' + (y - sz / 2) + 'px;width:' + sz + 'px;height:' + sz * .9 + 'px';
@@ -707,7 +731,17 @@
       b.r = k < .6 ? 8 + (Rb - 8) * Math.pow(k / .6, .9) : Rb + (d.Rmax - Rb) * ((k - .6) / .4);
       var nx = b.x + (b.tx - b.x) * .22, ny = b.y + (b.ty - b.y) * .22;
       b.vx = nx - b.x; b.x = nx; b.y = ny; b.rot += b.vx * .012 / Math.max(.35, b.r / 80);
-      place(b); requestAnimationFrame(grow);
+      place(b);
+      /* loose snow is pulled in from around the ball: it visibly gathers into the growing snowball */
+      if (t - (b.lf || 0) > 70 && b.r > 14) {
+        b.lf = t;
+        var an = Math.random() * 6.2832, d0 = b.r * (1.25 + Math.random() * .9), sz = 2.5 + Math.random() * Math.min(7, b.r / 14);
+        var q = document.createElement('i'); q.className = 'xm-bit'; q.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;left:' + (b.x + Math.cos(an) * d0) + 'px;top:' + (b.y + Math.sin(an) * d0 - b.r * .3) + 'px';
+        document.body.appendChild(q);
+        q.animate([{ transform: 'translate(0,0) scale(1)', opacity: 0 }, { opacity: 1, offset: .25 }, { transform: 'translate(' + (-Math.cos(an) * (d0 - b.r * .85)) + 'px,' + (-Math.sin(an) * (d0 - b.r * .85) + b.r * .3) + 'px) scale(.5)', opacity: .9 }],
+          { duration: 420 + Math.random() * 260, easing: 'ease-in', fill: 'forwards' }).onfinish = function () { q.remove(); };
+      }
+      requestAnimationFrame(grow);
     })(performance.now());
   }
   document.addEventListener('pointerdown', function (e) {
