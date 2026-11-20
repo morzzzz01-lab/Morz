@@ -217,13 +217,66 @@
       '<radialGradient id="scf{U}" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#ffe3cf"/><stop offset=".7" stop-color="#f5c7a6"/><stop offset="1" stop-color="#e2a582"/></radialGradient>' +
       '<radialGradient id="scw{U}" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#f1f4f9"/><stop offset="1" stop-color="#c9d3e2"/></radialGradient>' +
       '<linearGradient id="sck{U}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a302b"/><stop offset="1" stop-color="#0f0b09"/></linearGradient>' +
+      '<linearGradient id="rdb{U}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a87443"/><stop offset="1" stop-color="#6c431f"/></linearGradient>' +
+      '<linearGradient id="rdf{U}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a5c31"/><stop offset="1" stop-color="#553415"/></linearGradient>' +
+      '<linearGradient id="rdh{U}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9d6b3e"/><stop offset="1" stop-color="#b98653"/></linearGradient>' +
+      '<linearGradient id="rda{U}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#b48a52"/><stop offset="1" stop-color="#e6c88f"/></linearGradient>' +
+      '<radialGradient id="rdn{U}" cx=".38" cy=".35" r=".7"><stop offset="0" stop-color="#ffb4a6"/><stop offset=".45" stop-color="#ff2b2b"/><stop offset="1" stop-color="#a30000"/></radialGradient>' +
+      '<radialGradient id="rdg{U}"><stop offset="0" stop-color="#ff3b30" stop-opacity=".6"/><stop offset="1" stop-color="#ff3b30" stop-opacity="0"/></radialGradient>' +
       '</defs></svg>';
+  }
+  /* one reindeer, side view facing forward, legs stretched in a flying gallop. far = the one on the far side of a pair
+     (a shade darker), lead = Rudolph with his glowing red nose */
+  function deer(x, y, sc, far, lead, n) {
+    var B = G(far ? 'rdf' : 'rdb'), H = far ? G('rdf') : G('rdh'), A = G('rda'), dl = '-' + ((n * 131) % 560) + 'ms', leg = far ? '#4a2c12' : '#5f3a1b', legf = far ? '#3d2410' : '#4f3016';
+    var fluff = far ? '#e3d6c0' : '#f6ecdb', belly = far ? '#cdb089' : '#e6c99c';
+    return '<g transform="translate(' + x + ' ' + y + ') scale(' + sc + ')"><g class="xdr" style="animation-delay:' + dl + '">' +
+      '<g class="xlh" style="animation-delay:' + dl + '" stroke-linecap="round" fill="none">' +
+        '<path d="M-14 1 L-22 11" stroke="' + legf + '" stroke-width="6.6"/><path d="M-22 11 L-33 17" stroke="' + legf + '" stroke-width="3.3"/><ellipse cx="-34.6" cy="17.6" rx="2.6" ry="1.8" fill="#2a1b12" transform="rotate(20 -34.6 17.6)"/>' +
+        '<path d="M-16 0 L-26 9" stroke="' + leg + '" stroke-width="7.4"/><path d="M-26 9 L-38 12" stroke="' + leg + '" stroke-width="3.5"/><ellipse cx="-39.6" cy="12.3" rx="2.8" ry="1.9" fill="#2a1b12" transform="rotate(12 -39.6 12.3)"/>' +
+      '</g>' +
+      '<g class="xlf" style="animation-delay:' + dl + '" stroke-linecap="round" fill="none">' +
+        '<path d="M11 4 L19 13" stroke="' + legf + '" stroke-width="5.6"/><path d="M19 13 L14 21" stroke="' + legf + '" stroke-width="3.2"/><ellipse cx="13.4" cy="22" rx="2.4" ry="1.7" fill="#2a1b12"/>' +
+        '<path d="M14 3 L21 11" stroke="' + leg + '" stroke-width="6.2"/><path d="M21 11 L15 18" stroke="' + leg + '" stroke-width="3.4"/><ellipse cx="14.4" cy="19" rx="2.6" ry="1.8" fill="#2a1b12"/>' +
+      '</g>' +
+      '<path d="M-21 -6 C-27 -10 -28 -3 -23 -1.5 Z" fill="' + fluff + '"/>' +
+      '<path d="M-21 -3 C-22 -11 -11 -14 3 -13 C13 -12 20 -8 22 -2 C23 6 16 10 3 10.5 C-10 11 -21 7 -21 -3 Z" fill="' + B + '"/>' +
+      '<path d="M-15 5.5 C-6 9.5 8 9.5 16 5.5 C11 11 -8 12 -15 5.5 Z" fill="' + belly + '"/>' +
+      '<path d="M-14 -10 C-4 -13 8 -12 16 -8" stroke="#d7a571" stroke-opacity=".45" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M11 -9 C15 -17 20 -24 26 -28 L33 -24 C29 -17 25 -8 21 -2 Z" fill="' + B + '"/>' +
+      '<path d="M17 -8 C22 -13 26 -19 28 -24 C31 -16 27 -5 21 1 C19 -2 18 -5 17 -8 Z" fill="' + fluff + '"/>' +
+      '<g fill="none" stroke="' + A + '" stroke-width="2.3" stroke-linecap="round">' +
+        '<path d="M34 -33.5 C34 -43 31 -50 27 -55 M33 -43 L39 -47.5 M31 -49 L33.5 -56"/>' +
+        '<path d="M31 -33.5 C29 -42 25 -48 19 -52 M28 -42 L33 -48.5 M25 -46.6 L24 -54 M22 -49.6 L15.6 -51"/>' +
+      '</g>' +
+      '<path d="M29 -32 C25 -37.4 20 -37.4 18.6 -35.4 C21.6 -33.2 25 -31 28.6 -29.8 Z" fill="' + (far ? '#6f4724' : '#8d5d32') + '"/><path d="M27 -32.4 C24.4 -35.4 21.6 -35.6 20.6 -34.8 C22.6 -33.4 24.8 -32.2 27 -31.4 Z" fill="#e6b994" opacity=".7"/>' +
+      '<path d="M26 -27 C27 -33 34 -36 40 -33 C44 -31 47 -28 47 -25.5 C47 -22.5 43 -21.5 39 -21.8 C33 -22 27 -22.5 26 -27 Z" fill="' + H + '"/>' +
+      '<ellipse cx="42.6" cy="-24.4" rx="4.6" ry="3" fill="' + (far ? '#a77d55' : '#cfa071') + '"/>' +
+      '<circle cx="35.6" cy="-29.4" r="1.75" fill="#1b120c"/><circle cx="36.1" cy="-30" r=".6" fill="#fff"/>' +
+      '<path d="M43.6 -21.6 Q41.6 -20.4 39.6 -21.4" stroke="#5a3418" stroke-width=".7" fill="none" stroke-linecap="round"/>' +
+      (lead ? '<circle class="xnz" cx="47.4" cy="-26" r="8" fill="' + G('rdg') + '"/><circle cx="47.4" cy="-26" r="3.1" fill="' + G('rdn') + '"/><circle cx="46.5" cy="-27" r=".9" fill="#fff" opacity=".8"/>'
+            : '<circle cx="47" cy="-26" r="2.1" fill="#2b1c14"/>') +
+      '<path d="M5 -13 C7 -4 7 4 5 10.5" stroke="#c8132c" stroke-width="3.2" fill="none"/>' +
+      '<path d="M13 -11 C16 -6 20 -3 23 -1" stroke="#c8132c" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<path d="M5 -13 C9 -12.4 12 -12 14 -11" stroke="#c8132c" stroke-width="2.2" fill="none"/>' +
+      '<g fill="#f4c552"><circle cx="6.3" cy="-6" r=".9"/><circle cx="6.6" cy="0" r=".9"/><circle cx="6.2" cy="6" r=".9"/></g>' +
+      '<circle cx="15.6" cy="-7.8" r="2" fill="' + G('slb') + '"/><circle cx="19.9" cy="-4.6" r="2" fill="' + G('slb') + '"/>' +
+      '</g></g>';
+  }
+  /* the team: three pairs and Rudolph in front, climbing gently towards the sky, all on one golden trace */
+  function teamSVG() {
+    var o = '<svg class="xsl xtmv" viewBox="0 0 700 230" aria-hidden="true">', pairs = [[230, 168], [345, 150], [460, 132]], n = 0, S = 1.42;
+    o += '<path d="M150 150 L237 168 L352 150 L467 132 L585 114" stroke="#8d1020" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+    o += '<g fill="#f4c552"><circle cx="193" cy="159" r="1.5"/><circle cx="295" cy="159" r="1.5"/><circle cx="410" cy="141" r="1.5"/><circle cx="526" cy="123" r="1.5"/></g>';
+    pairs.forEach(function (q) { o += deer(q[0] + 14, q[1] - 10, .93 * S, 1, 0, n++) + deer(q[0], q[1], S, 0, 0, n++); });
+    o += deer(578, 114, 1.04 * S, 0, 1, n++);
+    return o + '</svg>';
   }
   /* Santa Claus, drawn in code: he sits in the sleigh, waves with one hand and holds the reins with the other */
   function santaSVG() {
     var W = G('scw'), R = G('scr');
     function puff(x, y, r) { return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + W + '"/>'; }
-    return '<svg class="xsl xsa" viewBox="0 0 560 230" aria-hidden="true">' +
+    return '<svg class="xsl xsa" viewBox="0 0 700 230" aria-hidden="true">' +
       /* the waving arm (behind the body) */
       '<g class="xwv" style="transform-origin:62px 101px">' +
         '<path d="M63 103 C58 96 54 90 53 82 C52 77 52 74 52 71" stroke="' + R + '" stroke-width="9.5" stroke-linecap="round" fill="none"/>' +
@@ -262,7 +315,7 @@
   }
   /* behind Santa: the far side wall, the green velvet seat back, the sack of presents and a candy cane */
   function sleighBack() {
-    return '<svg class="xsl" viewBox="0 0 560 230" aria-hidden="true">' +
+    return '<svg class="xsl" viewBox="0 0 700 230" aria-hidden="true">' +
       '<path d="M20 96 C34 94 44 104 50 118 C58 128 70 130 84 127 C96 124 108 118 126 114 L128 124 C110 126 98 132 86 136 C70 140 56 138 46 128 C40 116 32 104 20 104 Z" fill="#7d0915"/>' +
       '<path d="M20 96 C34 94 44 104 50 118 C58 128 70 130 84 127 C96 124 108 118 126 114" stroke="' + G('slg') + '" stroke-width="2" fill="none" stroke-opacity=".85"/>' +
       '<path d="M24 104 C34 104 42 114 46 128 L44 140 C38 130 30 122 20 120 Z" fill="' + G('slv') + '"/>' +
@@ -274,7 +327,7 @@
   }
   /* in front of Santa: the body with its gold trim and scrollwork, runners, bells and the reins */
   function sleighFront() {
-    return '<svg class="xsl" viewBox="0 0 560 230" aria-hidden="true">' +
+    return '<svg class="xsl" viewBox="0 0 700 230" aria-hidden="true">' +
       '<g fill="none" stroke="' + G('slg') + '" stroke-linecap="round">' +
         '<path d="M32 180 C30 190 28 197 27 204 M70 182 L68 204 M106 181 C110 190 114 197 117 204" stroke-width="3.6"/>' +
         '<path d="M12 204 L118 204 C140 204 154 198 156 184 C158 172 148 166 141 171 C135 176 140 185 147 182" stroke-width="4.4"/>' +
@@ -299,19 +352,18 @@
       '<circle cx="76.5" cy="160" r="2.3" fill="#e0243c"/><circle cx="80.5" cy="160.6" r="2.3" fill="#e0243c"/><circle cx="78.5" cy="157.2" r="2.1" fill="#ff3a50"/>' +
       '<path d="M98 136 C108 133 118 130 130 129" stroke="#5a0a0f" stroke-width="2" fill="none"/>' +
       '<circle cx="103" cy="138.4" r="3.4" fill="' + G('slb') + '"/><circle cx="113.5" cy="135.3" r="3.4" fill="' + G('slb') + '"/><circle cx="124" cy="132.6" r="3.4" fill="' + G('slb') + '"/>' +
-      '<path d="M99 125 C126 128 150 140 178 151" stroke="#5e170d" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
-      '<g fill="#f4c552"><circle cx="122" cy="129.5" r="1.1"/><circle cx="140" cy="135.6" r="1.1"/><circle cx="158" cy="143" r="1.1"/></g>' +
+      '<path d="M99 125 C140 132 200 150 258 162" stroke="#5e170d" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
+      '<g fill="#f4c552"><circle cx="130" cy="130.6" r="1.1"/><circle cx="170" cy="140" r="1.1"/><circle cx="215" cy="153" r="1.1"/></g>' +
       '</svg>';
   }
-  if (SC.santa) {
-    var su = SC.santa.indexOf('//') === 0 ? 'https:' + SC.santa : SC.santa, k;
-    var trail = '<b class="xtr">';
+  (function () {
+    var k, trail = '<b class="xtr">';
     for (k = 0; k < 9; k++) trail += '<s style="--d:-' + (k * 150) + 'ms;--y:' + ((k * 37) % 9 - 4) + 'px"></s>';
     trail += '</b>';
     santa = '<span class="xm-sg xm-sg2" aria-hidden="true">' + sleighDefs() + trail +
-      '<b class="xtm" style="background-image:url(' + su + ')"></b>' +
+      '<b class="xtm xtm2">' + teamSVG() + '</b>' +
       '<b class="xr">' + sleighBack() + santaSVG() + sleighFront() + '</b></span>';
-  }
+  })();
   window.__xmSanta = santa;
   function build() {
     var w = document.createElement('div');
@@ -685,36 +737,46 @@
       setTimeout(function () { fadeOut(img, 1800); }, lifeMs() + 600);
     });
   }
-  /* a tap from the front: the snowman tips over backwards, away from you, lands flat in the snow behind and breaks up */
+  /* a tap from the front: the snowman tips over backwards, away from you. The balls are real spheres: they stay round,
+     only travel back and get smaller with distance. Face, hat and arms tilt away with them and disappear behind the
+     bottom ball; when it lands in the snow behind, every ball breaks into powder */
   function fallBack() {
     var t = detach(), B = t.balls; if (!B.length) return;
-    var d = dims(), base = B[0], px = base.x, gy = t.gy, hz = Math.max(70, d.H * .12), ms = 1250, hit = ms * .74;
-    var wrap = document.createElement('div');
-    wrap.style.cssText = 'position:fixed;left:0;top:0;width:' + d.W + 'px;height:' + d.H + 'px;pointer-events:none;z-index:58;perspective:' + Math.round(d.H * 1.15) + 'px;perspective-origin:' + px.toFixed(1) + 'px ' + (gy - hz).toFixed(1) + 'px';
-    var grp = document.createElement('div');
-    grp.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:' + px.toFixed(1) + 'px ' + gy.toFixed(1) + 'px';
-    wrap.appendChild(grp); add(wrap);
-    B.forEach(function (b) { grp.appendChild(b.el); }); if (t.dress) grp.appendChild(t.dress);
-    grp.animate([
-      { transform: 'rotateX(0deg)', offset: 0, easing: 'cubic-bezier(.42,0,.92,.5)' },
-      { transform: 'rotateX(87deg)', offset: .74, easing: 'cubic-bezier(.2,.6,.4,1)' },
-      { transform: 'rotateX(79deg)', offset: .86, easing: 'cubic-bezier(.5,0,.9,.6)' },
-      { transform: 'rotateX(87deg)', offset: 1 }
-    ], { duration: ms, fill: 'forwards' });
-    setTimeout(function () {
-      tossArms(t.armMeta, grp, gy, 0);
+    var d = dims(), base = B[0], px = base.x, gy = t.gy, hz = Math.max(110, d.H * .24), P = Math.round(d.H * 1.15), oy = gy - hz;
+    var TH = 82 * Math.PI / 180, ms = 980, wrap = null, grp = null;
+    B.slice().reverse().forEach(function (b) { b.el.style.transition = 'none'; add(b.el); });
+    if (t.dress) {
+      wrap = document.createElement('div');
+      wrap.style.cssText = 'position:fixed;left:0;top:0;width:' + d.W + 'px;height:' + d.H + 'px;pointer-events:none;z-index:58;perspective:' + P + 'px;perspective-origin:' + px.toFixed(1) + 'px ' + oy.toFixed(1) + 'px';
+      grp = document.createElement('div');
+      grp.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:' + px.toFixed(1) + 'px ' + gy.toFixed(1) + 'px';
+      wrap.appendChild(grp); grp.appendChild(t.dress); add(wrap);
+    }
+    var t0 = performance.now();
+    (function frame(now) {
+      var u = Math.min(1, (now - t0) / ms), th = TH * (.12 * u + .88 * u * u), cs = Math.cos(th), sn = Math.sin(th);
+      B.forEach(function (b) {
+        var h = gy - b.y, k = P / (P + h * sn);
+        b.px = px + (b.x - px) * k; b.py = oy + (gy - h * cs - oy) * k; b.pr = b.r * k;
+        b.el.style.transform = tf(b.pr, b.px, b.py, b.rot || 0);
+      });
+      if (grp) { grp.style.transform = 'rotateX(' + (th * 57.2958).toFixed(2) + 'deg)'; grp.style.opacity = String(Math.max(0, Math.min(1, (.92 - u) / .4))); }
+      if (u < 1) requestAnimationFrame(frame); else land();
+    })(t0);
+    function land() {
+      if (grp) tossArms(t.armMeta, grp, gy, 0);
       B.forEach(function (b, i) {
-        var r = b.el.getBoundingClientRect(), x = r.left + r.width / 2, y = SY(r.top + r.height / 2);
-        setTimeout(function () { powder(x, y, b.r * 1.25, gy - 2, 0); spray(x, y, b.r * .8, 10); }, i * 50);
+        setTimeout(function () { powder(b.px, b.py, b.r * 1.25, gy - 2, 0); spray(b.px, b.py, b.r * .8, 10); }, i * 50);
+        b.el.animate([{ transform: tf(b.pr, b.px, b.py, b.rot || 0) }, { transform: tf(b.pr, b.px, b.py, b.rot || 0, 1.08, .88) }], { duration: 120, fill: 'forwards' });
+        fadeOut(b.el, 220);
       });
       spray(px, gy - base.r * .2, base.r * 1.4);
       drift(px, gy, base.r * 4.4, base.r * .78, 60, lifeMs(), t.scene);
-      try { grp.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, delay: 90, fill: 'forwards' }); } catch (e) {}
-      setTimeout(function () { wrap.remove(); }, 420);
+      if (wrap) setTimeout(function () { wrap.remove(); }, 200);
       fadeOut(t.shadow, 700);
       setTimeout(function () { fadeOut(t.skirt, 2400); }, lifeMs());
       fallen();
-    }, hit);
+    }
   }
   /* a ball that has come off rolls along the ground (it turns as far as it travels) and breaks into snow where it stops */
   function rollBall(b, x0, y0, rot0, dir, gy, delay, scene) {

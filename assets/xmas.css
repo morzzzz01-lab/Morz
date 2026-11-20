@@ -464,3 +464,22 @@ html.xm-light,html.xm-light body{background:#ffffff}
 .xm-sg2 .xsa .xwv{animation:xm-wave .7s ease-in-out infinite alternate}
 @keyframes xm-wave{from{transform:rotate(-10deg)}to{transform:rotate(12deg)}}
 @media(prefers-reduced-motion:reduce){.xm-sg2 .xsa .xwv{animation:none}}
+/* the code-drawn team: the whole team glides, each reindeer bobs and gallops with its legs */
+.xm-sg2 .xtm2{position:absolute;inset:0;display:block;transform-origin:30% 72%;animation:xm-team .92s ease-in-out infinite alternate;will-change:transform}
+.xm-sg2 .xdr{animation:xm-bob2 .56s ease-in-out infinite alternate}
+.xm-sg2 .xlf{transform-box:fill-box;transform-origin:0 0;animation:xm-lf .56s ease-in-out infinite alternate}
+.xm-sg2 .xlh{transform-box:fill-box;transform-origin:100% 0;animation:xm-lh .56s ease-in-out infinite alternate}
+.xm-sg2 .xnz{animation:xm-nose 1.1s ease-in-out infinite alternate}
+@keyframes xm-bob2{from{transform:translateY(-1.6px)}to{transform:translateY(1.6px)}}
+@keyframes xm-lf{from{transform:rotate(-18deg)}to{transform:rotate(14deg)}}
+@keyframes xm-lh{from{transform:rotate(16deg)}to{transform:rotate(-12deg)}}
+@keyframes xm-nose{from{opacity:.45}to{opacity:1}}
+/* the background Santa behind the page only glides (cheaper); the one in the winter scene gallops and waves */
+.xm-fly .xm-sg2 .xdr,.xm-fly .xm-sg2 .xlf,.xm-fly .xm-sg2 .xlh,.xm-fly .xm-sg2 .xwv,.xm-fly .xm-sg2 .xnz{animation:none}
+@media(prefers-reduced-motion:reduce){.xm-sg2 .xdr,.xm-sg2 .xlf,.xm-sg2 .xlh,.xm-sg2 .xnz,.xm-sg2 .xtm2{animation:none}}
+/* the wider flight (sleigh + bigger reindeer) */
+.xm-sg.xm-sg2{aspect-ratio:700/230}
+.xm-sg2 .xtm2{transform-origin:25% 72%}
+.xm-fly2:has(.xm-sg2){width:min(96vw,480px)}
+.xm-fly:has(.xm-sg2){width:min(58vw,410px)}
+@media(max-width:640px){.xm-fly:has(.xm-sg2){width:76vw}}
