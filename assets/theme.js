@@ -253,8 +253,14 @@
       o = o || selected();
       var one = !qtyEl || Number(qtyEl.value) <= 1;
       if (cardLinks.length && cardBtn) {
-        var L = (cardLinks.length > 1 && bigSize(o)) ? cardLinks[cardLinks.length - 1] : cardLinks[0];
-        cardBtn.href = L.href; cardBtn.textContent = 'Buy now';
+        /* XXL / XXXL have their own card link (they cost a little more): the button switches to it and says so */
+        var big = cardLinks.length > 1 && bigSize(o), L = big ? cardLinks[cardLinks.length - 1] : cardLinks[0];
+        var was = cardBtn.getAttribute('href');
+        cardBtn.href = L.href;
+        cardBtn.classList.toggle('is-big', big);
+        cardBtn.innerHTML = big ? '<span class="bn-t">Buy now</span><small class="bn-s">XXL / XXXL size</small>' : '<span class="bn-t">Buy now</span>';
+        if (cardBtn.__ready && was !== L.href) { cardBtn.classList.remove('bn-swap'); void cardBtn.offsetWidth; cardBtn.classList.add('bn-swap'); }
+        cardBtn.__ready = true;
         cardBtn.hidden = !one;
         if (noteEl) { noteEl.hidden = !one; if (selEl) selEl.textContent = o.filter(Boolean).join(' / '); }
       } else if (coBtn) { coBtn.hidden = false; }   // no card link on this product -> plain Buy now (checkout)
