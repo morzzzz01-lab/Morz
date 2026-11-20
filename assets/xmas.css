@@ -460,3 +460,7 @@ html.xm-light,html.xm-light body{background:#ffffff}
 .xm-sg2 .xtm{position:absolute;left:22.857%;top:0;width:77.143%;height:100%;display:block;background-size:129.63% 100%;background-position:100% 0;background-repeat:no-repeat;transform-origin:0 72%;animation:xm-team .92s ease-in-out infinite alternate;will-change:transform}
 @keyframes xm-team{from{transform:translateY(1.4%) rotate(.5deg)}to{transform:translateY(-2.2%) rotate(-.7deg)}}
 @media(prefers-reduced-motion:reduce){.xm-sg2 .xtm{animation:none}}
+/* Santa waves */
+.xm-sg2 .xsa .xwv{animation:xm-wave .7s ease-in-out infinite alternate}
+@keyframes xm-wave{from{transform:rotate(-10deg)}to{transform:rotate(12deg)}}
+@media(prefers-reduced-motion:reduce){.xm-sg2 .xsa .xwv{animation:none}}

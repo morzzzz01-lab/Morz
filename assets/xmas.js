@@ -213,7 +213,52 @@
       '<radialGradient id="slb{U}" cx=".35" cy=".32" r=".75"><stop offset="0" stop-color="#fffbe2"/><stop offset=".45" stop-color="#f3c446"/><stop offset="1" stop-color="#875709"/></radialGradient>' +
       '<linearGradient id="sls{U}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a87443"/><stop offset="1" stop-color="#5e3a1b"/></linearGradient>' +
       '<linearGradient id="slv{U}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f3f25"/><stop offset="1" stop-color="#1d6a40"/></linearGradient>' +
+      '<radialGradient id="scr{U}" cx=".35" cy=".25" r=".9"><stop offset="0" stop-color="#f03a4e"/><stop offset=".55" stop-color="#bf1426"/><stop offset="1" stop-color="#6e0712"/></radialGradient>' +
+      '<radialGradient id="scf{U}" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#ffe3cf"/><stop offset=".7" stop-color="#f5c7a6"/><stop offset="1" stop-color="#e2a582"/></radialGradient>' +
+      '<radialGradient id="scw{U}" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#f1f4f9"/><stop offset="1" stop-color="#c9d3e2"/></radialGradient>' +
+      '<linearGradient id="sck{U}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a302b"/><stop offset="1" stop-color="#0f0b09"/></linearGradient>' +
       '</defs></svg>';
+  }
+  /* Santa Claus, drawn in code: he sits in the sleigh, waves with one hand and holds the reins with the other */
+  function santaSVG() {
+    var W = G('scw'), R = G('scr');
+    function puff(x, y, r) { return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + W + '"/>'; }
+    return '<svg class="xsl xsa" viewBox="0 0 560 230" aria-hidden="true">' +
+      /* the waving arm (behind the body) */
+      '<g class="xwv" style="transform-origin:62px 101px">' +
+        '<path d="M63 103 C58 96 54 90 53 82 C52 77 52 74 52 71" stroke="' + R + '" stroke-width="9.5" stroke-linecap="round" fill="none"/>' +
+        '<ellipse cx="52" cy="71.5" rx="6.2" ry="3.6" fill="' + W + '"/>' +
+        '<ellipse cx="51.6" cy="63.6" rx="5.2" ry="6.4" fill="#f7f7f5"/><ellipse cx="56.2" cy="66.4" rx="1.9" ry="3.2" fill="#ecebe7" transform="rotate(30 56.2 66.4)"/>' +
+        '<path d="M49.2 58.6 v5.5 M51.6 57.6 v6.4 M54 58.3 v5.6" stroke="#cfd0cc" stroke-width=".7"/>' +
+      '</g>' +
+      /* body: red coat, white fur down the front, black belt with a gold buckle */
+      '<path d="M55 141 C51 122 53 106 63 98 C72 92 93 92 101 98 C109 105 111 123 109 141 Z" fill="' + R + '" stroke="#5c0510" stroke-width=".8"/>' +
+      '<path d="M92.5 99 C96 112 97 126 96 141 L103.5 141 C104.5 125 102.5 110 99.5 98.6 Z" fill="' + W + '"/>' +
+      '<path d="M55 128.5 C72 131.5 92 131.5 109 127.5 L109 135 C92 139 72 139 55 136 Z" fill="' + G('sck') + '"/>' +
+      '<rect x="88.5" y="128.4" width="8.6" height="7.6" rx="1.2" fill="none" stroke="' + G('slg') + '" stroke-width="1.8"/>' +
+      '<path d="M66 100 C62 108 61 118 62 126" stroke="#ff6474" stroke-opacity=".35" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      /* the tip of the hat droops down behind his head */
+      '<path d="M86 56.6 C76 54.6 68.6 61 66.4 71.4 C66.6 73.6 69 74.6 70.8 73 C72.6 66.4 77 62.4 87 62.6 Z" fill="' + R + '"/>' +
+      '<path d="M84 57.6 C77 57.4 71.4 62 68.8 69" stroke="#ff6b7a" stroke-opacity=".4" stroke-width="1.3" fill="none" stroke-linecap="round"/>' +
+      puff(68.4, 75.2, 4.6) +
+      /* head: face, rosy cheeks, happy eyes, bushy brows, round nose */
+      puff(73.5, 84, 5) + puff(72.5, 90, 4.4) +
+      '<circle cx="86.5" cy="83" r="11.2" fill="' + G('scf') + '"/>' +
+      '<circle cx="79" cy="87" r="2.7" fill="#ff8a8f" opacity=".55"/><circle cx="95.6" cy="86.3" r="2.6" fill="#ff8a8f" opacity=".55"/>' +
+      '<path d="M80.6 81.4 Q82.7 79.4 84.8 81.4 M89.8 81 Q91.9 79 94 81" stroke="#3a2418" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+      '<path d="M79.2 77.8 Q82.6 75.2 85.8 77.2 M89 77 Q92.6 74.6 96 77" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      /* the beard: a soft white cloud from cheek to chest */
+      puff(78, 92, 6.5) + puff(80.5, 101, 7.6) + puff(88, 107, 8) + puff(96.5, 101.5, 7) + puff(100, 92.5, 5.6) + puff(89, 97, 9) + puff(84, 112, 5.4) + puff(93, 112.5, 5) +
+      '<path d="M86.8 88.6 C83 86 77.6 87.2 76.2 91.8 C79.6 90.6 83 91.6 86.8 90.6 C90.4 91.8 93.8 91 97.2 92 C96.2 87.4 90.6 86 86.8 88.6 Z" fill="#fff" stroke="#d8dee8" stroke-width=".6"/>' +
+      '<circle cx="87.6" cy="86" r="2.8" fill="#f09b92"/><circle cx="86.8" cy="85.1" r=".9" fill="#fff" opacity=".7"/>' +
+      /* hat: flops back with the wind, fur brim and pom-pom */
+      '<path d="M75 75 C74 63 82 55 92 55.6 C98 56.2 100.6 63 99.6 75 Z" fill="' + R + '"/>' +
+      '<path d="M73.4 77 C73.6 71.6 80 70.4 87 70.4 C93.6 70.4 100 70.8 101.2 75 C101.8 79 96.4 79.8 87.2 79.6 C79 79.6 73.2 80.4 73.4 77 Z" fill="' + W + '"/>' +
+      /* the near arm reaches forward and holds the reins in a black mitten */
+      '<path d="M97 102 C104 107 107 115 102.6 122" stroke="' + R + '" stroke-width="9" stroke-linecap="round" fill="none"/>' +
+      '<ellipse cx="102" cy="121.6" rx="5.4" ry="3.2" fill="' + W + '" transform="rotate(-25 102 121.6)"/>' +
+      '<circle cx="99.6" cy="125.2" r="4.4" fill="#211a16"/><circle cx="98.4" cy="123.9" r="1.2" fill="#fff" opacity=".25"/>' +
+      '</svg>';
   }
   /* behind Santa: the far side wall, the green velvet seat back, the sack of presents and a candy cane */
   function sleighBack() {
@@ -260,13 +305,12 @@
   }
   if (SC.santa) {
     var su = SC.santa.indexOf('//') === 0 ? 'https:' + SC.santa : SC.santa, k;
-    var ru = SC.rider ? (SC.rider.indexOf('//') === 0 ? 'https:' + SC.rider : SC.rider) : su.replace('santa-sleigh.png', 'santa-rider.png');
     var trail = '<b class="xtr">';
     for (k = 0; k < 9; k++) trail += '<s style="--d:-' + (k * 150) + 'ms;--y:' + ((k * 37) % 9 - 4) + 'px"></s>';
     trail += '</b>';
     santa = '<span class="xm-sg xm-sg2" aria-hidden="true">' + sleighDefs() + trail +
       '<b class="xtm" style="background-image:url(' + su + ')"></b>' +
-      '<b class="xr">' + sleighBack() + '<b class="xrp" style="background-image:url(' + ru + ')"></b>' + sleighFront() + '</b></span>';
+      '<b class="xr">' + sleighBack() + santaSVG() + sleighFront() + '</b></span>';
   }
   window.__xmSanta = santa;
   function build() {
