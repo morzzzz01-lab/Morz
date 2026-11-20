@@ -1,0 +1,21 @@
+{%- comment -%} Daily Christmas jukebox. Songs are looked up live from the Apple iTunes Search API (30-second previews), a new set of songs is picked every day. {%- endcomment -%}
+<button type="button" class="mx-fab" id="MxFab" aria-expanded="false" aria-controls="MxPanel">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 3v11.3A3.5 3.5 0 1 0 11 17.5V8h7V3z"/></svg>
+  <span>{{ 'music.button' | t }}</span>
+</button>
+<div class="mx-panel" id="MxPanel" role="dialog" aria-label="{{ 'music.title' | t }}" hidden>
+  <div class="mx-head">
+    <div><b>{{ 'music.title' | t }}</b><small data-mx-date></small></div>
+    <button type="button" class="mx-x" data-mx-close aria-label="{{ 'general.close' | t }}">&times;</button>
+  </div>
+  <div class="mx-video"><div id="MxYt"></div></div>
+  <div class="mx-now"><div class="mx-meta"><div class="mx-t" data-mx-title>&nbsp;</div><div class="mx-a" data-mx-artist>&nbsp;</div></div></div>
+  <div class="mx-bar"><i data-mx-prog></i></div>
+  <div class="mx-ctl">
+    <button type="button" data-mx-prev aria-label="{{ 'music.prev' | t }}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+    <button type="button" class="mx-play" data-mx-play aria-label="{{ 'music.play' | t }}"><svg viewBox="0 0 24 24" fill="currentColor" data-mx-icon><path d="M7 4v16l13-8z"/></svg></button>
+    <button type="button" data-mx-next aria-label="{{ 'music.next' | t }}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5l11 7L4 19z"/></svg></button>
+  </div>
+  <ul class="mx-list" data-mx-list></ul>
+</div>
+<script src="{{ 'xmas-music.js' | asset_url }}" defer></script>

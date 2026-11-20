@@ -1,0 +1,121 @@
+{
+  "general": {
+    "skip": "跳到内容",
+    "close": "关闭",
+    "shop_now": "立即选购",
+    "language": "语言",
+    "country": "国家/地区 / 货币",
+    "search": "搜索",
+    "search_placeholder": "搜索商品…",
+    "payment_methods": "支持的支付方式",
+    "view_all": "查看全部",
+    "back_home": "返回首页",
+    "read_more": "阅读更多",
+    "password_title": "即将开业",
+    "password_enter": "使用密码进入商店",
+    "password_label": "密码",
+    "password_submit": "进入",
+    "password_error": "密码错误",
+    "menu": "菜单",
+    "menu_search_placeholder": "搜索商品和分类…",
+    "menu_categories": "菜单",
+    "menu_all_categories": "全部分类",
+    "menu_no_results": "没有找到结果，请换个词试试。",
+    "menu_products": "商品",
+    "menu_see_all": "查看全部结果",
+    "skip_intro": "跳过",
+    "secure_checkout": "安全结账。您的支付信息已加密。",
+    "on_sale": "特价",
+    "best_sellers": "热销"
+  },
+  "cart": {
+    "title": "购物车",
+    "empty": "您的购物车是空的。",
+    "subtotal": "小计",
+    "checkout": "结账",
+    "view": "查看购物车",
+    "remove": "移除",
+    "update": "更新购物车",
+    "continue": "继续购物",
+    "taxes_shipping": "税费和运费将在结账时计算。",
+    "add_named": "将 {{ title }} 加入购物车",
+    "quantity": "数量",
+    "decrease": "减少数量",
+    "increase": "增加数量",
+    "error": "无法将此商品加入购物车。",
+    "item_total": "合计"
+  },
+  "products": {
+    "view": "查看",
+    "add": "加入购物车",
+    "sold_out": "已售罄",
+    "unavailable": "暂不可用",
+    "choose_options": "选择选项",
+    "size": "尺寸",
+    "from": "起价",
+    "vendor": "品牌",
+    "shipping_policy": "配送政策",
+    "refund_policy": "退款政策",
+    "no_media": "暂无图片"
+  },
+  "collection": {
+    "filter": "筛选",
+    "sort": "排序方式",
+    "clear": "清除筛选",
+    "no_products": "没有符合条件的商品，请换个筛选条件。",
+    "apply": "应用",
+    "price_from": "最低",
+    "price_to": "最高",
+    "previous": "上一页",
+    "next": "下一页",
+    "all_collections": "系列"
+  },
+  "search": {
+    "title": "搜索",
+    "results": {
+      "other": "“{{ terms }}”共有 {{ count }} 个结果"
+    },
+    "no_results": "未找到“{{ terms }}”的相关结果，请换个词试试。",
+    "prompt": "请输入您要查找的内容。"
+  },
+  "errors": {
+    "title": "页面未找到",
+    "text": "您访问的页面不存在。"
+  },
+  "blog": {
+    "no_articles": "暂无文章。",
+    "by": "作者：{{ author }}"
+  },
+  "footer": {
+    "rights": "版权所有。"
+  },
+  "contact": {
+    "title": "联系我们",
+    "intro": "对订单、尺码或商品有疑问？请给我们留言，我们会通过邮件回复。",
+    "name": "姓名",
+    "email": "邮箱",
+    "phone": "电话（选填）",
+    "message": "留言",
+    "send": "发送留言",
+    "success": "谢谢！您的留言已发送，我们会尽快回复。",
+    "reply_note": "我们通过邮件回复。",
+    "info": "联系方式",
+    "hours": "营业时间"
+  },
+  "countdown": {
+    "title": "距离圣诞节还有",
+    "days": "天",
+    "hours": "时",
+    "minutes": "分",
+    "seconds": "秒",
+    "merry": "圣诞快乐！"
+  },
+  "music": {
+    "button": "Christmas songs",
+    "title": "Today's Christmas hits",
+    "prev": "Previous song",
+    "next": "Next song",
+    "play": "Play / pause",
+    "note": "The song order changes every day."
+  }
+}

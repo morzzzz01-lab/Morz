@@ -1,0 +1,41 @@
+{%- comment -%} Usage: {% render 'product-card', product: product, index: forloop.index, badge: 'New', badge_n: 0 %} (badge optional) {%- endcomment -%}
+<div class="p" style="--d:{{ index | default: 1 | times: 28 }}ms">
+  <a class="ph" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+    {%- if product.featured_media -%}
+      {%- assign main_id = product.featured_media.id -%}
+      {%- assign second = nil -%}
+      {%- for m in product.media -%}
+        {%- if m.media_type == 'image' and m.id != main_id and second == nil -%}{%- assign second = m -%}{%- endif -%}
+      {%- endfor -%}
+      {{ product.featured_media.preview_image | image_url: width: 900 | image_tag: class: 'pimg pimg-main', widths: '360, 540, 720, 900', sizes: '(min-width: 48rem) 32vw, 92vw', loading: 'lazy', alt: product.title }}
+      {%- if second -%}
+        {{ second.preview_image | image_url: width: 900 | image_tag: class: 'pimg pimg-alt', widths: '360, 540, 720, 900', sizes: '(min-width: 48rem) 32vw, 92vw', loading: 'lazy', alt: '' }}
+      {%- endif -%}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'ph-svg' }}
+    {%- endif -%}
+    {%- if product.compare_at_price > product.price and true -%}
+      {%- assign off = product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price | round -%}
+      <span class="sale-badge">-{{ off }}%</span>
+    {%- endif -%}
+    {%- if badge != blank -%}<span class="rank-badge rank-{{ badge_n | plus: 1 }}">{{ badge }}</span>{%- endif -%}
+    <span class="vw">{{ 'products.view' | t }}</span>
+  </a>
+  <h3><a href="{{ product.url }}">{% render 'short-title', title: product.title %}</a></h3>
+  <div class="pr">
+    <span>
+      {%- if product.compare_at_price > product.price -%}<s class="was">{{ product.compare_at_price | money }}</s> {% endif -%}
+      {{ product.price | money }}
+      {%- if settings.show_currency_code -%}<small class="cur">{{ cart.currency.iso_code }}</small>{%- endif -%}
+    </span>
+    {%- if true -%}
+      {%- if product.has_only_default_variant -%}
+        <button type="button" class="add" data-add-to-cart data-variant-id="{{ product.selected_or_first_available_variant.id }}" aria-label="{{ 'cart.add_named' | t: title: product.title }}">+</button>
+      {%- else -%}
+        <a class="add" href="{{ product.url }}" aria-label="{{ 'products.choose_options' | t }}: {{ product.title | escape }}">+</a>
+      {%- endif -%}
+    {%- else -%}
+      <span class="soldout">{{ 'products.sold_out' | t }}</span>
+    {%- endif -%}
+  </div>
+</div>

@@ -1,0 +1,62 @@
+{
+  "general": {
+    "skip": "Chuyển đến nội dung",
+    "close": "Đóng",
+    "shop_now": "Mua ngay",
+    "language": "Ngôn ngữ",
+    "country": "Quốc gia / tiền tệ",
+    "search": "Tìm kiếm",
+    "search_placeholder": "Tìm sản phẩm…",
+    "view_all": "Xem tất cả",
+    "back_home": "Về trang chủ",
+    "read_more": "Đọc thêm",
+    "menu": "Menu",
+    "menu_search_placeholder": "Tìm sản phẩm và danh mục…",
+    "menu_all_products": "Tất cả sản phẩm",
+    "menu_no_results": "Không tìm thấy gì. Hãy thử từ khác.",
+    "on_sale": "Giảm giá",
+    "best_sellers": "Bán chạy nhất"
+  },
+  "cart": {
+    "title": "Giỏ hàng",
+    "empty": "Giỏ hàng của bạn đang trống.",
+    "subtotal": "Tạm tính",
+    "checkout": "Thanh toán",
+    "view": "Xem giỏ hàng",
+    "remove": "Xóa",
+    "continue": "Tiếp tục mua sắm",
+    "taxes_shipping": "Thuế và phí vận chuyển được tính khi thanh toán.",
+    "add_named": "Thêm {{ title }} vào giỏ hàng",
+    "quantity": "Số lượng"
+  },
+  "products": {
+    "view": "Xem",
+    "add": "Thêm vào giỏ hàng",
+    "buy_now": "Mua ngay",
+    "sold_out": "Hết hàng",
+    "choose_options": "Chọn tùy chọn",
+    "size": "Kích cỡ"
+  },
+  "collection": {
+    "filter": "Lọc",
+    "sort": "Sắp xếp theo",
+    "clear": "Xóa bộ lọc",
+    "no_products": "Không có sản phẩm phù hợp. Hãy thử bộ lọc khác.",
+    "apply": "Áp dụng"
+  },
+  "countdown": {
+    "title": "Đếm ngược đến Giáng sinh",
+    "days": "Ngày",
+    "hours": "Giờ",
+    "minutes": "Phút",
+    "seconds": "Giây",
+    "merry": "Giáng sinh vui vẻ!"
+  },
+  "music": {
+    "button": "Nhạc Giáng sinh",
+    "title": "Bài hát Giáng sinh hôm nay",
+    "prev": "Bài trước",
+    "next": "Bài tiếp theo",
+    "play": "Phát / tạm dừng"
+  }
+}

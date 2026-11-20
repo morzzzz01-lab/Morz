@@ -1,0 +1,33 @@
+{%- paginate blog.articles by 12 -%}
+<section>
+  <div class="wrap">
+    <h1 class="ptitle">{{ blog.title }}</h1>
+    {%- if blog.articles.size == 0 -%}
+      <p class="none">{{ 'blog.no_articles' | t }}</p>
+    {%- else -%}
+      <div class="prods">
+        {%- for article in blog.articles -%}
+          <div class="p">
+            {%- if article.image -%}
+              <a class="ph" href="{{ article.url }}">{{ article.image | image_url: width: 600 | image_tag: class: 'cover', loading: 'lazy', alt: article.title }}</a>
+            {%- endif -%}
+            <h3><a href="{{ article.url }}">{{ article.title }}</a></h3>
+            <p class="muted small">{{ article.published_at | time_tag: format: 'date' }}</p>
+          </div>
+        {%- endfor -%}
+      </div>
+      {%- if paginate.pages > 1 -%}
+        <nav class="pagination" aria-label="Pagination">
+          {%- if paginate.previous -%}<a class="cartb" href="{{ paginate.previous.url }}">&larr; {{ 'collection.previous' | t }}</a>{%- endif -%}
+          <span>{{ paginate.current_page }} / {{ paginate.pages }}</span>
+          {%- if paginate.next -%}<a class="cartb" href="{{ paginate.next.url }}">{{ 'collection.next' | t }} &rarr;</a>{%- endif -%}
+        </nav>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</section>
+{%- endpaginate -%}
+
+{% schema %}
+{ "name": "Blog page" }
+{% endschema %}

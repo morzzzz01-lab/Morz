@@ -1,0 +1,27 @@
+{%- if section.settings.enable and section.settings.text != blank -%}
+  {%- assign ann_key = section.settings.text | md5 -%}
+  <div class="ann" id="Ann-{{ section.id }}" data-ann-key="{{ ann_key }}" role="region" aria-label="Announcement">
+    <p>
+      <span>{{ section.settings.text }}</span>
+      {%- if section.settings.link_label != blank -%}
+        <a href="{{ section.settings.link | default: routes.all_products_collection_url }}">{{ section.settings.link_label }}</a>
+      {%- endif -%}
+    </p>
+    <button type="button" class="ann-x" aria-label="Close" data-ann-close>&times;</button>
+  </div>
+  <script>
+    (function(){try{var b=document.getElementById('Ann-{{ section.id }}');if(b&&localStorage.getItem('morz_ann_'+b.getAttribute('data-ann-key'))==='1'){b.hidden=true;}}catch(e){}})();
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "settings": [
+    { "type": "checkbox", "id": "enable", "label": "Show announcement bar", "default": true },
+    { "type": "text", "id": "text", "label": "Text", "default": "Merry Christmas! Gifts for everyone you love" },
+    { "type": "text", "id": "link_label", "label": "Link label", "default": "Shop now" },
+    { "type": "url", "id": "link", "label": "Link" }
+  ]
+}
+{% endschema %}

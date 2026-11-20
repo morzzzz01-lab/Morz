@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}"{% if request.locale.iso_code contains 'ar' or request.locale.iso_code contains 'he' %} dir="rtl"{% endif %}>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="{{ settings.color_bg }}">
+  <link rel="canonical" href="{{ canonical_url }}">
+  {%- if settings.favicon != blank -%}
+    <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 64, height: 64 }}">
+  {%- endif -%}
+
+  <title>{{ page_title | escape }}{% unless page_title contains shop.name %} &ndash; {{ shop.name | escape }}{% endunless %}</title>
+  {%- if page_description != blank -%}<meta name="description" content="{{ page_description | escape }}">{%- endif -%}
+  <meta property="og:site_name" content="{{ shop.name | escape }}">
+  <meta property="og:title" content="{{ page_title | escape }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  {%- if page_image -%}<meta property="og:image" content="https:{{ page_image | image_url: width: 1200 }}">{%- endif -%}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Lobster&family=Oswald:wght@500;700&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:{{ settings.color_bg }};
+      --panel:{{ settings.color_panel }};
+      --line:{{ settings.color_line }};
+      --ink:{{ settings.color_text }};
+      --muted:{{ settings.color_muted }};
+      --blue:{{ settings.color_accent }};
+    }
+  </style>
+  {{ 'theme.css' | asset_url | stylesheet_tag }}
+  {{ 'xmas.css' | asset_url | stylesheet_tag }}
+
+  {%- if request.design_mode == false -%}
+  <script>
+    (function(){try{var d=document.documentElement;if(!window.CSSViewTransitionRule){d.classList.add('fx');}if(sessionStorage.getItem('morz_intro')||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){d.classList.add('no-intro');}else{sessionStorage.setItem('morz_intro','1');d.classList.add('intro-on');}}catch(e){}})();
+  </script>
+  {%- endif -%}
+
+  <script>(function(){if(!window.CSSViewTransitionRule){document.documentElement.classList.add('fx');}})();</script>
+
+  {{ content_for_header }}
+</head>
+<body class="tpl-{{ template.name | handle }}">
+
+  {%- if request.design_mode == false -%}
+  <div class="xi" id="XIntro" data-end="6.2">
+    <div class="xi-snow" aria-hidden="true"><i style="--l:0%;--s:3px;--dur:5s;--dl:-0.0s"></i><i style="--l:37%;--s:4px;--dur:6s;--dl:-0.7s"></i><i style="--l:74%;--s:5px;--dur:7s;--dl:-1.4s"></i><i style="--l:11%;--s:6px;--dur:8s;--dl:-2.1s"></i><i style="--l:48%;--s:3px;--dur:9s;--dl:-2.8s"></i><i style="--l:85%;--s:4px;--dur:5s;--dl:-3.5s"></i><i style="--l:22%;--s:5px;--dur:6s;--dl:-4.2s"></i><i style="--l:59%;--s:6px;--dur:7s;--dl:-4.9s"></i><i style="--l:96%;--s:3px;--dur:8s;--dl:-5.6s"></i><i style="--l:33%;--s:4px;--dur:9s;--dl:-6.3s"></i><i style="--l:70%;--s:5px;--dur:5s;--dl:-7.0s"></i><i style="--l:7%;--s:6px;--dur:6s;--dl:-7.7s"></i><i style="--l:44%;--s:3px;--dur:7s;--dl:-8.4s"></i><i style="--l:81%;--s:4px;--dur:8s;--dl:-9.1s"></i><i style="--l:18%;--s:5px;--dur:9s;--dl:-9.8s"></i><i style="--l:55%;--s:6px;--dur:5s;--dl:-10.5s"></i><i style="--l:92%;--s:3px;--dur:6s;--dl:-11.2s"></i><i style="--l:29%;--s:4px;--dur:7s;--dl:-11.9s"></i></div>
+    <div class="xi-logo" data-intro-logo role="img" aria-label="{{ shop.name | escape }}">
+      <canvas class="xi-pen" width="868" height="1152"></canvas>
+      <svg class="xi-lead" viewBox="0 0 434 576" aria-hidden="true"><path pathLength="1" d="M 900 215 C 800 330 740 150 650 270 S 520 400 440 330 S 380 400 352 361"/></svg>
+      <canvas class="xi-wire" width="868" height="1152" data-src="{{ 'xi-lights.png' | asset_url }}"></canvas>
+      <div class="xi-lights"><span class="xi-b" style="--x:71.27%;--y:33.9%;--c:#ffc83a;--arr:4.88s;--g:0"></span><span class="xi-b" style="--x:64.07%;--y:36.8%;--c:#ffc83a;--arr:4.87s;--g:1"></span><span class="xi-b" style="--x:44.69%;--y:42.58%;--c:#ff3b30;--arr:4.54s;--g:2"></span><span class="xi-b" style="--x:35.3%;--y:46.56%;--c:#ffc83a;--arr:4.43s;--g:0"></span><span class="xi-b" style="--x:74.02%;--y:47.76%;--c:#ffc83a;--arr:4.75s;--g:1"></span><span class="xi-b" style="--x:58.54%;--y:53.84%;--c:#35d56a;--arr:4.61s;--g:2"></span><span class="xi-b" style="--x:29.46%;--y:54.88%;--c:#ff3b30;--arr:4.33s;--g:0"></span><span class="xi-b" style="--x:76.61%;--y:55.07%;--c:#ff3b30;--arr:4.85s;--g:1"></span><span class="xi-b" style="--x:43.03%;--y:57.08%;--c:#ff3b30;--arr:4.40s;--g:2"></span><span class="xi-b" style="--x:25.65%;--y:61.68%;--c:#ffc83a;--arr:4.18s;--g:0"></span><span class="xi-b" style="--x:78.64%;--y:65.79%;--c:#35d56a;--arr:3.47s;--g:1"></span><span class="xi-b" style="--x:23.71%;--y:68.45%;--c:#ffc83a;--arr:4.11s;--g:2"></span><span class="xi-b" style="--x:70.61%;--y:73.62%;--c:#ff3b30;--arr:3.61s;--g:0"></span><span class="xi-b" style="--x:55.95%;--y:75.8%;--c:#ffc83a;--arr:3.72s;--g:1"></span><span class="xi-b" style="--x:46.87%;--y:77.03%;--c:#35d56a;--arr:3.86s;--g:2"></span><span class="xi-b" style="--x:34.15%;--y:77.61%;--c:#ff3b30;--arr:3.97s;--g:0"></span></div>
+      <div class="xi-hat">
+        <img src="{{ 'xi-hat.png' | asset_url }}" alt="" width="434" height="576">
+        <img class="xi-pom" src="{{ 'xi-pom.png' | asset_url }}" alt="" width="434" height="576">
+      </div>
+    </div>
+    <button type="button" class="xi-skip" data-intro-skip>{{ 'general.skip_intro' | t }}</button>
+  </div>
+  {%- endif -%}
+  <a class="skip" href="#MainContent">{{ 'general.skip' | t }}</a>
+
+  {% sections 'header-group' %}
+
+  <main id="MainContent" tabindex="-1">
+    {{ content_for_layout }}
+  </main>
+
+  {% sections 'footer-group' %}
+
+  {% section 'cart-drawer' %}
+
+  <script>
+    window.MORZ = {
+      cartDrawer: {{ settings.cart_drawer | json }},
+      moneyFormat: {{ shop.money_format | json }},
+      routes: {
+        root: {{ routes.root_url | json }},
+        cart: {{ routes.cart_url | json }},
+        cart_js: {{ routes.cart_url | append: '.js' | json }},
+        cart_add: {{ routes.cart_add_url | append: '.js' | json }},
+        cart_change: {{ routes.cart_change_url | append: '.js' | json }},
+        search: {{ routes.search_url | json }},
+        suggest: {{ routes.predictive_search_url | json }}
+      },
+      strings: {
+        add: {{ 'products.add' | t | json }},
+        soldOut: {{ 'products.sold_out' | t | json }},
+        buyNow: {{ 'products.buy_now' | t | json }},
+        unavailable: {{ 'products.unavailable' | t | json }},
+        error: {{ 'cart.error' | t | json }},
+        menuProducts: {{ 'general.menu_products' | t | json }},
+        menuSeeAll: {{ 'general.menu_see_all' | t | json }}
+      }
+    };
+  </script>
+  {%- liquid
+    assign sn_hat_tag = nil
+    assign sn_hat_guess = nil
+    assign sn_scarf_tag = nil
+    assign sn_scarf_guess = nil
+    for pr in collections.all.products limit: 250
+      assign tags_s = pr.tags | join: ' '
+      assign blob = ' ' | append: pr.title | append: ' ' | append: pr.type | append: ' ' | append: tags_s | append: ' ' | downcase
+      if pr.tags contains 'snowman-hat'
+        assign sn_hat_tag = pr
+      elsif sn_hat_guess == nil and blob contains ' hat '
+        assign sn_hat_guess = pr
+      elsif sn_hat_guess == nil and blob contains ' hats '
+        assign sn_hat_guess = pr
+      elsif sn_hat_guess == nil and blob contains ' beanie '
+        assign sn_hat_guess = pr
+      elsif sn_hat_guess == nil and blob contains ' beanies '
+        assign sn_hat_guess = pr
+      endif
+      if pr.tags contains 'snowman-scarf'
+        assign sn_scarf_tag = pr
+      elsif sn_scarf_guess == nil and blob contains ' scarf '
+        assign sn_scarf_guess = pr
+      elsif sn_scarf_guess == nil and blob contains ' scarves '
+        assign sn_scarf_guess = pr
+      elsif sn_scarf_guess == nil and blob contains ' scarfs '
+        assign sn_scarf_guess = pr
+      endif
+    endfor
+    assign sn_hat = sn_hat_tag | default: sn_hat_guess
+    assign sn_scarf = sn_scarf_tag | default: sn_scarf_guess
+    assign sn_hat_url = ''
+    assign sn_scarf_url = ''
+    if sn_hat != nil and sn_hat.featured_image != nil
+      assign sn_hat_url = sn_hat.featured_image | image_url: width: 500
+    endif
+    if sn_scarf != nil and sn_scarf.featured_image != nil
+      assign sn_scarf_url = sn_scarf.featured_image | image_url: width: 500
+    endif
+  -%}
+  <script>window.MORZ_SNOW={ball:{{ 'snowball.png' | asset_url | json }},twig:{{ 'twig-arm.png' | asset_url | json }},santa:{{ 'santa-sleigh.png' | asset_url | json }},hat:{{ sn_hat_url | json }},scarf:{{ sn_scarf_url | json }}};</script>
+  {% render 'xmas-music' %}
+  <script src="{{ 'xmas.js' | asset_url }}" defer></script>
+  <script src="{{ 'theme.js' | asset_url }}" defer></script>
+</body>
+</html>

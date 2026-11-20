@@ -1,0 +1,62 @@
+{
+  "general": {
+    "skip": "Przejdź do treści",
+    "close": "Zamknij",
+    "shop_now": "Kup teraz",
+    "language": "Język",
+    "country": "Kraj / waluta",
+    "search": "Szukaj",
+    "search_placeholder": "Szukaj produktów…",
+    "view_all": "Zobacz wszystko",
+    "back_home": "Wróć na stronę główną",
+    "read_more": "Czytaj więcej",
+    "menu": "Menu",
+    "menu_search_placeholder": "Szukaj produktów i kategorii…",
+    "menu_all_products": "Wszystkie produkty",
+    "menu_no_results": "Nic nie znaleziono. Spróbuj innego słowa.",
+    "on_sale": "Promocja",
+    "best_sellers": "Bestsellery"
+  },
+  "cart": {
+    "title": "Koszyk",
+    "empty": "Twój koszyk jest pusty.",
+    "subtotal": "Suma częściowa",
+    "checkout": "Do kasy",
+    "view": "Zobacz koszyk",
+    "remove": "Usuń",
+    "continue": "Kontynuuj zakupy",
+    "taxes_shipping": "Podatki i wysyłka są obliczane przy kasie.",
+    "add_named": "Dodaj {{ title }} do koszyka",
+    "quantity": "Ilość"
+  },
+  "products": {
+    "view": "Zobacz",
+    "add": "Dodaj do koszyka",
+    "buy_now": "Kup teraz",
+    "sold_out": "Wyprzedane",
+    "choose_options": "Wybierz opcje",
+    "size": "Rozmiar"
+  },
+  "collection": {
+    "filter": "Filtruj",
+    "sort": "Sortuj według",
+    "clear": "Wyczyść filtry",
+    "no_products": "Brak pasujących produktów. Spróbuj innego filtra.",
+    "apply": "Zastosuj"
+  },
+  "countdown": {
+    "title": "Odliczanie do Bożego Narodzenia",
+    "days": "Dni",
+    "hours": "Godz.",
+    "minutes": "Min",
+    "seconds": "Sek",
+    "merry": "Wesołych Świąt!"
+  },
+  "music": {
+    "button": "Piosenki świąteczne",
+    "title": "Dzisiejsze hity świąteczne",
+    "prev": "Poprzedni utwór",
+    "next": "Następny utwór",
+    "play": "Odtwarzaj / pauza"
+  }
+}

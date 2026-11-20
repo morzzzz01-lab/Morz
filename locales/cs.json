@@ -1,0 +1,62 @@
+{
+  "general": {
+    "skip": "Přejít na obsah",
+    "close": "Zavřít",
+    "shop_now": "Koupit nyní",
+    "language": "Jazyk",
+    "country": "Země / měna",
+    "search": "Hledat",
+    "search_placeholder": "Hledat produkty…",
+    "view_all": "Zobrazit vše",
+    "back_home": "Zpět na úvod",
+    "read_more": "Číst více",
+    "menu": "Menu",
+    "menu_search_placeholder": "Hledat produkty a kategorie…",
+    "menu_all_products": "Všechny produkty",
+    "menu_no_results": "Nic nenalezeno. Zkuste jiné slovo.",
+    "on_sale": "Ve slevě",
+    "best_sellers": "Nejprodávanější"
+  },
+  "cart": {
+    "title": "Košík",
+    "empty": "Váš košík je prázdný.",
+    "subtotal": "Mezisoučet",
+    "checkout": "K pokladně",
+    "view": "Zobrazit košík",
+    "remove": "Odebrat",
+    "continue": "Pokračovat v nákupu",
+    "taxes_shipping": "Daně a doprava se vypočítají v pokladně.",
+    "add_named": "Přidat {{ title }} do košíku",
+    "quantity": "Množství"
+  },
+  "products": {
+    "view": "Zobrazit",
+    "add": "Přidat do košíku",
+    "buy_now": "Koupit nyní",
+    "sold_out": "Vyprodáno",
+    "choose_options": "Vybrat možnosti",
+    "size": "Velikost"
+  },
+  "collection": {
+    "filter": "Filtrovat",
+    "sort": "Řadit podle",
+    "clear": "Zrušit filtry",
+    "no_products": "Žádné produkty neodpovídají. Zkuste jiný filtr.",
+    "apply": "Použít"
+  },
+  "countdown": {
+    "title": "Odpočet do Vánoc",
+    "days": "Dny",
+    "hours": "Hodiny",
+    "minutes": "Min",
+    "seconds": "Sek",
+    "merry": "Veselé Vánoce!"
+  },
+  "music": {
+    "button": "Vánoční písně",
+    "title": "Dnešní vánoční hity",
+    "prev": "Předchozí skladba",
+    "next": "Další skladba",
+    "play": "Přehrát / pozastavit"
+  }
+}

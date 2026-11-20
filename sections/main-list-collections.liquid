@@ -1,0 +1,17 @@
+<section>
+  <div class="wrap">
+    <h1 class="ptitle">{{ 'collection.all_collections' | t }}</h1>
+    <div class="cats">
+      {%- for collection in collections -%}
+        <a class="cat" href="{{ collection.url }}">
+          <b>{{ collection.title }}</b>
+          <span>{{ 'general.shop_now' | t }}</span>
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Collection list page" }
+{% endschema %}

@@ -1,0 +1,44 @@
+<section>
+  <div class="wrap cart-page">
+    <h1 class="ptitle">{{ 'cart.title' | t }}</h1>
+    {%- if cart.item_count == 0 -%}
+      <p class="none">{{ 'cart.empty' | t }}</p>
+      <a class="btn" href="{{ routes.all_products_collection_url }}">{{ 'cart.continue' | t }}</a>
+    {%- else -%}
+      <form action="{{ routes.cart_url }}" method="post" id="cart-form">
+        {%- for item in cart.items -%}
+          <div class="li big">
+            <a class="li-img" href="{{ item.url }}">
+              {%- if item.image -%}{{ item.image | image_url: width: 200 | image_tag: loading: 'lazy', alt: item.product.title }}{%- endif -%}
+            </a>
+            <div class="li-info">
+              <a href="{{ item.url }}">{{ item.product.title }}</a>
+              {%- unless item.product.has_only_default_variant -%}<small>{{ item.variant.title }}</small>{%- endunless -%}
+              <small>{{ item.final_price | money }}</small>
+              <div class="qty">
+                <input class="qty-input" type="number" name="updates[]" value="{{ item.quantity }}" min="0" aria-label="{{ 'cart.quantity' | t }}">
+                <a class="rm" href="{{ item.url_to_remove }}">{{ 'cart.remove' | t }}</a>
+              </div>
+            </div>
+            <span class="li-price">{{ item.final_line_price | money }}</span>
+          </div>
+        {%- endfor -%}
+
+        <div class="tot"><span>{{ 'cart.subtotal' | t }}</span><span>{{ cart.total_price | money }}</span></div>
+        <p class="note">{{ 'cart.taxes_shipping' | t }}</p>
+        {% render 'payment-icons' %}
+        {%- if cart.item_count == 1 -%}
+          <p class="co-note">Checkout is for 2 or more items. Buying just 1 item? Use <b>Buy now with card</b> on the product page.</p>
+        {%- endif -%}
+        <div class="cd-actions">
+          <button class="cartb" type="submit" name="update">{{ 'cart.update' | t }}</button>
+          <button class="btn" type="submit" name="checkout" {% if cart.item_count < 2 %}disabled{% endif %}>{{ 'cart.checkout' | t }}</button>
+        </div>
+      </form>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Cart page" }
+{% endschema %}

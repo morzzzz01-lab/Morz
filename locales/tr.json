@@ -1,0 +1,122 @@
+{
+  "general": {
+    "skip": "İçeriğe geç",
+    "close": "Kapat",
+    "shop_now": "Hemen al",
+    "language": "Dil",
+    "country": "Ülke / para birimi",
+    "search": "Ara",
+    "search_placeholder": "Ürün ara…",
+    "payment_methods": "Kabul edilen ödeme yöntemleri",
+    "view_all": "Tümünü gör",
+    "back_home": "Ana sayfaya dön",
+    "read_more": "Devamını oku",
+    "password_title": "Çok yakında",
+    "password_enter": "Şifre ile mağazaya gir",
+    "password_label": "Şifre",
+    "password_submit": "Giriş",
+    "password_error": "Yanlış şifre",
+    "menu": "Menü",
+    "menu_search_placeholder": "Ürün ve kategori ara…",
+    "menu_categories": "Menü",
+    "menu_all_categories": "Tüm kategoriler",
+    "menu_no_results": "Sonuç bulunamadı. Başka bir kelime deneyin.",
+    "menu_products": "Ürünler",
+    "menu_see_all": "Tüm sonuçları gör",
+    "skip_intro": "Geç",
+    "secure_checkout": "Güvenli ödeme. Ödeme bilgileriniz şifrelenir.",
+    "on_sale": "İndirimde",
+    "best_sellers": "Çok satanlar"
+  },
+  "cart": {
+    "title": "Sepet",
+    "empty": "Sepetiniz boş.",
+    "subtotal": "Ara toplam",
+    "checkout": "Ödeme",
+    "view": "Sepeti görüntüle",
+    "remove": "Kaldır",
+    "update": "Sepeti güncelle",
+    "continue": "Alışverişe devam et",
+    "taxes_shipping": "Vergiler ve kargo ödeme sırasında hesaplanır.",
+    "add_named": "{{ title }} ürününü sepete ekle",
+    "quantity": "Adet",
+    "decrease": "Adedi azalt",
+    "increase": "Adedi artır",
+    "error": "Bu ürün sepete eklenemedi.",
+    "item_total": "Toplam"
+  },
+  "products": {
+    "view": "Görüntüle",
+    "add": "Sepete ekle",
+    "sold_out": "Tükendi",
+    "unavailable": "Mevcut değil",
+    "choose_options": "Seçenekleri seç",
+    "size": "Beden",
+    "from": "Başlangıç",
+    "vendor": "Marka",
+    "shipping_policy": "Kargo politikası",
+    "refund_policy": "İade politikası",
+    "no_media": "Görsel yok"
+  },
+  "collection": {
+    "filter": "Filtrele",
+    "sort": "Sırala",
+    "clear": "Filtreleri temizle",
+    "no_products": "Eşleşen ürün yok. Başka bir filtre deneyin.",
+    "apply": "Uygula",
+    "price_from": "En az",
+    "price_to": "En çok",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "all_collections": "Koleksiyonlar"
+  },
+  "search": {
+    "title": "Ara",
+    "results": {
+      "one": "“{{ terms }}” için {{ count }} sonuç",
+      "other": "“{{ terms }}” için {{ count }} sonuç"
+    },
+    "no_results": "“{{ terms }}” için sonuç bulunamadı. Başka bir kelime deneyin.",
+    "prompt": "Aradığınızı yazın."
+  },
+  "errors": {
+    "title": "Sayfa bulunamadı",
+    "text": "Aradığınız sayfa mevcut değil."
+  },
+  "blog": {
+    "no_articles": "Henüz yazı yok.",
+    "by": "Yazar: {{ author }}"
+  },
+  "footer": {
+    "rights": "Tüm hakları saklıdır."
+  },
+  "contact": {
+    "title": "Bize ulaşın",
+    "intro": "Sipariş, beden veya ürün hakkında sorunuz mu var? Mesaj gönderin, e-posta ile yanıtlayalım.",
+    "name": "Ad",
+    "email": "E-posta",
+    "phone": "Telefon (isteğe bağlı)",
+    "message": "Mesaj",
+    "send": "Mesaj gönder",
+    "success": "Teşekkürler! Mesajınız gönderildi. Yakında yanıtlayacağız.",
+    "reply_note": "E-posta ile yanıt veriyoruz.",
+    "info": "İletişim bilgileri",
+    "hours": "Çalışma saatleri"
+  },
+  "countdown": {
+    "title": "Noel'e kalan süre",
+    "days": "Gün",
+    "hours": "Saat",
+    "minutes": "Dk",
+    "seconds": "Sn",
+    "merry": "Mutlu Noeller!"
+  },
+  "music": {
+    "button": "Christmas songs",
+    "title": "Today's Christmas hits",
+    "prev": "Previous song",
+    "next": "Next song",
+    "play": "Play / pause",
+    "note": "The song order changes every day."
+  }
+}

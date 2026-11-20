@@ -1,0 +1,62 @@
+{
+  "general": {
+    "skip": "Naar de inhoud",
+    "close": "Sluiten",
+    "shop_now": "Nu kopen",
+    "language": "Taal",
+    "country": "Land / valuta",
+    "search": "Zoeken",
+    "search_placeholder": "Zoek producten…",
+    "view_all": "Alles bekijken",
+    "back_home": "Terug naar home",
+    "read_more": "Lees meer",
+    "menu": "Menu",
+    "menu_search_placeholder": "Zoek producten en categorieën…",
+    "menu_all_products": "Alle producten",
+    "menu_no_results": "Niets gevonden. Probeer een ander woord.",
+    "on_sale": "In de aanbieding",
+    "best_sellers": "Bestsellers"
+  },
+  "cart": {
+    "title": "Winkelwagen",
+    "empty": "Je winkelwagen is leeg.",
+    "subtotal": "Subtotaal",
+    "checkout": "Afrekenen",
+    "view": "Winkelwagen bekijken",
+    "remove": "Verwijderen",
+    "continue": "Verder winkelen",
+    "taxes_shipping": "Belasting en verzending worden bij het afrekenen berekend.",
+    "add_named": "{{ title }} toevoegen aan winkelwagen",
+    "quantity": "Aantal"
+  },
+  "products": {
+    "view": "Bekijken",
+    "add": "In winkelwagen",
+    "buy_now": "Nu kopen",
+    "sold_out": "Uitverkocht",
+    "choose_options": "Kies opties",
+    "size": "Maat"
+  },
+  "collection": {
+    "filter": "Filteren",
+    "sort": "Sorteren op",
+    "clear": "Filters wissen",
+    "no_products": "Geen producten gevonden. Probeer een ander filter.",
+    "apply": "Toepassen"
+  },
+  "countdown": {
+    "title": "Kerstaftelling",
+    "days": "Dagen",
+    "hours": "Uren",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "merry": "Vrolijk kerstfeest!"
+  },
+  "music": {
+    "button": "Kerstliedjes",
+    "title": "De kersthits van vandaag",
+    "prev": "Vorig nummer",
+    "next": "Volgend nummer",
+    "play": "Afspelen / pauzeren"
+  }
+}

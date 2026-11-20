@@ -1,0 +1,3 @@
+{%- comment -%} Short, tidy product name for cards and the hero: keeps the part before " - ", "," or "(" and at most 4 words. The full title stays on the product page. {%- endcomment -%}
+{%- assign st = title | split: ' - ' | first | split: ', ' | first | split: ' (' | first | strip -%}
+{{- st | truncatewords: 8, '' -}}

@@ -1,0 +1,122 @@
+{
+  "general": {
+    "skip": "Zum Inhalt springen",
+    "close": "Schließen",
+    "shop_now": "Jetzt kaufen",
+    "language": "Sprache",
+    "country": "Land / Währung",
+    "search": "Suche",
+    "search_placeholder": "Produkte suchen…",
+    "payment_methods": "Akzeptierte Zahlungsarten",
+    "view_all": "Alle ansehen",
+    "back_home": "Zurück zur Startseite",
+    "read_more": "Weiterlesen",
+    "password_title": "Bald geöffnet",
+    "password_enter": "Mit Passwort in den Shop",
+    "password_label": "Passwort",
+    "password_submit": "Eintreten",
+    "password_error": "Falsches Passwort",
+    "menu": "Menü",
+    "menu_search_placeholder": "Produkte & Kategorien suchen…",
+    "menu_categories": "Menü",
+    "menu_all_categories": "Alle Kategorien",
+    "menu_no_results": "Nichts gefunden. Versuche ein anderes Wort.",
+    "menu_products": "Produkte",
+    "menu_see_all": "Alle Ergebnisse ansehen",
+    "skip_intro": "Überspringen",
+    "secure_checkout": "Sichere Bezahlung. Deine Zahlungsdaten sind verschlüsselt.",
+    "on_sale": "Angebote",
+    "best_sellers": "Bestseller"
+  },
+  "cart": {
+    "title": "Warenkorb",
+    "empty": "Dein Warenkorb ist leer.",
+    "subtotal": "Zwischensumme",
+    "checkout": "Zur Kasse",
+    "view": "Warenkorb ansehen",
+    "remove": "Entfernen",
+    "update": "Warenkorb aktualisieren",
+    "continue": "Weiter einkaufen",
+    "taxes_shipping": "Steuern und Versand werden an der Kasse berechnet.",
+    "add_named": "{{ title }} in den Warenkorb legen",
+    "quantity": "Menge",
+    "decrease": "Menge verringern",
+    "increase": "Menge erhöhen",
+    "error": "Dieser Artikel konnte nicht hinzugefügt werden.",
+    "item_total": "Gesamt"
+  },
+  "products": {
+    "view": "Ansehen",
+    "add": "In den Warenkorb",
+    "sold_out": "Ausverkauft",
+    "unavailable": "Nicht verfügbar",
+    "choose_options": "Optionen wählen",
+    "size": "Größe",
+    "from": "Ab",
+    "vendor": "Marke",
+    "shipping_policy": "Versandrichtlinie",
+    "refund_policy": "Rückerstattungsrichtlinie",
+    "no_media": "Kein Bild"
+  },
+  "collection": {
+    "filter": "Filter",
+    "sort": "Sortieren nach",
+    "clear": "Filter zurücksetzen",
+    "no_products": "Keine passenden Produkte. Versuche einen anderen Filter.",
+    "apply": "Anwenden",
+    "price_from": "Von",
+    "price_to": "Bis",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "all_collections": "Kollektionen"
+  },
+  "search": {
+    "title": "Suche",
+    "results": {
+      "one": "{{ count }} Ergebnis für „{{ terms }}“",
+      "other": "{{ count }} Ergebnisse für „{{ terms }}“"
+    },
+    "no_results": "Keine Ergebnisse für „{{ terms }}“. Versuche ein anderes Wort.",
+    "prompt": "Gib ein, wonach du suchst."
+  },
+  "errors": {
+    "title": "Seite nicht gefunden",
+    "text": "Die gesuchte Seite existiert nicht."
+  },
+  "blog": {
+    "no_articles": "Noch keine Artikel.",
+    "by": "Von {{ author }}"
+  },
+  "footer": {
+    "rights": "Alle Rechte vorbehalten."
+  },
+  "contact": {
+    "title": "Kontakt",
+    "intro": "Fragen zu einer Bestellung, Größe oder einem Produkt? Schreib uns, wir antworten per E-Mail.",
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon (optional)",
+    "message": "Nachricht",
+    "send": "Nachricht senden",
+    "success": "Danke! Deine Nachricht wurde gesendet. Wir melden uns bald.",
+    "reply_note": "Wir antworten per E-Mail.",
+    "info": "Kontaktdaten",
+    "hours": "Öffnungszeiten"
+  },
+  "countdown": {
+    "title": "Bis Weihnachten",
+    "days": "Tage",
+    "hours": "Std.",
+    "minutes": "Min",
+    "seconds": "Sek",
+    "merry": "Frohe Weihnachten!"
+  },
+  "music": {
+    "button": "Christmas songs",
+    "title": "Today's Christmas hits",
+    "prev": "Previous song",
+    "next": "Next song",
+    "play": "Play / pause",
+    "note": "The song order changes every day."
+  }
+}

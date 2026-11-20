@@ -1,0 +1,123 @@
+{
+  "general": {
+    "skip": "Skip to content",
+    "close": "Close",
+    "shop_now": "Shop now",
+    "language": "Language",
+    "country": "Country / currency",
+    "search": "Search",
+    "search_placeholder": "Search products…",
+    "payment_methods": "Accepted payment methods",
+    "view_all": "View all",
+    "back_home": "Back to home",
+    "read_more": "Read more",
+    "password_title": "Opening soon",
+    "password_enter": "Enter store using password",
+    "password_label": "Password",
+    "password_submit": "Enter",
+    "password_error": "Wrong password",
+    "menu": "Menu",
+    "menu_search_placeholder": "Search products & categories…",
+    "menu_categories": "Menu",
+    "menu_all_categories": "All categories",
+    "menu_all_products": "All products",
+    "menu_no_results": "Nothing found. Try another word.",
+    "menu_products": "Products",
+    "menu_see_all": "See all results",
+    "skip_intro": "Skip",
+    "secure_checkout": "Secure checkout. Your payment details are encrypted.",
+    "on_sale": "On sale",
+    "best_sellers": "Best sellers"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty.",
+    "subtotal": "Subtotal",
+    "checkout": "Checkout",
+    "view": "View cart",
+    "remove": "Remove",
+    "update": "Update cart",
+    "continue": "Continue shopping",
+    "taxes_shipping": "Taxes and shipping are calculated at checkout.",
+    "add_named": "Add {{ title }} to cart",
+    "quantity": "Quantity",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity",
+    "error": "Could not add this item to the cart.",
+    "item_total": "Total"
+  },
+  "products": {
+    "view": "View",
+    "add": "Add to cart",
+    "buy_now": "Buy now",
+    "sold_out": "Sold out",
+    "unavailable": "Unavailable",
+    "choose_options": "Choose options",
+    "size": "Size",
+    "from": "From",
+    "vendor": "Brand",
+    "shipping_policy": "Shipping policy",
+    "refund_policy": "Refund policy",
+    "no_media": "No image"
+  },
+  "collection": {
+    "filter": "Filter",
+    "sort": "Sort by",
+    "clear": "Clear filters",
+    "no_products": "No products match. Try another filter.",
+    "apply": "Apply",
+    "price_from": "From",
+    "price_to": "To",
+    "previous": "Previous",
+    "next": "Next",
+    "all_collections": "Collections"
+  },
+  "search": {
+    "title": "Search",
+    "results": {
+      "one": "{{ count }} result for “{{ terms }}”",
+      "other": "{{ count }} results for “{{ terms }}”"
+    },
+    "no_results": "No results found for “{{ terms }}”. Try another word.",
+    "prompt": "Type what you are looking for."
+  },
+  "errors": {
+    "title": "Page not found",
+    "text": "The page you are looking for does not exist."
+  },
+  "blog": {
+    "no_articles": "No articles yet.",
+    "by": "By {{ author }}"
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  },
+  "contact": {
+    "title": "Contact us",
+    "intro": "Questions about an order, sizing or a product? Send us a message and we will reply by email.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "message": "Message",
+    "send": "Send message",
+    "success": "Thanks! Your message was sent. We will reply soon.",
+    "reply_note": "We reply by email.",
+    "info": "Contact details",
+    "hours": "Hours"
+  },
+  "countdown": {
+    "title": "Christmas countdown",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "merry": "Merry Christmas!"
+  },
+  "music": {
+    "button": "Christmas songs",
+    "title": "Today's Christmas hits",
+    "prev": "Previous song",
+    "next": "Next song",
+    "play": "Play / pause"
+  }
+}

@@ -1,0 +1,63 @@
+{%- liquid
+  assign cd_now = 'now' | date: '%s' | plus: 0
+  assign cd_year = 'now' | date: '%Y' | plus: 0
+  assign cd_target = cd_year | append: '-12-25 00:00:00' | date: '%s' | plus: 0
+  if cd_target < cd_now
+    assign cd_year = cd_year | plus: 1
+    assign cd_target = cd_year | append: '-12-25 00:00:00' | date: '%s' | plus: 0
+  endif
+  assign cd_left = cd_target | minus: cd_now
+  assign cd_d = cd_left | divided_by: 86400
+  assign cd_h = cd_left | modulo: 86400 | divided_by: 3600
+  assign cd_m = cd_left | modulo: 3600 | divided_by: 60
+  assign cd_s = cd_left | modulo: 60
+-%}
+<div class="cd" id="Cd-hdr" data-cd role="timer" aria-label="{{ 'countdown.title' | t }}"
+     data-month="12" data-day="25"
+     data-merry="{{ 'countdown.merry' | t | escape }}">
+  <div class="cd-in">
+    <span class="cd-title">{{ 'countdown.title' | t }}</span>
+    <span class="cd-units" data-cd-units>
+      <span class="cd-u"><b data-cd-d>{{ cd_d }}</b><i>{{ 'countdown.days' | t }}</i></span>
+      <span class="cd-u"><b data-cd-h>{{ cd_h | prepend: "0" | slice: -2, 2 }}</b><i>{{ 'countdown.hours' | t }}</i></span>
+      <span class="cd-u"><b data-cd-m>{{ cd_m | prepend: "0" | slice: -2, 2 }}</b><i>{{ 'countdown.minutes' | t }}</i></span>
+      <span class="cd-u"><b data-cd-s>{{ cd_s | prepend: "0" | slice: -2, 2 }}</b><i>{{ 'countdown.seconds' | t }}</i></span>
+    </span>
+    <span class="cd-merry" data-cd-merry hidden></span>
+    <span class="cd-tz" data-cd-tz></span>
+  </div>
+</div>
+<script>
+(function () {
+  var root = document.getElementById('Cd-hdr');
+  if (!root) return;
+  var mo = parseInt(root.dataset.month, 10) - 1, dy = parseInt(root.dataset.day, 10);
+  var units = root.querySelector('[data-cd-units]'), merry = root.querySelector('[data-cd-merry]');
+  var els = { d: root.querySelector('[data-cd-d]'), h: root.querySelector('[data-cd-h]'), m: root.querySelector('[data-cd-m]'), s: root.querySelector('[data-cd-s]') };
+  var tzEl = root.querySelector('[data-cd-tz]');
+  /* Uses the visitor's own device clock and time zone, so every country counts down to
+     Christmas morning (00:00) in its own local time. */
+  try {
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    var off = -new Date().getTimezoneOffset(), sg = off < 0 ? '-' : '+', a = Math.abs(off);
+    var gmt = 'UTC' + sg + String(Math.floor(a / 60)).padStart(2, '0') + ':' + String(a % 60).padStart(2, '0');
+    tzEl.textContent = (tz ? tz.replace(/_/g, ' ') + ' · ' : '') + gmt;
+  } catch (e) {}
+  function p(n) { return n < 10 ? '0' + n : '' + n; }
+  function tick() {
+    var now = new Date(), y = now.getFullYear();
+    var start = new Date(y, mo, dy, 0, 0, 0), end = new Date(y, mo, dy + 1, 0, 0, 0);
+    if (now >= start && now < end) {
+      units.hidden = true; merry.hidden = false; merry.textContent = root.dataset.merry; return;
+    }
+    units.hidden = false; merry.hidden = true;
+    var target = now >= end ? new Date(y + 1, mo, dy, 0, 0, 0) : start;
+    var t = Math.max(0, Math.floor((target - now) / 1000));
+    els.d.textContent = Math.floor(t / 86400);
+    els.h.textContent = p(Math.floor(t % 86400 / 3600));
+    els.m.textContent = p(Math.floor(t % 3600 / 60));
+    els.s.textContent = p(t % 60);
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>

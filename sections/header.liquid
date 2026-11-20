@@ -1,0 +1,168 @@
+{%- assign logo_style = 'height:' | append: settings.logo_height | append: 'px;width:auto' -%}
+{%- assign show_loc = false -%}
+{%- if section.settings.show_localization -%}
+  {%- if localization.available_languages.size > 1 -%}{%- assign show_loc = true -%}{%- endif -%}
+  {%- if localization.available_countries.size > 1 -%}{%- assign show_loc = true -%}{%- endif -%}
+{%- endif -%}
+{%- render 'xmas-countdown' -%}
+<header class="top">
+  <div class="xm-string" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i><i class="b"></i></div>
+  <div class="wrap">
+    <button type="button" class="menu-btn" data-menu-open aria-label="{{ 'general.menu' | t }}" aria-controls="MenuDrawer" aria-haspopup="dialog"><span></span><span></span><span></span></button>
+    <a href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+      <span class="xm-logo">
+      {%- if settings.logo != blank -%}
+        {{ settings.logo | image_url: height: 200 | image_tag: class: 'mark', alt: shop.name, loading: 'eager', style: logo_style }}
+      {%- else -%}
+        <img class="mark mark--xm" src="{{ 'morz-logo-mini-light.png' | asset_url }}" alt="{{ shop.name | escape }}" width="38" height="50" style="{{ logo_style }}">
+      {%- endif -%}
+      </span>
+    </a>
+    <span class="sp"></span>
+
+    {%- if section.settings.show_search -%}
+      <button type="button" class="hb hb-search" data-search-toggle aria-expanded="false" aria-label="{{ 'general.search' | t }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+    {%- endif -%}
+
+    {%- if section.settings.show_localization -%}
+      <details class="gl">
+        <summary class="hb" aria-label="{{ 'general.language' | t }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg><span>{{ localization.language.iso_code | upcase }} · {{ localization.country.currency.iso_code }}</span></summary>
+        <div class="gl-panel">
+          {%- if show_loc -%}
+            {%- form 'localization', id: 'HeaderLocalization', class: 'loc' -%}
+              {%- if localization.available_languages.size > 1 -%}
+                <label>{{ 'general.language' | t }}
+                <select name="language_code" aria-label="{{ 'general.language' | t }}" data-autosubmit>
+                  {%- for language in localization.available_languages -%}
+                    <option value="{{ language.iso_code }}" {% if language.iso_code == localization.language.iso_code %}selected{% endif %}>{{ language.endonym_name | capitalize }}</option>
+                  {%- endfor -%}
+                </select></label>
+              {%- endif -%}
+              {%- if localization.available_countries.size > 1 -%}
+                <label>{{ 'general.country' | t }}
+                <select name="country_code" aria-label="{{ 'general.country' | t }}" data-autosubmit>
+                  {%- for country in localization.available_countries -%}
+                    <option value="{{ country.iso_code }}" {% if country.iso_code == localization.country.iso_code %}selected{% endif %}>{{ country.name }} ({{ country.currency.iso_code }})</option>
+                  {%- endfor -%}
+                </select></label>
+              {%- endif -%}
+            {%- endform -%}
+          {%- endif -%}
+          {%- if localization.available_languages.size < 2 -%}
+            <label translate="no">{{ 'general.language' | t }}
+            <select data-gt-select aria-label="{{ 'general.language' | t }}"><option value="en">English</option><option value="mn">Монгол</option><option value="ru">Русский</option><option value="de">Deutsch</option><option value="fr">Français</option><option value="es">Español</option><option value="tr">Türkçe</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh-CN">中文</option><option value="pt">Português</option><option value="it">Italiano</option><option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="pl">Polski</option><option value="nl">Nederlands</option><option value="uk">Українська</option><option value="vi">Tiếng Việt</option><option value="th">ไทย</option><option value="id">Bahasa Indonesia</option></select></label>
+            <div id="gt-el" class="gt-el" translate="no"></div>
+          {%- endif -%}
+          {%- if localization.available_countries.size < 2 -%}
+            <p class="gl-cur" translate="no">{{ localization.country.currency.iso_code }} ({{ localization.country.currency.symbol }})</p>
+          {%- endif -%}
+        </div>
+      </details>
+    {%- endif -%}
+
+    <a class="cartb" id="cart-icon-bubble" href="{{ routes.cart_url }}" data-cart-open>{{ 'cart.title' | t }} (<span data-cart-count>{{ cart.item_count }}</span>)</a>
+
+    {%- if section.settings.show_search -%}
+      <form class="search-form" action="{{ routes.search_url }}" method="get" role="search">
+        <input class="search" type="search" name="q" value="{{ search.terms | escape }}" placeholder="{{ 'general.search_placeholder' | t }}" aria-label="{{ 'general.search' | t }}">
+        <input type="hidden" name="type" value="product">
+      </form>
+    {%- endif -%}
+
+    {%- assign menu = linklists[section.settings.menu] -%}
+    {%- if menu.links.size > 0 -%}
+      <nav class="main" aria-label="Main">
+        {%- for link in menu.links -%}{%- if link.type == 'catalog_link' or link.title == 'Catalog' -%}{%- continue -%}{%- endif -%}
+          <a href="{% render 'safe-url', link: link %}" {% if link.current or link.child_current %}aria-current="page"{% endif %}>{{ link.title }}</a>
+        {%- endfor -%}
+      </nav>
+    {%- endif -%}
+  </div>
+</header>
+
+{%- assign drawer_menu = linklists[section.settings.menu] -%}
+<dialog id="MenuDrawer" class="menu-dialog" aria-label="{{ 'general.menu' | t }}">
+  <div class="md-in">
+    <div class="md-head">
+      <strong>{{ 'general.menu' | t }}</strong>
+      <button type="button" class="cartb" data-menu-close>{{ 'general.close' | t }}</button>
+    </div>
+
+    <form class="md-search" action="{{ routes.search_url }}" method="get" role="search">
+      <input type="search" name="q" data-menu-search placeholder="{{ 'general.menu_search_placeholder' | t }}" aria-label="{{ 'general.search' | t }}" autocomplete="off">
+      <input type="hidden" name="type" value="product">
+    </form>
+
+    <div class="md-quick">
+      <a href="{{ routes.root_url }}#sale">{{ 'general.on_sale' | t }}</a>
+      <a href="{{ routes.root_url }}#best-sellers">{{ 'general.best_sellers' | t }}</a>
+    </div>
+
+    <div class="md-results" data-menu-results hidden></div>
+
+    <div class="md-list" data-menu-list>
+      {%- if drawer_menu.links.size > 0 -%}
+        <div class="md-group" data-menu-group>
+          <h3>{{ 'general.menu_categories' | t }}</h3>
+          <ul>
+            {%- for link in drawer_menu.links -%}{%- if link.type == 'catalog_link' or link.title == 'Catalog' -%}{%- continue -%}{%- endif -%}
+              {%- if link.links.size > 0 -%}
+                <li data-menu-item data-label="{{ link.title | downcase | escape }}">
+                  <details>
+                    <summary>{{ link.title }}</summary>
+                    <ul>
+                      <li data-menu-item data-label="{{ link.title | downcase | escape }}"><a href="{% render 'safe-url', link: link %}">{{ 'general.view_all' | t }} {{ link.title }}</a></li>
+                      {%- for child in link.links -%}
+                        <li data-menu-item data-label="{{ child.title | downcase | escape }}"><a href="{% render 'safe-url', link: child %}">{{ child.title }}</a></li>
+                      {%- endfor -%}
+                    </ul>
+                  </details>
+                </li>
+              {%- else -%}
+                <li data-menu-item data-label="{{ link.title | downcase | escape }}"><a href="{% render 'safe-url', link: link %}">{{ link.title }}</a></li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_collections -%}
+        {%- capture cat_items -%}
+          {%- for collection in collections limit: 60 -%}
+            {%- if collection.products_count > 0 -%}
+              <li data-menu-item data-label="{{ collection.title | downcase | escape }}"><a href="{{ collection.url }}">{{ collection.title }}</a></li>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endcapture -%}
+        {%- assign cat_items = cat_items | strip -%}
+        {%- if cat_items != blank -%}
+          <div class="md-group" data-menu-group>
+            <h3>{{ 'general.menu_all_categories' | t }}</h3>
+            <ul>{{ cat_items }}</ul>
+          </div>
+        {%- elsif collections.all.products_count > 0 -%}
+          <div class="md-group" data-menu-group>
+            <ul>
+              <li data-menu-item data-label="{{ 'general.menu_all_categories' | t | downcase | escape }}"><a href="{{ routes.all_products_collection_url }}">{{ 'general.menu_all_categories' | t }}</a></li>
+            </ul>
+          </div>
+        {%- endif -%}
+      {%- endif -%}
+
+    </div>
+    <p class="md-empty" data-menu-empty data-text="{{ 'general.menu_no_results' | t | escape }}" hidden></p>
+  </div>
+</dialog>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "checkbox", "id": "show_currency", "label": "Show currency code next to country", "default": false },
+    { "type": "checkbox", "id": "show_search", "label": "Show search", "default": true },
+    { "type": "checkbox", "id": "show_collections", "label": "List all collections in the menu drawer", "default": true, "info": "The menu drawer search looks through the menu links and all collections." },
+    { "type": "checkbox", "id": "show_localization", "label": "Show language and currency selector", "default": true, "info": "Languages and currencies are managed in Settings → Markets / Languages." }
+  ]
+}
+{% endschema %}
