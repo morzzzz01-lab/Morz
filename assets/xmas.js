@@ -201,20 +201,78 @@
     '<g stroke="#ffd24a" stroke-width="1.6" opacity=".7"><path d="M0 70l40 4M30 90l50-4M10 110l60-8"/></g>' +
     '</svg>';
   var SC = window.MORZ_SNOW || {};
+  /* Santa's sleigh, drawn in code: red lacquer, gold trim and scrollwork, curled runners, sleigh bells and a sack of
+     presents. Santa himself and the reindeer stay real photos; the reindeer gallop, the sleigh sways behind them
+     and leaves a trail of sparkles. ({U} is replaced so every copy has its own gradient ids.) */
+  function G(id) { return 'url(#' + id + '{U})'; }
+  function sleighDefs() {
+    return '<svg class="xsd" width="0" height="0" aria-hidden="true" focusable="false"><defs>' +
+      '<linearGradient id="slr{U}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ec2c40"/><stop offset=".45" stop-color="#b8121f"/><stop offset="1" stop-color="#650610"/></linearGradient>' +
+      '<linearGradient id="slg{U}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".35" stop-color="#f4c552"/><stop offset=".75" stop-color="#c48919"/><stop offset="1" stop-color="#7c4f06"/></linearGradient>' +
+      '<linearGradient id="slh{U}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+      '<radialGradient id="slb{U}" cx=".35" cy=".32" r=".75"><stop offset="0" stop-color="#fffbe2"/><stop offset=".45" stop-color="#f3c446"/><stop offset="1" stop-color="#875709"/></radialGradient>' +
+      '<linearGradient id="sls{U}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a87443"/><stop offset="1" stop-color="#5e3a1b"/></linearGradient>' +
+      '<linearGradient id="slv{U}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f3f25"/><stop offset="1" stop-color="#1d6a40"/></linearGradient>' +
+      '</defs></svg>';
+  }
+  /* behind Santa: the far side wall, the green velvet seat back, the sack of presents and a candy cane */
+  function sleighBack() {
+    return '<svg class="xsl" viewBox="0 0 560 230" aria-hidden="true">' +
+      '<path d="M20 96 C34 94 44 104 50 118 C58 128 70 130 84 127 C96 124 108 118 126 114 L128 124 C110 126 98 132 86 136 C70 140 56 138 46 128 C40 116 32 104 20 104 Z" fill="#7d0915"/>' +
+      '<path d="M20 96 C34 94 44 104 50 118 C58 128 70 130 84 127 C96 124 108 118 126 114" stroke="' + G('slg') + '" stroke-width="2" fill="none" stroke-opacity=".85"/>' +
+      '<path d="M24 104 C34 104 42 114 46 128 L44 140 C38 130 30 122 20 120 Z" fill="' + G('slv') + '"/>' +
+      '<path d="M8 104 C6 92 14 84 24 84 C34 84 40 92 38 104 Z" fill="' + G('sls') + '"/><path d="M14 86 C18 82 26 81 31 85" stroke="#3d240f" stroke-width="1.6" fill="none"/>' +
+      '<g transform="rotate(-9 22 86)"><rect x="13" y="74" width="17" height="15" rx="1.5" fill="#1d8a4a"/><rect x="20" y="74" width="3.4" height="15" fill="#f6d04d"/><rect x="13" y="80" width="17" height="3.2" fill="#f6d04d"/><path d="M21.7 74 C17 69 14 72 19 74.4 M21.7 74 C26 69 29 72 24 74.4" stroke="#f6d04d" stroke-width="1.8" fill="none"/></g>' +
+      '<g transform="rotate(7 33 92)"><rect x="27" y="84" width="12" height="12" rx="1.2" fill="#e0243c"/><rect x="31.8" y="84" width="2.6" height="12" fill="#fff"/><rect x="27" y="88.6" width="12" height="2.6" fill="#fff"/></g>' +
+      '<path d="M6 100 L6 80 C6 74 14 74 14 80" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M6 100 L6 80 C6 74 14 74 14 80" stroke="#e0243c" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="3 3"/>' +
+      '</svg>';
+  }
+  /* in front of Santa: the body with its gold trim and scrollwork, runners, bells and the reins */
+  function sleighFront() {
+    return '<svg class="xsl" viewBox="0 0 560 230" aria-hidden="true">' +
+      '<g fill="none" stroke="' + G('slg') + '" stroke-linecap="round">' +
+        '<path d="M32 180 C30 190 28 197 27 204 M70 182 L68 204 M106 181 C110 190 114 197 117 204" stroke-width="3.6"/>' +
+        '<path d="M12 204 L118 204 C140 204 154 198 156 184 C158 172 148 166 141 171 C135 176 140 185 147 182" stroke-width="4.4"/>' +
+        '<path d="M12 204 C3 204 0 196 6 193 C10 191 12 196 9 198" stroke-width="3.6"/>' +
+      '</g>' +
+      '<path d="M14 203 L116 203" stroke="#fff6c8" stroke-opacity=".55" stroke-width="1" fill="none"/>' +
+      '<path d="M22 100 C34 100 40 112 44 126 C50 140 60 142 72 141 C82 140 88 134 96 129 C104 124 116 123 124 121 C138 118 148 130 146 148 C144 166 132 180 112 182 L34 182 C20 182 10 172 8 156 C6 140 4 122 8 110 C10 104 14 100 22 100 Z" fill="' + G('slr') + '"/>' +
+      '<path d="M10 160 C14 174 24 180 36 180 L110 180 C126 179 138 170 143 156 C136 166 124 172 110 172 L36 172 C24 172 14 168 10 160 Z" fill="#3d0208" opacity=".35"/>' +
+      '<path d="M15 112 C24 108 36 118 42 132 L38 136 C32 124 24 118 13 120 Z" fill="' + G('slh') + '"/>' +
+      '<path d="M128 128 C138 128 142 140 140 152 L136 152 C137 142 134 134 126 132 Z" fill="' + G('slh') + '"/>' +
+      '<path d="M50 146 C70 150 96 142 120 132" stroke="#fff" stroke-opacity=".22" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+      '<g fill="none" stroke="' + G('slg') + '" stroke-linecap="round">' +
+        '<path d="M22 100 C34 100 40 112 44 126 C50 140 60 142 72 141 C82 140 88 134 96 129 C104 124 116 123 124 121" stroke-width="3.6"/>' +
+        '<path d="M34 182 L112 182" stroke-width="3.2"/>' +
+        '<path d="M17 118 C14 136 17 160 34 172 L108 172 C126 170 136 158 137 142" stroke-width="1.4" stroke-opacity=".9"/>' +
+        '<path d="M44 162 C48 152 60 150 64 158 C68 166 56 170 53 164 C50 158 57 155 60 159" stroke-width="1.6"/>' +
+        '<path d="M126 158 C122 148 110 148 107 156 C104 164 116 168 119 162 C122 156 115 154 112 158" stroke-width="1.6"/>' +
+        '<path d="M22 100 C12 98 5 90 9 84 C13 78 24 79 24 87 C24 93 17 94 16 89" stroke-width="3.6"/>' +
+        '<path d="M124 121 C132 108 150 112 148 124 C146 133 135 133 134 126 C133 121 139 120 140 124" stroke-width="3.4"/>' +
+      '</g>' +
+      '<path d="M78 158 C82 151 90 151 93 156 C88 156 84 160 78 158 Z M78 158 C74 151 66 152 63 157 C68 157 72 161 78 158 Z" fill="#1d8a4a"/>' +
+      '<circle cx="76.5" cy="160" r="2.3" fill="#e0243c"/><circle cx="80.5" cy="160.6" r="2.3" fill="#e0243c"/><circle cx="78.5" cy="157.2" r="2.1" fill="#ff3a50"/>' +
+      '<path d="M98 136 C108 133 118 130 130 129" stroke="#5a0a0f" stroke-width="2" fill="none"/>' +
+      '<circle cx="103" cy="138.4" r="3.4" fill="' + G('slb') + '"/><circle cx="113.5" cy="135.3" r="3.4" fill="' + G('slb') + '"/><circle cx="124" cy="132.6" r="3.4" fill="' + G('slb') + '"/>' +
+      '<path d="M99 125 C126 128 150 140 178 151" stroke="#5e170d" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
+      '<g fill="#f4c552"><circle cx="122" cy="129.5" r="1.1"/><circle cx="140" cy="135.6" r="1.1"/><circle cx="158" cy="143" r="1.1"/></g>' +
+      '</svg>';
+  }
   if (SC.santa) {
-    var su = SC.santa.indexOf('//') === 0 ? 'https:' + SC.santa : SC.santa, N = 28, parts = '', L, k;
-    ['b', 'l'].forEach(function (L) {
-      parts += '<b class="xl ' + L + '">';
-      for (k = 0; k < N; k++) parts += '<i style="left:' + (k * 100 / N).toFixed(3) + '%;width:calc(' + (100 / N).toFixed(3) + '% + .6px);background-position:' + (k / (N - 1) * 100).toFixed(2) + '% 0;animation-delay:-' + (k * (L === 'b' ? 38 : 22)) + 'ms"></i>';
-      parts += '</b>';
-    });
-    santa = '<span class="xm-sg" aria-hidden="true" style="--img:url(' + su + ')">' + parts + '</span>';
+    var su = SC.santa.indexOf('//') === 0 ? 'https:' + SC.santa : SC.santa, k;
+    var ru = SC.rider ? (SC.rider.indexOf('//') === 0 ? 'https:' + SC.rider : SC.rider) : su.replace('santa-sleigh.png', 'santa-rider.png');
+    var trail = '<b class="xtr">';
+    for (k = 0; k < 9; k++) trail += '<s style="--d:-' + (k * 150) + 'ms;--y:' + ((k * 37) % 9 - 4) + 'px"></s>';
+    trail += '</b>';
+    santa = '<span class="xm-sg xm-sg2" aria-hidden="true">' + sleighDefs() + trail +
+      '<b class="xtm" style="background-image:url(' + su + ')"></b>' +
+      '<b class="xr">' + sleighBack() + '<b class="xrp" style="background-image:url(' + ru + ')"></b>' + sleighFront() + '</b></span>';
   }
   window.__xmSanta = santa;
   function build() {
     var w = document.createElement('div');
     w.className = 'xm-scene'; w.setAttribute('aria-hidden', 'true');
-    w.innerHTML = tree('xm-tree xm-tree--r') + tree('xm-tree xm-tree--l') + '<div class="xm-fly">' + santa + '</div>';
+    w.innerHTML = tree('xm-tree xm-tree--r') + tree('xm-tree xm-tree--l') + '<div class="xm-fly">' + santa.replace(/\{U\}/g, 'a') + '</div>';
     document.body.appendChild(w);
   }
   function afterIntro() {
@@ -810,7 +868,7 @@
       el: sk, gy: gy,
       /* Santa and the greeting: added when the wind starts */
       extras: function () {
-        var f = document.createElement('div'); f.className = 'xm-fly2'; f.innerHTML = window.__xmSanta || ''; sk.appendChild(f);
+        var f = document.createElement('div'); f.className = 'xm-fly2'; f.innerHTML = (window.__xmSanta || '').replace(/\{U\}/g, 'b'); sk.appendChild(f);
         var gr = document.createElement('div'); gr.className = 'xm-greet'; gr.style.top = Math.round(gy + (H - gy) * .1) + 'px';
         function word(t, off, cls) { return '<div class="' + cls + '">' + t.split('').map(function (ch, n) { return '<span style="animation-delay:' + (off + n * 55) + 'ms">' + (ch === ' ' ? '&nbsp;' : ch) + '</span>'; }).join('') + '</div>'; }
         gr.innerHTML = word('Merry Christmas', 3700, 'g1') + word('from Morz', 4900, 'g2');
@@ -846,7 +904,7 @@
   /* everything from the scene leaves at the same moment: sky, greeting, the fallen snowman's snow and twigs */
   function endScene() {
     if (!SCN || SCN.ending) return;
-    var s = SCN, ms = 1800, keep = [];
+    var s = SCN, ms = 2400, keep = [];
     s.ending = 1; clearTimeout(s.safety);
     if (tower.scene) { var t = detach(); t.balls.forEach(function (b) { fadeOut(b.el, ms); }); fadeOut(t.dress, ms); fadeOut(t.skirt, ms); fadeOut(t.shadow, ms); }
     tower.balls.forEach(function (b) { keep.push(b.el); }); keep.push(tower.skirt, tower.shadow, tower.dress); if (cur) keep.push(cur.el);
@@ -1048,7 +1106,7 @@
   }, { passive: true });
   function knockEnd(e) {
     if (!knock || e.pointerId !== knock.id) return;
-    var k = knock; knock = null; document.body.classList.remove('xm-knock');
+    var k = knock; knock = null; document.body.classList.remove('xm-knock'); hush();
     if (!k.done && e.type === 'pointerup' && tower.balls.length) fallBack();
   }
   document.addEventListener('pointerup', knockEnd, { passive: true });
@@ -1067,10 +1125,14 @@
   function end(e) {
     if (pend && e.pointerId === pend.id) { clearTimeout(pend.tm); pend = null; }
     if (!cur || e.pointerId !== cur.id) return;
-    var b = cur; cur = null; document.body.classList.remove('xm-hold');
+    var b = cur; cur = null; document.body.classList.remove('xm-hold'); hush();
     if (b.r < 12) { b.el.remove(); live--; return; }
     if ((b.k || 0) >= .6) bury(b); else drop(b);
   }
+  /* the click a browser sends after the finger lifts belongs to the snowball, never to a link or button under it */
+  var quiet = 0;
+  function hush() { quiet = Date.now(); }
+  window.addEventListener('click', function (e) { if (Date.now() - quiet < 650) { e.preventDefault(); e.stopPropagation(); } }, true);
   document.addEventListener('pointerup', end, { passive: true });
   document.addEventListener('pointercancel', end, { passive: true });
   document.addEventListener('contextmenu', function (e) { if (cur || pend || knock) e.preventDefault(); });
