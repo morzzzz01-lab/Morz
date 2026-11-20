@@ -507,12 +507,56 @@
   var el = document.getElementById('XIntro');
   if (!el) { root.classList.remove('intro-on'); return; }
   var done = false, endTimer = null, started = false, raf = 0;
+  /* the end of the intro: a gust of wind blows a wave of snow across the screen and the shop appears behind it */
+  function blowSnow() {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return 0;
+    var W = window.innerWidth, H = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+    var c = document.createElement('canvas'); c.className = 'xi-gust'; c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+    var x = c.getContext && c.getContext('2d'); if (!x) return 0;
+    x.scale(dpr, dpr); document.body.appendChild(c);
+    var spr = document.createElement('canvas'); spr.width = spr.height = 64;
+    var sx = spr.getContext('2d'), sg = sx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(.45, 'rgba(244,248,253,.92)'); sg.addColorStop(.78, 'rgba(176,196,224,.38)'); sg.addColorStop(1, 'rgba(176,196,224,0)');
+    sx.fillStyle = sg; sx.fillRect(0, 0, 64, 64);
+    var P = [], S2 = [], n = Math.round(Math.min(1200, W * H / 650)), i, T = 1750;
+    for (i = 0; i < n; i++) {
+      var big = Math.random() < .12;
+      P.push({ s: 900 * Math.pow(Math.random(), 1.2), y: Math.random() * H, v: (big ? 760 : 1000) + Math.random() * 900, sz: big ? 22 + Math.random() * 50 : 2.4 + Math.random() * 7,
+        a: big ? .35 + Math.random() * .3 : .8 + Math.random() * .2, w: Math.random() * 6.28, dy: (Math.random() - .3) * 90, big: big });
+    }
+    for (i = 0; i < 22; i++) S2.push({ s: 700 * Math.random(), y: Math.random() * H, v: 1700 + Math.random() * 900, L: 120 + Math.random() * 160, w: Math.random() * 6.28 });
+    var t0 = performance.now();
+    (function frame(now) {
+      var t = now - t0, k;
+      x.clearRect(0, 0, W, H);
+      for (k = 0; k < S2.length; k++) {
+        var q = S2[k], dq = (t - q.s) / 1000; if (dq < 0) continue;
+        var qx = -q.L + q.v * dq, qy = q.y + Math.sin(dq * 4 + q.w) * 14; if (qx > W + q.L) continue;
+        var lg = x.createLinearGradient(qx - q.L, 0, qx, 0); lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(.7, 'rgba(255,255,255,.75)'); lg.addColorStop(1, 'rgba(255,255,255,0)');
+        x.strokeStyle = 'rgba(120,145,180,.18)'; x.lineWidth = 2.6; x.beginPath(); x.moveTo(qx - q.L, qy + 1.5); x.quadraticCurveTo(qx - q.L / 2, qy - 6, qx, qy + 1.5); x.stroke();
+        x.strokeStyle = lg; x.lineWidth = 1.6; x.beginPath(); x.moveTo(qx - q.L, qy); x.quadraticCurveTo(qx - q.L / 2, qy - 7.5, qx, qy); x.stroke();
+      }
+      for (k = 0; k < P.length; k++) {
+        var p = P[k], d = (t - p.s) / 1000; if (d < 0) continue;
+        var px = -80 + p.v * d + 40 * Math.sin(d * 5 + p.w), py = p.y + p.dy * d + Math.sin(d * 7 + p.w) * 9;
+        if (px > W + 100) continue;
+        var st = 1 + Math.min(1.8, p.v / 900), fade = Math.min(1, d * 6);
+        x.globalAlpha = p.a * fade;
+        if (!p.big) { x.fillStyle = 'rgba(105,130,168,.32)'; x.fillRect(px - p.sz * st * .3 + 1, py - p.sz * .15 + 1.4, p.sz * st * .6, p.sz * .38); }
+        x.drawImage(spr, px - p.sz * st / 2, py - p.sz / 2, p.sz * st, p.sz);
+      }
+      x.globalAlpha = 1;
+      if (t < T) requestAnimationFrame(frame); else c.remove();
+    })(t0);
+    return 1;
+  }
   function finish() {
     if (done) return; done = true;
     clearTimeout(endTimer); cancelAnimationFrame(raf);
-    el.classList.add('is-out');
-    root.classList.remove('intro-on');
-    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1300);
+    var gust = blowSnow(), wait = gust ? 430 : 0;
+    if (gust) el.classList.add('is-blown');
+    setTimeout(function () { el.classList.add('is-out'); root.classList.remove('intro-on'); }, wait);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, wait + 1300);
   }
   el.addEventListener('click', finish);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') finish(); });

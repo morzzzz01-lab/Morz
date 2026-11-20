@@ -498,3 +498,32 @@ html.xm-light,html.xm-light body{background:#ffffff}
 @keyframes xi-glow-tw{0%,100%{opacity:.9}50%{opacity:.5}}
 @keyframes xi-core-on{0%{opacity:0}40%{opacity:1}100%{opacity:.85}}
 @keyframes xi-core-tw{0%,100%{opacity:.85}50%{opacity:.55}}
+
+/* ---- hero: old price crossed out and how much is saved, next to the price ---- */
+.hpr{display:flex;align-items:baseline;flex-wrap:wrap;gap:.15rem .6rem}
+.hpr-was{font-size:.58em;opacity:.78;text-decoration-thickness:2px}
+.hpr-off{align-self:center;font-family:var(--font,system-ui);font-size:.5em;font-weight:800;line-height:1;letter-spacing:.02em;background:#fff;color:#d4202a;padding:.38em .7em;border-radius:2rem;box-shadow:0 6px 14px -6px rgba(0,0,0,.45);text-shadow:none;animation:xm-off-in .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes xm-off-in{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+
+/* ---- dark mode: the product cards on the home page are dark too (light mode keeps them snow-white) ---- */
+html:not(.xm-light) .tpl-index .p{background:linear-gradient(180deg,#1c1416 0%,#0c0909 100%);border-color:#35262a;color:#f5efe9;box-shadow:0 18px 40px -26px rgba(0,0,0,.9)}
+html:not(.xm-light) .tpl-index .p h3,html:not(.xm-light) .tpl-index .p h3 a,html:not(.xm-light) .tpl-index .p .pr,html:not(.xm-light) .tpl-index .p .pr span{color:#f5efe9}
+html:not(.xm-light) .tpl-index .p .was{color:#8f7f83}
+html:not(.xm-light) .tpl-index .p .cur{color:#bfaeb2}
+html:not(.xm-light) .tpl-index .ph{background:radial-gradient(circle at 50% 32%,#2e2326 0%,#151011 72%);box-shadow:inset 0 0 0 1px #35262a}
+html:not(.xm-light) .tpl-index .ph::before{opacity:.45}
+html:not(.xm-light) .tpl-index .p .pimg{filter:drop-shadow(0 12px 14px rgba(0,0,0,.6))}
+
+/* ---- real-looking snow caps (painted by xmas.js; the old drawn caps stay until it is ready) ---- */
+html.xm-caps .prods .p::after{top:-21px;height:56px;left:-2%;right:-2%;background:var(--xm-cap) 0 0/auto 100% repeat-x;filter:drop-shadow(0 3px 2.5px rgba(10,20,40,.28))}
+html.xm-caps .prods .p:nth-child(3n+2)::after{background-position-x:-160px}
+html.xm-caps .prods .p:nth-child(3n)::after{background-position-x:-320px}
+html.xm-caps .prods .p::before{display:none}
+html.xm-caps .btn-card::before,html.xm-caps .btn-cart::before,html.xm-caps .bundle::before{top:-15px;height:40px;background:var(--xm-cap) 0 0/auto 100% repeat-x;filter:drop-shadow(0 2px 2px rgba(10,20,40,.3))}
+html.xm-caps .bundle:nth-child(2)::before{background-position-x:-130px}
+html.xm-caps .bundle:nth-child(3)::before{background-position-x:-260px}
+
+/* ---- end of the intro: the snow wave blows across and the shop appears ---- */
+.xi-gust{position:fixed;left:0;top:0;width:100%;height:100%;z-index:10001;pointer-events:none}
+.xi.is-blown{transition:opacity .75s cubic-bezier(.4,0,.2,1),visibility .75s cubic-bezier(.4,0,.2,1)}
+.xi.is-blown.is-out .xi-logo{transform:translateX(9vw) scale(1.02);opacity:0;transition:transform .8s cubic-bezier(.5,0,.75,0),opacity .6s ease}

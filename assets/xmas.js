@@ -1,3 +1,91 @@
+/* Real-looking snow caps for the product cards, Buy now buttons and bundles: one seamless strip of snow is painted once
+   (lumpy top, soft shaded underside, fine grain, a few sparkles and small clear icicles) and repeated along every edge. */
+(function () {
+  if (window.__xmCaps) return;
+  window.__xmCaps = true;
+  var W = 480, H = 56, K = 2, seed = 7;
+  function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+  function cap() {
+    var c = document.createElement('canvas'); c.width = W * K; c.height = H * K;
+    var x = c.getContext('2d'); if (!x) return null; x.scale(K, K);
+    var P = 6.2832 / W, i, j;
+    var ph = []; for (i = 0; i < 8; i++) ph.push(rnd() * 6.2832);
+    var drips = []; for (i = 0; i < 9; i++) drips.push([(i + .2 + rnd() * .6) * W / 9, 3.5 + rnd() * 6, 9 + rnd() * 12]);
+    function wrapd(a, b) { var d = Math.abs(a - b) % W; return Math.min(d, W - d); }
+    function top(t) { return 10 + 3.1 * Math.sin(3 * P * t + ph[0]) + 1.9 * Math.sin(7 * P * t + ph[1]) + 1.1 * Math.sin(13 * P * t + ph[2]) + .55 * Math.sin(29 * P * t + ph[3]); }
+    function bot(t) {
+      var y = 31 + 1.5 * Math.sin(5 * P * t + ph[4]) + .9 * Math.sin(11 * P * t + ph[5]) + .5 * Math.sin(23 * P * t + ph[6]);
+      drips.forEach(function (d) { var u = wrapd(t, d[0]) / d[2]; y += d[1] * Math.exp(-u * u * 2.2); });
+      return y;
+    }
+    function body() {
+      x.beginPath(); x.moveTo(-2, top(0));
+      for (i = 0; i <= W + 2; i += 2) x.lineTo(i, top(i));
+      for (i = W + 2; i >= -2; i -= 2) x.lineTo(i, bot(i));
+      x.closePath();
+    }
+    /* icicles hang behind the snow's lower edge */
+    for (i = 0; i < 11; i++) {
+      var ix = (i + rnd()) * W / 11, base = bot(ix) - 1.5, L = 5 + rnd() * 13 * (rnd() < .3 ? 1.5 : 1), w = 2.2 + rnd() * 2.6, lean = (rnd() - .5) * 2.2;
+      [ix, ix - W, ix + W].forEach(function (ax) {
+        var g = x.createLinearGradient(0, base, 0, base + L);
+        g.addColorStop(0, 'rgba(255,255,255,.96)'); g.addColorStop(.45, 'rgba(214,232,250,.8)'); g.addColorStop(1, 'rgba(196,224,252,.25)');
+        x.fillStyle = g; x.beginPath(); x.moveTo(ax - w / 2, base);
+        x.quadraticCurveTo(ax - w * .35 + lean * .3, base + L * .6, ax + lean, base + L);
+        x.quadraticCurveTo(ax + w * .35 + lean * .3, base + L * .6, ax + w / 2, base); x.closePath(); x.fill();
+        x.strokeStyle = 'rgba(255,255,255,.85)'; x.lineWidth = .55; x.beginPath(); x.moveTo(ax - w * .22, base + 1); x.quadraticCurveTo(ax - w * .2 + lean * .2, base + L * .5, ax + lean * .7, base + L * .85); x.stroke();
+        x.fillStyle = 'rgba(225,242,255,.85)'; x.beginPath(); x.arc(ax + lean, base + L + .4, .75, 0, 6.2832); x.fill();
+      });
+    }
+    /* the snow itself */
+    body();
+    var g = x.createLinearGradient(0, 2, 0, 40); g.addColorStop(0, '#ffffff'); g.addColorStop(.5, '#f7fafd'); g.addColorStop(1, '#dbe5f2');
+    x.fillStyle = g; x.fill();
+    x.save(); body(); x.clip();
+    /* clumps: each lump catches light on top-left and has a cool shadow bottom-right */
+    for (i = 0; i < 70; i++) {
+      var cx0 = rnd() * W, r = 3 + rnd() * 7, cy = top(cx0) + r * (.55 + rnd() * .9);
+      [cx0, cx0 - W, cx0 + W].forEach(function (ax) {
+        var sg = x.createRadialGradient(ax + r * .25, cy + r * .35, 0, ax + r * .25, cy + r * .35, r * 1.25);
+        sg.addColorStop(0, 'rgba(120,150,195,.16)'); sg.addColorStop(1, 'rgba(120,150,195,0)');
+        x.fillStyle = sg; x.fillRect(ax - r * 1.2, cy - r * 1.2, r * 2.8, r * 2.8);
+        var lg = x.createRadialGradient(ax - r * .3, cy - r * .35, 0, ax - r * .3, cy - r * .35, r);
+        lg.addColorStop(0, 'rgba(255,255,255,.95)'); lg.addColorStop(1, 'rgba(255,255,255,0)');
+        x.fillStyle = lg; x.fillRect(ax - r * 1.3, cy - r * 1.4, r * 2.2, r * 2.2);
+      });
+    }
+    /* the underside is in shadow */
+    for (i = 0; i <= W; i += 2) {
+      var b = bot(i), sh = x.createLinearGradient(0, b - 9, 0, b);
+      sh.addColorStop(0, 'rgba(130,158,200,0)'); sh.addColorStop(1, 'rgba(118,148,192,.42)');
+      x.fillStyle = sh; x.fillRect(i, b - 9, 2.2, 9);
+    }
+    /* fine grain */
+    for (i = 0; i < 2600; i++) {
+      var gx = rnd() * W, gy = top(gx) + rnd() * (bot(gx) - top(gx)), dk = rnd() < .3, sz = .4 + rnd() * .9;
+      x.fillStyle = dk ? 'rgba(120,150,195,' + (.08 + rnd() * .14).toFixed(3) + ')' : 'rgba(255,255,255,' + (.6 + rnd() * .4).toFixed(2) + ')';
+      x.fillRect(gx, gy, sz, sz);
+    }
+    x.restore();
+    /* a soft bright rim along the top and a few sparkles */
+    x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(-2, top(0) + .6);
+    for (i = 0; i <= W + 2; i += 2) x.lineTo(i, top(i) + .6);
+    x.stroke();
+    for (i = 0; i < 26; i++) {
+      var sx = rnd() * W, sy = top(sx) + 2 + rnd() * 9, s = .9 + rnd() * 1.6;
+      x.fillStyle = 'rgba(255,255,255,1)'; x.fillRect(sx - s, sy - .25, s * 2, .5); x.fillRect(sx - .25, sy - s, .5, s * 2);
+      x.fillStyle = 'rgba(200,225,255,.6)'; x.beginPath(); x.arc(sx, sy, .7, 0, 6.2832); x.fill();
+    }
+    return c;
+  }
+  try {
+    var c = cap(); if (!c) return;
+    var done = function (u) { document.documentElement.style.setProperty('--xm-cap', 'url("' + u + '")'); document.documentElement.classList.add('xm-caps'); };
+    if (c.toBlob && window.URL && URL.createObjectURL) c.toBlob(function (bl) { if (bl) done(URL.createObjectURL(bl)); }, 'image/png');
+    else done(c.toDataURL('image/png'));
+  } catch (e) {}
+})();
+
 /* Light / Dark: two buttons in the header menu. Light makes the shop white, Dark is the original look.
    The choice is remembered on this device (an inline script in the page head applies it before the first paint). */
 (function () {
