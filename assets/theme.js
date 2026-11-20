@@ -517,7 +517,7 @@
   var done = false, endTimer = null, started = false, raf = 0;
   /* the end of the intro: a snow storm builds up, blows the logo away and keeps blowing for a few seconds;
      the shop appears behind it while it dies down */
-  var STORM = 3200;
+  var STORM = 4600;
   function blowSnow() {
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return 0;
     var W = window.innerWidth, H = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -529,14 +529,14 @@
     sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(.45, 'rgba(244,248,253,.92)'); sg.addColorStop(.78, 'rgba(176,196,224,.38)'); sg.addColorStop(1, 'rgba(176,196,224,0)');
     sx.fillStyle = sg; sx.fillRect(0, 0, 64, 64);
     /* how hard it snows over time: builds up quickly, blows hard, then thins out */
-    function power(t) { return t < 350 ? t / 350 : t < 1900 ? 1 : Math.max(0, 1 - (t - 1900) / (STORM - 2300)); }
-    var P = [], S2 = [], i, rate = Math.min(1.25, W * H / 600000) * 1.1, acc = 0, last = 0;
+    function power(t) { return t < 450 ? t / 450 : t < 3000 ? 1 : Math.max(0, 1 - (t - 3000) / (STORM - 3400)); }
+    var P = [], S2 = [], i, rate = Math.min(1.25, W * H / 600000) * .85, acc = 0, last = 0;
     function spawn(t, k) {
       var big = Math.random() < .12;
-      P.push({ s: t, y: Math.random() * H * 1.1 - H * .05, v: (big ? 760 : 1050) + Math.random() * 950, sz: big ? 22 + Math.random() * 54 : 2.4 + Math.random() * 7.5,
+      P.push({ s: t, y: Math.random() * H * 1.1 - H * .05, v: (big ? 560 : 760) + Math.random() * 700, sz: big ? 22 + Math.random() * 54 : 2.4 + Math.random() * 7.5,
         a: big ? .32 + Math.random() * .3 : .8 + Math.random() * .2, w: Math.random() * 6.28, dy: (Math.random() - .25) * 110, big: big, x0: k ? -Math.random() * W * .4 - 60 : -80 });
     }
-    for (i = 0; i < 26; i++) S2.push({ s: Math.random() * (STORM - 900), y: Math.random() * H, v: 1700 + Math.random() * 900, L: 120 + Math.random() * 180, w: Math.random() * 6.28 });
+    for (i = 0; i < 34; i++) S2.push({ s: Math.random() * (STORM - 1300), y: Math.random() * H, v: 1300 + Math.random() * 700, L: 120 + Math.random() * 180, w: Math.random() * 6.28 });
     var t0 = performance.now();
     (function frame(now) {
       var t = now - t0, k;
@@ -545,7 +545,7 @@
       while (acc >= 1) { spawn(t - Math.random() * 16, P.length < 40); acc -= 1; }
       x.clearRect(0, 0, W, H);
       /* the air itself turns white in the thick of it */
-      var veil = .26 * Math.min(1, power(t) * 1.4) * (t < 1900 ? 1 : power(t));
+      var veil = .26 * Math.min(1, power(t) * 1.4) * (t < 3000 ? 1 : power(t));
       if (veil > .005) { x.fillStyle = 'rgba(244,248,253,' + veil.toFixed(3) + ')'; x.fillRect(0, 0, W, H); }
       for (k = 0; k < S2.length; k++) {
         var q = S2[k], dq = (t - q.s) / 1000; if (dq < 0) continue;
@@ -576,9 +576,9 @@
     var gust = blowSnow();
     if (gust) {
       /* the logo is blown away first, the storm keeps blowing, then the shop shows through as it dies down */
-      setTimeout(function () { el.classList.add('is-blown'); }, 380);
-      setTimeout(function () { el.classList.add('is-out'); root.classList.remove('intro-on'); }, 1700);
-      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 3200);
+      setTimeout(function () { el.classList.add('is-blown'); }, 450);
+      setTimeout(function () { el.classList.add('is-out'); root.classList.remove('intro-on'); }, 2700);
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 4300);
     } else {
       el.classList.add('is-out'); root.classList.remove('intro-on');
       setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1300);
