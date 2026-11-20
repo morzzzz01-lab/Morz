@@ -13,6 +13,7 @@ import {
 import {C, F, FPS, H, TL, W, clamp01, easeIn, easeOut, flicker, lerp, prog, sp} from './lib';
 
 const {s1, s2, s3, s4, s5} = TL;
+const LOGO_H = 330;
 
 /* Scene 1: dark, cosy room (the hero photo, defocused and dimmed) and the hook. */
 const Hook: React.FC<{t: number; frame: number}> = ({t, frame}) => {
@@ -248,6 +249,7 @@ const Finale: React.FC<{t: number; frame: number}> = ({t, frame}) => {
   const l1 = (d: number) => prog(t, s5.line1 + d, s5.line1 + d + 0.6, easeOut);
   const l2 = (d: number) => prog(t, s5.line2 + d, s5.line2 + d + 0.6, easeOut);
   const brand = prog(t, s5.brand, s5.brand + 0.8, easeOut);
+  const logoK = lerp(0.82, 1, sp(frame, s5.brand, {damping: 11, stiffness: 200, mass: 0.7}));
   const cta = sp(frame, s5.cta, {damping: 11, stiffness: 210, mass: 0.7});
   const pulse = t > s5.cta + 0.6 ? 1 + 0.03 * Math.sin((t - s5.cta - 0.6) * Math.PI * 2 * 1.333) : 1;
   const shine = ((t - s5.cta - 0.5) % 1.5) / 0.7;
@@ -260,7 +262,7 @@ const Finale: React.FC<{t: number; frame: number}> = ({t, frame}) => {
         t1={s5.end}
         from={{z: 1.36, x: 0.51, y: 0.66}}
         to={{z: 1.24, x: 0.51, y: 0.67}}
-        cy={1030}
+        cy={950}
         bright={1.03}
       />
       <Scrim top={190} height={470} amount={0.85 * l1(0)} />
@@ -279,30 +281,25 @@ const Finale: React.FC<{t: number; frame: number}> = ({t, frame}) => {
           </Word>
         </div>
       </div>
-      <Scrim top={1280} height={360} amount={0.8 * brand} />
-      <div
+      <Scrim top={1120} height={600} amount={0.85 * brand} />
+      {/* the MORZ mini logo from the store theme (assets/morz-logo-mini-light.png), unaltered */}
+      <Img
+        src={staticFile('logo/morz-logo-mini-light.png')}
         style={{
           position: 'absolute',
-          top: 1335,
-          width: '100%',
-          textAlign: 'center',
-          fontFamily: F.sans,
-          fontWeight: 800,
-          fontSize: 76,
-          color: C.cream,
-          letterSpacing: `${lerp(0.7, 0.42, brand)}em`,
-          paddingLeft: `${lerp(0.7, 0.42, brand)}em`,
-          opacity: brand,
-          filter: `blur(${(1 - brand) * 10}px)`,
-          textShadow: '0 4px 30px rgba(0,0,0,0.5)',
+          top: 1160,
+          left: W / 2 - LOGO_H * (308 / 404) / 2,
+          height: LOGO_H,
+          width: LOGO_H * (308 / 404),
+          opacity: clamp01(brand * 1.4),
+          transform: `scale(${logoK}) translateY(${(1 - brand) * 24}px)`,
+          filter: `blur(${(1 - brand) * 10}px) drop-shadow(0 6px 24px rgba(0,0,0,0.55))`,
         }}
-      >
-        MORZ
-      </div>
+      />
       <div
         style={{
           position: 'absolute',
-          top: 1450,
+          top: 1510,
           left: W / 2 - 220,
           width: 440,
           height: 104,

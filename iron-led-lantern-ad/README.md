@@ -14,7 +14,7 @@ and light effects. The product itself is not redrawn or changed.
 | 2–5 s | Lantern in the dark, its light comes up, slow push in, sheen across the metal | s1 (cut-out) |
 | 5–9 s | Close-ups (reindeer, snowflake, trees), "INSTANT COZY VIBES" | s8, s7, s9 |
 | 9–12 s | Other angles, one per beat | s4, s2, s6, s5 |
-| 12–15 s | Hero shot, "MAKE YOUR SPACE FEEL SPECIAL", MORZ, SHOP NOW | s10 |
+| 12–15 s | Hero shot, "MAKE YOUR SPACE FEEL SPECIAL", MORZ mini logo, SHOP NOW | s10, `public/logo/morz-logo-mini-light.png` |
 
 ## Edit and re-render
 
