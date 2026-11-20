@@ -55,11 +55,133 @@
     elArtist.textContent = '';
     [].forEach.call(elList.children, function (li, n) { li.classList.toggle('cur', n === cur); });
   }
+  /* ---- lyrics: the words of the song that is playing, in time with it (synced lyrics from lrclib.net) ----
+     shown as a soft karaoke line at the bottom of the screen: the line being sung fills in, the next one waits below */
+  var LY = { id: null, lines: null, idx: -2, on: true, raw: -1, base: 0, at: 0, raf: 0, playing: false };
+  try { LY.on = localStorage.getItem('morz_lyrics') !== 'off'; } catch (e) {}
+  var lyBtn = q('[data-mx-lyr]'), lyLabel = lyBtn ? lyBtn.getAttribute('title') : 'Lyrics';
+  var lyBox = document.createElement('div');
+  lyBox.className = 'mx-lyr'; lyBox.setAttribute('aria-hidden', 'true');
+  lyBox.innerHTML = '<div class="mx-lyr-in"></div><button type="button" class="mx-lyr-x" tabindex="-1">&times;</button>';
+  document.body.appendChild(lyBox);
+  var lyIn = lyBox.firstChild, lyCur = null, lyNext = null;
+  function lySetBtn() { if (lyBtn) lyBtn.setAttribute('aria-pressed', LY.on ? 'true' : 'false'); }
+  lySetBtn();
+  function lyToggle(on) {
+    LY.on = on; lySetBtn();
+    try { localStorage.setItem('morz_lyrics', on ? 'on' : 'off'); } catch (e) {}
+    lyShow(); if (on) lyLoop();
+  }
+  if (lyBtn) lyBtn.addEventListener('click', function () { lyToggle(!LY.on); });
+  lyBox.lastChild.setAttribute('aria-label', lyLabel);
+  lyBox.lastChild.addEventListener('click', function () { lyToggle(false); });
+  function lyShow() {
+    var muted = false; try { muted = player && player.isMuted && player.isMuted(); } catch (e) {}
+    var vis = !!(LY.on && LY.playing && !muted && LY.lines && LY.lines.length && !document.documentElement.classList.contains('intro-on'));
+    if (vis !== lyBox.classList.contains('on')) lyBox.classList.toggle('on', vis);
+  }
+  function lyParse(txt) {
+    var out = [];
+    (txt || '').split(/\r?\n/).forEach(function (row) {
+      var tags = row.match(/\[\d+:\d+(?:[.:]\d+)?\]/g); if (!tags) return;
+      var words = row.replace(/\[[^\]]*\]/g, '').trim();
+      tags.forEach(function (tg) { var m = tg.match(/\[(\d+):(\d+)(?:[.:](\d+))?\]/); out.push({ t: +m[1] * 60 + +m[2] + (m[3] ? +('0.' + m[3]) : 0), s: words }); });
+    });
+    out.sort(function (a, b) { return a.t - b.t; });
+    return out;
+  }
+  function norm(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
+  function lyQuery(title, author) {
+    var t = (title || '').replace(/[\(\[][^\)\]]*[\)\]]/g, ' ').replace(/\s(ft|feat|featuring)\.?\s.*$/i, '').replace(/\|.*$/, '').replace(/["“”]/g, '').replace(/\s+/g, ' ').trim();
+    var a = (author || '').replace(/vevo$/i, '').replace(/\s*-\s*topic$/i, '').trim(), artist = '', track = t;
+    var parts = t.split(/\s[-–—]\s/);
+    if (parts.length > 1) { artist = parts[0].trim(); track = parts.slice(1).join(' ').trim(); } else artist = a;
+    return { artist: artist, track: track };
+  }
+  function lyFetch(id, title, author, dur) {
+    var key = 'morz_lyr_' + id;
+    try { var c = sessionStorage.getItem(key); if (c) return Promise.resolve(JSON.parse(c)); } catch (e) {}
+    var Q = lyQuery(title, author), nt = norm(Q.track), na = norm(Q.artist);
+    function pick(list) {
+      var best = null, bs = 1e9;
+      (list || []).forEach(function (r) {
+        if (!r || !r.syncedLyrics || r.instrumental) return;
+        var tn = norm(r.trackName), an = norm(r.artistName);
+        var tm = nt && (tn === nt || tn.indexOf(nt) > -1 || nt.indexOf(tn) > -1), am = !na || an.indexOf(na) > -1 || na.indexOf(an) > -1;
+        var dd = dur > 0 && r.duration ? Math.abs(r.duration - dur) : 6;
+        if (dd > 15) return;
+        var sc = dd + (tm ? 0 : 25) + (am ? 0 : 6);
+        if (sc < bs) { bs = sc; best = r; }
+      });
+      return best && bs < 40 ? lyParse(best.syncedLyrics) : null;
+    }
+    function get(u) { return fetch(u).then(function (r) { if (!r.ok) throw 0; return r.json(); }); }
+    var base = 'https://lrclib.net/api/search?';
+    return get(base + 'q=' + encodeURIComponent((Q.artist + ' ' + Q.track).trim())).then(pick).catch(function () { return null; })
+      .then(function (res) { return res || get(base + 'track_name=' + encodeURIComponent(Q.track)).then(pick).catch(function () { return null; }); })
+      .then(function (res) { try { sessionStorage.setItem(key, JSON.stringify(res || [])); } catch (e) {} return res || []; });
+  }
+  function lyLoad() {
+    if (!player || !player.getVideoData) return;
+    var d = player.getVideoData() || {}, id = d.video_id;
+    if (!id || id === LY.id) return;
+    LY.id = id; LY.lines = null; LY.idx = -2; lyIn.innerHTML = ''; lyCur = lyNext = null; lyShow();
+    var cur = player.getPlaylistIndex ? player.getPlaylistIndex() : -1, li = elList.children[cur];
+    var title = (li && li.getAttribute('data-name')) || TITLES[id] || clean(d.title || ''), dur = 0;
+    try { dur = player.getDuration() || 0; } catch (e) {}
+    lyFetch(id, title, d.author || '', dur).then(function (lines) {
+      if (LY.id !== id) return;
+      LY.lines = lines && lines.length ? lines : null; LY.idx = -2; lyShow(); lyLoop();
+    });
+  }
+  function lyLine(txt, cls) {
+    var p = document.createElement('p'), bx = document.createElement('span'), sp = document.createElement('span'); p.className = 'mx-ly ' + cls;
+    sp.textContent = txt || '\u266A \u266A';
+    if (!txt) p.classList.add('mx-ly-note');
+    bx.appendChild(sp); p.appendChild(bx); lyIn.appendChild(p); return p;
+  }
+  /* move to line i: the sung line slides up and fades out, the waiting line moves up into place, a new one fades in below */
+  function lyGo(i) {
+    var L = LY.lines;
+    if (lyCur) { var o = lyCur; o.style.setProperty('--p', '100%'); o.className = o.className.replace(/\bis-cur\b/, 'is-gone'); setTimeout(function () { o.remove(); }, 700); }
+    if (lyNext && LY.idx === i - 1) { lyCur = lyNext; lyCur.className = lyCur.className.replace(/\bis-next\b/, 'is-cur'); }
+    else { if (lyNext) lyNext.remove(); lyCur = i >= 0 ? lyLine(L[i].s, 'is-cur is-new') : null; if (lyCur) { void lyCur.offsetWidth; lyCur.classList.remove('is-new'); } }
+    lyNext = L[i + 1] ? lyLine(L[i + 1].s, 'is-next is-new') : null;
+    if (lyNext) { void lyNext.offsetWidth; lyNext.classList.remove('is-new'); }
+    LY.idx = i;
+  }
+  function lyTime() {
+    var raw = 0; try { raw = player.getCurrentTime() || 0; } catch (e) {}
+    var now = performance.now();
+    if (raw !== LY.raw) { LY.raw = raw; LY.base = raw; LY.at = now; }
+    return LY.base + Math.min(.6, (now - LY.at) / 1000);
+  }
+  function lyTick() {
+    LY.raf = 0;
+    if (!LY.on || !LY.playing || !LY.lines) { lyShow(); return; }
+    lyShow();
+    var L = LY.lines, t = lyTime() + .15, i = -1, lo = 0, hi = L.length - 1;
+    while (lo <= hi) { var m = (lo + hi) >> 1; if (L[m].t <= t) { i = m; lo = m + 1; } else hi = m - 1; }
+    if (i !== LY.idx) {
+      if (Math.abs(i - LY.idx) > 1) { lyIn.innerHTML = ''; lyCur = lyNext = null; LY.idx = -2; }
+      lyGo(i);
+    }
+    if (lyCur && i >= 0) {
+      var st = L[i].t, en = L[i + 1] ? L[i + 1].t : st + 4, len = Math.min(en - st, .6 + (L[i].s || '').length * .075);
+      var pr = Math.max(0, Math.min(1, (t - st) / Math.max(.3, len)));
+      lyCur.style.setProperty('--p', (pr * 100).toFixed(1) + '%');
+    }
+    LY.raf = requestAnimationFrame(lyTick);
+  }
+  function lyLoop() { if (!LY.raf && LY.on && LY.playing && LY.lines) LY.raf = requestAnimationFrame(lyTick); }
+  function lyPlaying(p) { LY.playing = p; if (p) { lyLoad(); lyLoop(); } lyShow(); }
+  document.addEventListener('visibilitychange', function () { if (document.hidden && LY.raf) { cancelAnimationFrame(LY.raf); LY.raf = 0; } else lyLoop(); });
+
   function onState(e) {
     var S = window.YT.PlayerState;
-    if (e.data === S.PLAYING) { setIcon(true); started = true; info(); }
-    else if (e.data === S.PAUSED) { setIcon(false); }
-    else if (e.data === S.ENDED) { advance(); }
+    if (e.data === S.PLAYING) { setIcon(true); started = true; info(); lyPlaying(true); }
+    else if (e.data === S.PAUSED) { setIcon(false); lyPlaying(false); }
+    else if (e.data === S.ENDED) { lyPlaying(false); advance(); }
     else if (e.data === S.CUED) { info(); }
   }
   /* YouTube moves on to the next song by itself; only step in when it did not (stuck/blocked), and never skip a song twice */

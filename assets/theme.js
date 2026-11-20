@@ -619,14 +619,44 @@
     /* the spark's path along the wire, in the same time units as the reveal (negative = flying in from the right) */
     var SPK = [[-650, 432, 316], [-330, 398, 336], [0, 352, 362], [60, 330, 392], [200, 300, 412], [430, 245, 418], [600, 205, 421], [800, 165, 424], [960, 135, 408],
       [1080, 127, 385], [1220, 138, 350], [1360, 150, 320], [1500, 185, 306], [1650, 225, 294], [1800, 262, 281], [1950, 295, 271], [2080, 305, 250], [2200, 301, 222], [2320, 299, 198], [2400, 304, 183]];
-    function sparkAt(t) {
-      if (t <= SPK[0][0]) return null;
-      for (var i = 1; i < SPK.length; i++) if (t <= SPK[i][0]) {
-        var a = SPK[i - 1], b = SPK[i], u = (t - a[0]) / (b[0] - a[0]);
-        return [a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
+    /* the spark glides like a snake: a smooth curve (Catmull-Rom) through the guide points, travelled at a speed that
+       is smoothed over time, so it eases in from the right, never jerks at a corner and comes softly to rest */
+    var sparkAt = (function () {
+      var n = SPK.length, SEG = 16, samp = [], knot = [], len = 0, px = null, py = 0, i, j, k;
+      function G(m) { return SPK[Math.max(0, Math.min(n - 1, m))]; }
+      function cr(a, b, c, d, u, o) { var u2 = u * u, u3 = u2 * u; return .5 * (2 * b[o] + (c[o] - a[o]) * u + (2 * a[o] - 5 * b[o] + 4 * c[o] - d[o]) * u2 + (3 * b[o] - a[o] - 3 * c[o] + d[o]) * u3); }
+      for (i = 0; i < n; i++) {
+        for (j = 0; j < (i < n - 1 ? SEG : 1); j++) {
+          var u = j / SEG, x = i < n - 1 ? cr(G(i - 1), G(i), G(i + 1), G(i + 2), u, 1) : G(i)[1], y = i < n - 1 ? cr(G(i - 1), G(i), G(i + 1), G(i + 2), u, 2) : G(i)[2];
+          if (px !== null) len += Math.sqrt((x - px) * (x - px) + (y - py) * (y - py));
+          if (j === 0) knot.push(len);
+          samp.push([x, y, len]); px = x; py = y;
+        }
       }
-      return [SPK[SPK.length - 1][1], SPK[SPK.length - 1][2]];
-    }
+      var T0 = SPK[0][0], T1 = SPK[n - 1][0], STEP = 10, M = Math.round((T1 - T0) / STEP) + 1, sm = [], seg = 0;
+      for (k = 0; k < M; k++) {
+        var t = T0 + k * STEP;
+        while (seg < n - 2 && t > SPK[seg + 1][0]) seg++;
+        var f = Math.max(0, Math.min(1, (t - SPK[seg][0]) / (SPK[seg + 1][0] - SPK[seg][0])));
+        sm.push(knot[seg] + (knot[seg + 1] - knot[seg]) * f);
+      }
+      for (var pass = 0; pass < 3; pass++) {
+        var R = 9, out = [];
+        for (k = 0; k < M; k++) { var acc = 0; for (j = -R; j <= R; j++) acc += sm[Math.max(0, Math.min(M - 1, k + j))]; out.push(acc / (2 * R + 1)); }
+        sm = out;
+      }
+      var s0 = sm[0], s1 = sm[M - 1];
+      for (k = 0; k < M; k++) sm[k] = (sm[k] - s0) / (s1 - s0) * len;
+      return function (t) {
+        if (t <= T0) return null;
+        var L = len;
+        if (t < T1) { var fk = (t - T0) / STEP, k0 = Math.floor(fk); L = sm[k0] + (sm[Math.min(M - 1, k0 + 1)] - sm[k0]) * (fk - k0); }
+        var lo = 0, hi = samp.length - 1;
+        while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (samp[mid][2] < L) lo = mid; else hi = mid; }
+        var A = samp[lo], B = samp[hi], g = B[2] > A[2] ? (L - A[2]) / (B[2] - A[2]) : 0;
+        return [A[0] + (B[0] - A[0]) * g, A[1] + (B[1] - A[1]) * g];
+      };
+    })();
     function glow(x, y, r, a) {
       var g = wx.createRadialGradient(x, y, 0, x, y, r);
       g.addColorStop(0, 'rgba(255,255,255,' + a + ')'); g.addColorStop(.18, 'rgba(255,246,200,' + (a * .95) + ')');
@@ -642,8 +672,8 @@
       wx.clearRect(0, 0, wc.width, wc.height);
       if (lready) { wx.globalCompositeOperation = 'source-over'; wx.drawImage(mask, 0, 0); wx.globalCompositeOperation = 'source-in'; wx.drawImage(limg, 0, 0, wc.width, wc.height); wx.globalCompositeOperation = 'source-over'; }
       if (live) {
-        trail.push([sp[0] * S, sp[1] * S]); if (trail.length > 9) trail.shift();
-        for (var i = 0; i < trail.length - 1; i++) glow(trail[i][0], trail[i][1], (4 + i * 1.1) * S, (.12 + i * .05) * fade);
+        /* a soft comet tail taken from where the spark was a moment ago (time based, so it is the same at any frame rate) */
+        for (var tk = 12; tk >= 1; tk--) { var tq = sparkAt(t - tk * 12); if (!tq) continue; var tf = 1 - tk / 13; glow(tq[0] * S, tq[1] * S, (3.2 + tf * 9) * S, (.04 + tf * .24) * fade); }
         glow(sp[0] * S, sp[1] * S, 20 * S, .95 * fade);
         glow(sp[0] * S, sp[1] * S, 5.5 * S, fade);
         return true;
@@ -657,6 +687,13 @@
       ctx.beginPath();
       while (p < PEN.length && PEN[p][3] * TS <= e) {
         var q = PEN[p], r = Math.max(1.4, q[2] * S * .98), cx = (q[0] + .5) * S, cy = (q[1] + .5) * S;
+        /* inside one stroke (no pen lift) fill the gap to the previous dot, so the ink is one smooth line, never beads */
+        var q0 = p > 0 ? PEN[p - 1] : null;
+        if (q0 && q[3] - q0[3] < 40) {
+          var ax = (q0[0] + .5) * S, ay = (q0[1] + .5) * S, ar = Math.max(1.4, q0[2] * S * .98), gd = Math.sqrt((cx - ax) * (cx - ax) + (cy - ay) * (cy - ay));
+          var gn = Math.floor(gd / (Math.min(r, ar) * .45));
+          for (var gk = 1; gk < gn; gk++) { var gu = gk / gn, gx = ax + (cx - ax) * gu, gy = ay + (cy - ay) * gu, gr = ar + (r - ar) * gu; ctx.moveTo(gx + gr, gy); ctx.arc(gx, gy, gr, 0, 6.2832); }
+        }
         ctx.moveTo(cx + r, cy); ctx.arc(cx, cy, r, 0, 6.2832);
         p++;
       }

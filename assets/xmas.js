@@ -86,6 +86,162 @@
   } catch (e) {}
 })();
 
+/* Snow that has really settled on each product card: painted to the card's own width, piled a little higher in the middle,
+   rolling softly over both top corners and hanging a short way down the sides, with a few round drips on the front edge.
+   Every card gets its own drift (seeded), it settles into place when the card comes into view, and it is redrawn on resize. */
+(function () {
+  if (window.__xmCardSnow) return;
+  window.__xmCardSnow = true;
+  var O = 7, T = 26, H = 26 + 34, R = 14, cards = [], ro = null, io = null, n = 0;
+  function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function paint(card) {
+    var c = card.__xmCap, w = Math.round(card.offsetWidth);
+    if (!c || w < 60 || w === card.__xmW) return;
+    card.__xmW = w;
+    var dpr = Math.min(2, window.devicePixelRatio || 1), CW = w + O * 2;
+    c.width = Math.round(CW * dpr); c.height = Math.round(H * dpr); c.style.width = CW + 'px'; c.style.height = H + 'px';
+    var x = c.getContext('2d'); if (!x) return;
+    x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, CW, H);
+    var r = rng(card.__xmSeed), PI = Math.PI, xl = O, xr = O + w, i, k;
+    /* top surface: a soft drift, higher towards the middle, with lumps of several sizes */
+    var ph = []; for (i = 0; i < 6; i++) ph.push(r() * 6.2832);
+    var per = [80 + r() * 50, 31 + r() * 14, 13 + r() * 6];
+    var mounds = []; for (i = 0; i < Math.max(2, Math.round(w / 110)); i++) mounds.push([xl + (i + .2 + r() * .6) * w / Math.max(2, Math.round(w / 110)), 1.8 + r() * 3.2, 22 + r() * 30]);
+    function th(X) {
+      var u = Math.max(0, Math.min(1, (X - xl) / w)), v = 9.5 + 6 * Math.pow(Math.sin(PI * u), .7);
+      v += 2 * Math.sin(6.2832 * X / per[0] + ph[0]) + 1.15 * Math.sin(6.2832 * X / per[1] + ph[1]) + .55 * Math.sin(6.2832 * X / per[2] + ph[2]);
+      mounds.forEach(function (m) { var d = (X - m[0]) / m[2]; v += m[1] * Math.exp(-d * d); });
+      return Math.max(6, v);
+    }
+    /* front edge on the card: a gently wavy lip with a few round snow drips */
+    var drips = [], nd = Math.max(3, Math.round(w / 48));
+    for (i = 0; i < nd; i++) drips.push([xl + 18 + (i + .15 + r() * .7) * (w - 36) / nd, 2.5 + r() * 6.5, 4.5 + r() * 6]);
+    function lip(X) {
+      var v = 5 + 1.3 * Math.sin(6.2832 * X / per[1] + ph[3]) + .6 * Math.sin(6.2832 * X / per[2] + ph[4]);
+      drips.forEach(function (d) { var q = (X - d[0]) / d[2]; v += d[1] * Math.exp(-q * q * 1.6); });
+      return T + v;
+    }
+    /* the two corners: snow rolls over them and hangs down the side a little (each side its own length) */
+    var side = [{ s: 5.5 + r() * 1.5, d: 7.5 + r() * 2, L: T + 7 + r() * 10 }, { s: 5.5 + r() * 1.5, d: 7.5 + r() * 2, L: T + 7 + r() * 10 }];
+    function so(sd, y) { var v = Math.max(0, Math.min(1, (y - T) / (sd.L - T))); return sd.s * (1 - .3 * v) + .5 * Math.sin(y * .5 + ph[5]); }
+    function si(sd, y) { var v = Math.max(0, Math.min(1, (y - T) / (sd.L - T))); return sd.d * (1 - .35 * v); }
+    function outline() {
+      var L = side[0], Rt = side[1], y, a, cx, cy;
+      x.beginPath();
+      x.moveTo(xl - so(L, L.L), L.L);
+      for (y = L.L; y > T + R * .35; y -= 2) x.lineTo(xl - so(L, y), y);
+      /* left corner: round shoulder from the side up onto the top */
+      cx = xl + R; cy = T + R;
+      for (a = PI; a <= PI * 1.5 + .001; a += PI / 24) {
+        var f = (a - PI) / (PI / 2), e = f * f * (3 - 2 * f), t0 = so(L, T) * (1 - e) + th(xl + R) * e;
+        x.lineTo(cx + Math.cos(a) * (R + t0), cy + Math.sin(a) * (R + t0));
+      }
+      for (var X = xl + R; X <= xr - R; X += 2) x.lineTo(X, T - th(X));
+      cx = xr - R;
+      for (a = PI * 1.5; a <= PI * 2 + .001; a += PI / 24) {
+        var f2 = (a - PI * 1.5) / (PI / 2), e2 = f2 * f2 * (3 - 2 * f2), t1 = th(xr - R) * (1 - e2) + so(Rt, T) * e2;
+        x.lineTo(cx + Math.cos(a) * (R + t1), cy + Math.sin(a) * (R + t1));
+      }
+      for (y = T + R * .35; y < Rt.L; y += 2) x.lineTo(xr + so(Rt, y), y);
+      /* round end of the right side, then back up its inner edge */
+      var ro0 = so(Rt, Rt.L), ri0 = si(Rt, Rt.L), rr = (ro0 + ri0) / 2;
+      x.arc(xr + (ro0 - ri0) / 2, Rt.L, rr, 0, PI, false);
+      for (y = Rt.L; y > lip(xr - si(Rt, T)); y -= 2) x.lineTo(xr - si(Rt, y), y);
+      for (X = xr - si(Rt, T); X >= xl + si(L, T); X -= 2) x.lineTo(X, lip(X));
+      for (y = lip(xl + si(L, T)); y < L.L; y += 2) x.lineTo(xl + si(L, y), y);
+      var lo0 = so(L, L.L), li0 = si(L, L.L), lr = (lo0 + li0) / 2;
+      x.arc(xl + (li0 - lo0) / 2, L.L, lr, 0, PI, false);
+      x.closePath();
+    }
+    outline();
+    var g = x.createLinearGradient(0, T - 20, 0, T + 16);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(.55, '#f6f9fd'); g.addColorStop(1, '#d6e1f0');
+    x.fillStyle = g; x.fill();
+    x.save(); outline(); x.clip();
+    /* lumps: lit from the top-left, cool shade at the bottom-right */
+    for (i = 0; i < Math.round(w / 5); i++) {
+      var lx = xl + r() * w, lr2 = 3 + r() * 7, ly = T - th(lx) + lr2 * (.5 + r() * .9);
+      var sg = x.createRadialGradient(lx + lr2 * .25, ly + lr2 * .35, 0, lx + lr2 * .25, ly + lr2 * .35, lr2 * 1.25);
+      sg.addColorStop(0, 'rgba(120,150,195,.15)'); sg.addColorStop(1, 'rgba(120,150,195,0)');
+      x.fillStyle = sg; x.fillRect(lx - lr2 * 1.2, ly - lr2 * 1.2, lr2 * 2.8, lr2 * 2.8);
+      var lg = x.createRadialGradient(lx - lr2 * .3, ly - lr2 * .35, 0, lx - lr2 * .3, ly - lr2 * .35, lr2);
+      lg.addColorStop(0, 'rgba(255,255,255,.95)'); lg.addColorStop(1, 'rgba(255,255,255,0)');
+      x.fillStyle = lg; x.fillRect(lx - lr2 * 1.3, ly - lr2 * 1.4, lr2 * 2.2, lr2 * 2.2);
+    }
+    /* the rolled-over corners and hanging sides are rounder, so they are shaded towards the outside */
+    var sl = x.createLinearGradient(xl - 7, 0, xl + 12, 0); sl.addColorStop(0, 'rgba(112,142,188,.42)'); sl.addColorStop(1, 'rgba(112,142,188,0)');
+    x.fillStyle = sl; x.fillRect(0, 0, xl + 12, H);
+    var sr = x.createLinearGradient(xr + 7, 0, xr - 12, 0); sr.addColorStop(0, 'rgba(112,142,188,.42)'); sr.addColorStop(1, 'rgba(112,142,188,0)');
+    x.fillStyle = sr; x.fillRect(xr - 12, 0, CW - xr + 12, H);
+    /* the underside and the hanging ends are in shadow */
+    /* (thin lines that follow the lip, getting darker towards its edge: no vertical banding) */
+    x.lineWidth = 1.4;
+    for (k = 9; k >= 0; k--) {
+      x.strokeStyle = 'rgba(112,142,188,' + (.045 * (9 - k) / 9 * 1.0 + .0).toFixed(3) + ')';
+      x.beginPath();
+      for (var lx2 = xl; lx2 <= xr; lx2 += 2) { if (lx2 === xl) x.moveTo(lx2, lip(lx2) - k); else x.lineTo(lx2, lip(lx2) - k); }
+      x.stroke();
+    }
+    [[xl - 8, xl + 10, side[0].L], [xr - 10, xr + 8, side[1].L]].forEach(function (q) {
+      var dg = x.createLinearGradient(0, T + 2, 0, q[2] + 6); dg.addColorStop(0, 'rgba(112,142,188,0)'); dg.addColorStop(1, 'rgba(104,134,182,.45)');
+      x.fillStyle = dg; x.fillRect(q[0], T + 2, q[1] - q[0], q[2] - T + 6);
+    });
+    /* fine grain */
+    for (i = 0; i < Math.round(w * 6); i++) {
+      var gx = xl - 6 + r() * (w + 12), top = T - th(Math.max(xl, Math.min(xr, gx))), gy = top + r() * (T + 18 - top), dk = r() < .3, gs = .4 + r() * .9;
+      x.fillStyle = dk ? 'rgba(120,150,195,' + (.08 + r() * .14).toFixed(3) + ')' : 'rgba(255,255,255,' + (.6 + r() * .4).toFixed(2) + ')';
+      x.fillRect(gx, gy, gs, gs);
+    }
+    x.restore();
+    /* bright rim along the top, and a few sparkles */
+    x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineWidth = 1.2; x.beginPath();
+    for (X = xl + R; X <= xr - R; X += 2) { if (X === xl + R) x.moveTo(X, T - th(X) + .7); else x.lineTo(X, T - th(X) + .7); }
+    x.stroke();
+    for (i = 0; i < Math.round(w / 16); i++) {
+      var px = xl + 10 + r() * (w - 20), py = T - th(px) + 2 + r() * 8, ps = .9 + r() * 1.6;
+      x.fillStyle = '#fff'; x.fillRect(px - ps, py - .25, ps * 2, .5); x.fillRect(px - .25, py - ps, .5, ps * 2);
+      x.fillStyle = 'rgba(200,225,255,.6)'; x.beginPath(); x.arc(px, py, .7, 0, 6.2832); x.fill();
+    }
+  }
+  function add(card) {
+    if (card.__xmCap) return;
+    var c = document.createElement('canvas'); c.className = 'xm-snowcap'; c.setAttribute('aria-hidden', 'true');
+    c.style.left = -O + 'px'; c.style.top = -T + 'px';
+    card.__xmCap = c; card.__xmSeed = 1013 + (n++) * 7919; card.__xmW = 0;
+    card.appendChild(c); card.classList.add('xm-hc');
+    paint(card);
+    if (ro) ro.observe(card);
+    if (io) io.observe(card); else c.classList.add('is-set');
+  }
+  function scan() { [].forEach.call(document.querySelectorAll('.prods .p'), add); }
+  if (window.ResizeObserver) ro = new ResizeObserver(function (es) { es.forEach(function (e) { paint(e.target); }); });
+  var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (window.IntersectionObserver && !still) io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { var c = e.target.__xmCap; setTimeout(function () { c.classList.add('is-set'); }, 120); io.unobserve(e.target); } });
+  }, { rootMargin: '0px 0px -8% 0px' });
+  function start() {
+    scan();
+    var main = document.getElementById('MainContent'), t = 0;
+    if (main) new MutationObserver(function () { clearTimeout(t); t = setTimeout(scan, 150); }).observe(main, { childList: true, subtree: true });
+    document.addEventListener('morz:navigate', scan);
+    window.addEventListener('resize', function () { cards = document.querySelectorAll('.prods .p.xm-hc'); [].forEach.call(cards, paint); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+
+/* Logo shine: the logo's own shape is used as a mask, so a soft golden glint can sweep across exactly the letters */
+(function () {
+  function go() {
+    [].forEach.call(document.querySelectorAll('.xm-logo'), function (l) {
+      var im = l.querySelector('img'); if (!im || l.__xmShine) return;
+      l.__xmShine = 1;
+      var set = function () { var u = im.currentSrc || im.src; if (u) l.style.setProperty('--xm-logo-mask', 'url("' + u + '")'); l.classList.add('xm-shine'); };
+      if (im.complete) set(); else im.addEventListener('load', set, { once: true });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+})();
+
 /* Light / Dark: two buttons in the header menu. Light makes the shop white, Dark is the original look.
    The choice is remembered on this device (an inline script in the page head applies it before the first paint). */
 (function () {
@@ -569,7 +725,7 @@
   function fadeOut(el, ms) {
     if (!el || el.__fo) return; el.__fo = 1;
     var o = 1; try { o = parseFloat(getComputedStyle(el).opacity); if (isNaN(o)) o = 1; } catch (e) {}
-    try { el.animate([{ opacity: o }, { opacity: 0 }], { duration: ms, easing: 'ease-in', fill: 'forwards' }); } catch (e) { el.style.transition = 'opacity ' + ms + 'ms'; el.style.opacity = '0'; }
+    try { el.animate([{ opacity: o }, { opacity: 0 }], { duration: ms, easing: 'cubic-bezier(.45,0,.55,1)', fill: 'forwards' }); } catch (e) { el.style.transition = 'opacity ' + ms + 'ms'; el.style.opacity = '0'; }
     setTimeout(function () { if (el.parentNode) el.remove(); }, ms + 80);
   }
   function freshTower() { return { balls: [], shadow: null, skirt: null, dress: null, timer: 0, gy: 0, scene: false }; }

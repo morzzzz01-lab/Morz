@@ -535,3 +535,66 @@ html.xm-caps .bundle:nth-child(3)::before{background-position-x:-260px}
 /* longer storm: the logo is carried off first, the cream background stays a moment longer, then the shop shows through */
 .xi.is-blown .xi-logo{transform:translateX(16vw) rotate(4deg) scale(.96);opacity:0;transition:transform 1.1s cubic-bezier(.5,0,.75,0),opacity .9s ease .1s}
 .xi.is-blown{transition:opacity 1.2s cubic-bezier(.4,0,.2,1),visibility 1.2s cubic-bezier(.4,0,.2,1)}
+
+/* ---- v59: snow that has settled on each product card (painted per card by xmas.js) ---- */
+.prods .p.xm-hc::after{display:none}
+.xm-snowcap{position:absolute;z-index:3;pointer-events:none;display:block;filter:drop-shadow(0 3px 2.5px rgba(10,20,40,.3));
+  opacity:0;transform:translate3d(0,-9px,0) scaleY(.9);transform-origin:50% 100%;
+  transition:opacity .9s cubic-bezier(.22,1,.36,1),transform 1.1s cubic-bezier(.22,1,.36,1)}
+.xm-snowcap.is-set{opacity:1;transform:none}
+/* a few glints twinkling on the snow */
+html.xm-caps .prods .p.xm-hc::before{display:block;left:8%;right:8%;top:-16px;height:14px;z-index:4}
+@media(prefers-reduced-motion:reduce){.xm-snowcap{transition:none;opacity:1;transform:none}}
+
+/* ---- v59: song lyrics (karaoke line at the bottom of the screen) ---- */
+.mx-ctl .mx-lyrbtn{width:auto;height:2.1rem;padding:0 .75rem;margin-left:.3rem;display:inline-flex;align-items:center;gap:.35rem;border-radius:2rem;font:700 .78rem/1 var(--font,system-ui);opacity:.6;transition:opacity .25s,background-color .25s,color .25s}
+.mx-ctl .mx-lyrbtn svg{width:15px;height:15px;flex:none}
+.mx-ctl .mx-lyrbtn[aria-pressed=true]{opacity:1;background:#ffd24a;color:#1a1410}
+.mx-lyr{position:fixed;left:50%;bottom:calc(1.1rem + env(safe-area-inset-bottom,0px));z-index:69;width:min(94vw,40rem);pointer-events:none;
+  opacity:0;visibility:hidden;transform:translate3d(-50%,16px,0);transition:opacity .6s ease,transform .8s cubic-bezier(.22,1,.36,1),visibility 0s linear .6s}
+.mx-lyr.on{opacity:1;visibility:visible;transform:translate3d(-50%,0,0);transition:opacity .6s ease,transform .8s cubic-bezier(.22,1,.36,1),visibility 0s}
+.mx-lyr-in{position:relative;height:5em;overflow:hidden;border-radius:1.3rem;font-size:clamp(.95rem,3.9vw,1.25rem);color:#fff;text-align:center;
+  background:linear-gradient(180deg,rgba(18,20,34,.62),rgba(10,10,18,.72));-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);
+  border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 44px -20px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.1)}
+.mx-ly{position:absolute;left:1.6em;right:1.6em;top:.35em;height:2.6em;margin:0;display:flex;align-items:center;justify-content:center;
+  font-weight:800;line-height:1.28;letter-spacing:.005em;transform-origin:50% 0;will-change:transform,opacity;
+  transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .6s ease}
+.mx-ly>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* the words fill in line after line (the inline text keeps one continuous background across its lines) */
+.mx-ly>span>span{-webkit-box-decoration-break:slice;box-decoration-break:slice;
+  background:linear-gradient(90deg,#fff 0,#fff var(--p,0%),rgba(255,255,255,.45) var(--p,0%),rgba(255,255,255,.45) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 1px 6px rgba(255,214,120,.18))}
+.mx-ly.is-cur{transform:none;opacity:1}
+.mx-ly.is-next{transform:translate3d(0,2.6em,0) scale(.8);opacity:.55}
+.mx-ly.is-next>span{-webkit-line-clamp:1}.mx-ly.is-next{--p:0%}
+.mx-ly.is-gone{transform:translate3d(0,-1.9em,0) scale(.92);opacity:0}
+.mx-ly.is-cur.is-new{transform:translate3d(0,.8em,0);opacity:0}
+.mx-ly.is-next.is-new{transform:translate3d(0,4em,0) scale(.8);opacity:0}
+.mx-ly.mx-ly-note>span>span{letter-spacing:.4em;background:none;color:rgba(255,224,138,.85);-webkit-text-fill-color:currentColor}
+.mx-lyr-x{position:absolute;top:.35rem;right:.45rem;width:1.6rem;height:1.6rem;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:1.05rem;line-height:1;cursor:pointer;pointer-events:auto;transition:background-color .2s}
+.mx-lyr:not(.on) .mx-lyr-x{pointer-events:none}
+@media(hover:hover){.mx-lyr-x:hover{background:rgba(255,255,255,.22);color:#fff}}
+@media(prefers-reduced-motion:reduce){.mx-lyr,.mx-ly{transition:opacity .3s ease}}
+
+/* ---- v59: logo: soft entrance, gentle lift, a golden glint now and then ---- */
+.xm-logo{transition:transform .6s cubic-bezier(.22,1,.36,1)}
+.xm-logo img{transition:filter .6s cubic-bezier(.22,1,.36,1);backface-visibility:hidden}
+@media(hover:hover){a:hover>.xm-logo{transform:translateY(-2px) scale(1.04)}}
+a:active>.xm-logo{transform:scale(.96);transition-duration:.15s}
+header.top .xm-logo{animation:xm-logo-in 1.1s cubic-bezier(.22,1,.36,1) .15s both}
+@keyframes xm-logo-in{from{opacity:0;transform:translate3d(0,-10px,0) scale(.94)}to{opacity:1;transform:none}}
+.xm-logo.xm-shine::after{content:"";position:absolute;inset:0;pointer-events:none;
+  -webkit-mask:var(--xm-logo-mask) center/100% 100% no-repeat;mask:var(--xm-logo-mask) center/100% 100% no-repeat;
+  background:linear-gradient(105deg,transparent 45%,rgba(255,236,190,.55) 49%,rgba(255,248,225,.75) 50%,rgba(255,236,190,.55) 51%,transparent 55%) 0 0/300% 100% no-repeat;mix-blend-mode:screen;
+  background-position:120% 0;animation:xm-shine 7.5s cubic-bezier(.45,0,.55,1) 2.2s infinite}
+@keyframes xm-shine{0%{background-position:120% 0}26%,100%{background-position:-20% 0}}
+@media(prefers-reduced-motion:reduce){.xm-logo,.xm-logo img{transition:none}header.top .xm-logo{animation:none}.xm-logo.xm-shine::after{display:none}}
+
+/* ---- v59: smoother motion (same pictures, same colours) ---- */
+/* loading screen: the hat lands with a soft settle, the pompom swings out smoothly */
+.xi-hat{animation:xi-hat-drop .95s cubic-bezier(.22,1,.36,1) 2.5s forwards}
+@keyframes xi-hat-drop{0%{opacity:0;transform:translate3d(0,-125%,0)}14%{opacity:1}72%{transform:translate3d(0,1.2%,0)}100%{opacity:1;transform:none}}
+.xi-hat .xi-pom{animation:xi-pom-swing 2.6s cubic-bezier(.37,0,.63,1) 3.2s both}
+/* snowman arms wave and Santa bobs on smooth sine curves */
+.xm-dress .xa-r,.xm-dress .xa-l,.xm-fly2 img,.xm-fly2 svg,.xtb,.xm-sg2 .xtm,.xm-sg2 .xtm2,.xm-sg .xr{animation-timing-function:cubic-bezier(.45,0,.55,1)}
+.xm-chunk,.xm-bit,.xm-puff,.xm-twig,.xm-mound,.xm-skirt,.xm-drift{backface-visibility:hidden}

@@ -15,6 +15,7 @@
     <button type="button" data-mx-prev aria-label="{{ 'music.prev' | t }}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
     <button type="button" class="mx-play" data-mx-play aria-label="{{ 'music.play' | t }}"><svg viewBox="0 0 24 24" fill="currentColor" data-mx-icon><path d="M7 4v16l13-8z"/></svg></button>
     <button type="button" data-mx-next aria-label="{{ 'music.next' | t }}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5l11 7L4 19z"/></svg></button>
+    <button type="button" class="mx-lyrbtn" data-mx-lyr aria-pressed="true" title="{{ 'music.lyrics' | t | escape }}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 5h16v2H4zm0 4h16v2H4zm0 4h10v2H4zm0 4h7v2H4zm13.5-3.5v5.1a2.4 2.4 0 1 1-1.5-2.2V12h4v1.5z"/></svg><span>{{ 'music.lyrics' | t }}</span></button>
   </div>
   <ul class="mx-list" data-mx-list></ul>
 </div>

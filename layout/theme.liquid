@@ -141,6 +141,9 @@
   -%}
   <script>window.MORZ_SNOW={ball:{{ 'snowball.png' | asset_url | json }},twig:{{ 'twig-arm.png' | asset_url | json }},hat:{{ sn_hat_url | json }},scarf:{{ sn_scarf_url | json }}};</script>
   {% render 'xmas-music' %}
+  <script src="{{ 'gsap.min.js' | asset_url }}" defer></script>
+  <script src="{{ 'ScrollTrigger.min.js' | asset_url }}" defer></script>
+  <script src="{{ 'lenis.min.js' | asset_url }}" defer></script>
   <script src="{{ 'xmas.js' | asset_url }}" defer></script>
   <script src="{{ 'theme.js' | asset_url }}" defer></script>
 </body>
