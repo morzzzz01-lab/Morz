@@ -226,7 +226,14 @@
     document.addEventListener('morz:navigate', scan);
     window.addEventListener('resize', function () { cards = document.querySelectorAll('.prods .p.xm-hc'); [].forEach.call(cards, paint); });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+  /* painted only after the opening logo animation, so it never takes time away from the handwriting */
+  function ready() {
+    var h = document.documentElement;
+    if (!h.classList.contains('intro-on')) return start();
+    var mo = new MutationObserver(function () { if (!h.classList.contains('intro-on')) { mo.disconnect(); setTimeout(start, 200); } });
+    mo.observe(h, { attributes: true, attributeFilter: ['class'] });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();
 })();
 
 /* Logo shine: the logo's own shape is used as a mask, so a soft golden glint can sweep across exactly the letters */

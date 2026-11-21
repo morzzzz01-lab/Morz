@@ -570,9 +570,13 @@
     })(t0);
     return 1;
   }
+  var completeNow = null;
   function finish() {
     if (done) return; done = true;
     clearTimeout(endTimer); cancelAnimationFrame(raf);
+    /* whatever ends the intro, the whole logo (signature and lights) is on screen before the wind takes it */
+    if (completeNow) { try { completeNow(); } catch (e) {} }
+    el.classList.add('is-done');
     var gust = blowSnow();
     if (gust) {
       /* the logo is blown away first, the storm keeps blowing, then the shop shows through as it dies down */
@@ -584,7 +588,8 @@
       setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1300);
     }
   }
-  el.addEventListener('click', finish);
+  /* only the Skip button (or Esc) skips: a tap anywhere else (to start the music, to scroll) must not cut the signature short */
+  el.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-intro-skip]')) finish(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') finish(); });
 
   var cv = el.querySelector('.xi-pen');
@@ -633,7 +638,8 @@
       wx.save(); wx.beginPath(); wx.rect(x0, y0, bw, bh); wx.clip();
       wx.clearRect(x0, y0, bw, bh);
       wx.globalCompositeOperation = 'source-over'; wx.drawImage(mask, x0, y0, bw, bh, x0, y0, bw, bh);
-      wx.globalCompositeOperation = 'source-in'; wx.drawImage(limg, x0 * k, y0 * kh, bw * k, bh * kh, x0, y0, bw, bh);
+      var sx = x0 * k, sy = y0 * kh, sw = Math.min(bw * k, limg.naturalWidth - sx), sh = Math.min(bh * kh, limg.naturalHeight - sy);
+      wx.globalCompositeOperation = 'source-in'; if (sw > 0 && sh > 0) wx.drawImage(limg, sx, sy, sw, sh, x0, y0, sw / k, sh / kh);
       wx.restore();
     }
     /* the spark and its tail are small glowing dots moved by the graphics card (not painted into the big canvas) */
@@ -701,14 +707,21 @@
     }
     function frame(now) {
       if (done) return;
-      var e = now - t0;
+      try { step(now - t0); } catch (err) { box = null; }
+      if (!done) {
+        if (p < PEN.length || w < SNAKE.length || stepBusy || box) raf = requestAnimationFrame(frame);
+        else if (spk) { spk.remove(); spk = null; }
+      }
+    }
+    var stepBusy = false;
+    function step(e) {
       ctx.beginPath();
       while (p < PEN.length && PEN[p][3] * PTS <= e) {
-        var q = PEN[p], r = Math.max(1.4, q[2] * S * .98), cx = (q[0] + .5) * S, cy = (q[1] + .5) * S;
+        var q = PEN[p], r = Math.max(2.5, q[2]) * S * .98, cx = (q[0] + .5) * S, cy = (q[1] + .5) * S;
         /* inside one stroke (no pen lift) fill the gap to the previous dot, so the ink is one smooth line, never beads */
         var q0 = p > 0 ? PEN[p - 1] : null;
         if (q0 && q[3] - q0[3] < 40) {
-          var ax = (q0[0] + .5) * S, ay = (q0[1] + .5) * S, ar = Math.max(1.4, q0[2] * S * .98), gd = Math.sqrt((cx - ax) * (cx - ax) + (cy - ay) * (cy - ay));
+          var ax = (q0[0] + .5) * S, ay = (q0[1] + .5) * S, ar = Math.max(2.5, q0[2]) * S * .98, gd = Math.sqrt((cx - ax) * (cx - ax) + (cy - ay) * (cy - ay));
           var gn = Math.floor(gd / (Math.min(r, ar) * .45));
           for (var gk = 1; gk < gn; gk++) { var gu = gk / gn, gx = ax + (cx - ax) * gu, gy = ay + (cy - ay) * gu, gr = ar + (r - ar) * gu; ctx.moveTo(gx + gr, gy); ctx.arc(gx, gy, gr, 0, 6.2832); }
         }
@@ -724,10 +737,15 @@
       }
       while (w < SNAKE.length && (SNAKE[w][2] + WSTART) * TS + SHIFT <= e) { reveal([(SNAKE[w][0] + .5) * S, (SNAKE[w][1] + .5) * S]); w++; }
       comp();
-      var busy = paint(e);
-      if (p < PEN.length || w < SNAKE.length || busy || box) raf = requestAnimationFrame(frame);
-      else if (spk) { spk.remove(); spk = null; }
+      stepBusy = paint(e);
     }
+    completeNow = function () {
+      step(1e9);
+      while (w < SNAKE.length) { reveal([(SNAKE[w][0] + .5) * S, (SNAKE[w][1] + .5) * S]); w++; }
+      comp();
+      if (nib) nib.classList.remove('on');
+      if (spk) { spk.remove(); spk = null; }
+    };
     begin();
     t0 = performance.now();
     raf = requestAnimationFrame(frame);

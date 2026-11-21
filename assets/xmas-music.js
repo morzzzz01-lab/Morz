@@ -123,7 +123,7 @@
       .replace(/\b(official|music|video|audio|hd|4k|remaster(ed)?|version)\b/gi, ' ').replace(/["“”]/g, ' ').replace(/\s+/g, ' ').trim();
   }
   /* only lyrics of this very song: its name must be in the video title, and the recording must be as long as the video
-     (within 6 s), so the words stay in time; anything less certain shows no lyrics rather than wrong ones */
+     (within 4 s), so the words stay in time; anything less certain shows no lyrics rather than wrong ones */
   function lyPick(list, title, author, dur) {
     var T = ' ' + norm(cleanT(title)) + ' ', A = norm(author), best = null, bs = 1e9;
     (Array.isArray(list) ? list : []).forEach(function (r) {
@@ -133,7 +133,7 @@
       var am = an.split(' ').filter(function (w) { return w.length > 2 && w !== 'the' && w !== 'and'; })
         .some(function (w) { return T.indexOf(' ' + w + ' ') > -1 || (A && A.indexOf(w) > -1); });
       var dd = dur > 0 && r.duration ? Math.abs(r.duration - dur) : 3;
-      if (dd > 6) return;
+      if (dd > 4) return;
       var sc = dd + (am ? 0 : 10) - tn.length * .05;
       if (sc < bs) { bs = sc; best = r; }
     });
@@ -176,31 +176,35 @@
   /* move to line i: the sung line slides up and fades out, the waiting line moves up into place, a new one fades in below */
   function lyGo(i) {
     var L = LY.lines;
-    if (lyCur) { var o = lyCur; o.style.setProperty('--p', '100%'); o.className = o.className.replace(/\bis-cur\b/, 'is-gone'); setTimeout(function () { o.remove(); }, 700); }
+    if (lyCur) { var o = lyCur; o.style.setProperty('--p', '100%'); o.className = o.className.replace(/\bis-cur\b/, 'is-gone'); setTimeout(function () { o.remove(); }, 950); }
     if (lyNext && LY.idx === i - 1) { lyCur = lyNext; lyCur.className = lyCur.className.replace(/\bis-next\b/, 'is-cur'); }
     else { if (lyNext) lyNext.remove(); lyCur = i >= 0 ? lyLine(L[i].s, 'is-cur is-new') : null; if (lyCur) { void lyCur.offsetWidth; lyCur.classList.remove('is-new'); } }
     lyNext = L[i + 1] ? lyLine(L[i + 1].s, 'is-next is-new') : null;
     if (lyNext) { void lyNext.offsetWidth; lyNext.classList.remove('is-new'); }
     LY.idx = i;
   }
+  /* the song's own clock; it is only carried forward between YouTube's updates while the song really plays,
+     and never more than a quarter second, so the words can never run ahead of a song that is still loading */
   function lyTime() {
-    var raw = 0; try { raw = player.getCurrentTime() || 0; } catch (e) {}
+    var raw = 0, st = -1; try { raw = player.getCurrentTime() || 0; st = player.getPlayerState(); } catch (e) {}
     var now = performance.now();
     if (raw !== LY.raw) { LY.raw = raw; LY.base = raw; LY.at = now; }
-    return LY.base + Math.min(.6, (now - LY.at) / 1000);
+    return LY.base + (st === 1 ? Math.min(.25, (now - LY.at) / 1000) : 0);
   }
+  var LAG = .3; /* each line shows a moment after its singing starts (never before) */
   function lyTick() {
     LY.raf = 0;
     if (!LY.on || !LY.playing || !LY.lines) { lyShow(); return; }
     lyShow();
-    var L = LY.lines, t = lyTime() + .15, i = -1, lo = 0, hi = L.length - 1;
+    var L = LY.lines, t = lyTime() - LAG, i = -1, lo = 0, hi = L.length - 1;
     while (lo <= hi) { var m = (lo + hi) >> 1; if (L[m].t <= t) { i = m; lo = m + 1; } else hi = m - 1; }
     if (i !== LY.idx) {
       if (Math.abs(i - LY.idx) > 1) { lyIn.innerHTML = ''; lyCur = lyNext = null; LY.idx = -2; }
       lyGo(i);
     }
     if (lyCur && i >= 0) {
-      var st = L[i].t, en = L[i + 1] ? L[i + 1].t : st + 4, len = Math.min(en - st, .6 + (L[i].s || '').length * .075);
+      /* the words light up at about singing speed (not in a quick sweep) */
+      var st = L[i].t, en = L[i + 1] ? L[i + 1].t : st + 4, len = Math.min((en - st) * .95, .9 + (L[i].s || '').length * .1);
       var pr = Math.max(0, Math.min(1, (t - st) / Math.max(.3, len)));
       lyCur.style.setProperty('--p', (pr * 100).toFixed(1) + '%');
     }
@@ -216,6 +220,8 @@
     else if (e.data === S.PAUSED) { setIcon(false); lyPlaying(false); }
     else if (e.data === S.ENDED) { lyPlaying(false); advance(); }
     else if (e.data === S.CUED) { info(); }
+    /* loading or switching songs: the words wait (and the old song's words are gone at once) until it really plays */
+    if (e.data === S.BUFFERING || e.data === -1 || e.data === S.CUED) { lyPlaying(false); lyLoad(); }
   }
   /* YouTube moves on to the next song by itself; only step in when it did not (stuck/blocked), and never skip a song twice */
   var advT = 0;
