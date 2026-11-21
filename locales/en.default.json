@@ -118,6 +118,7 @@
     "title": "Today's Christmas hits",
     "prev": "Previous song",
     "next": "Next song",
-    "play": "Play / pause"
+    "play": "Play / pause",
+    "lyrics": "Lyrics"
   }
 }

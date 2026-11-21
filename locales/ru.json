@@ -119,6 +119,7 @@
     "prev": "Previous song",
     "next": "Next song",
     "play": "Play / pause",
-    "note": "The song order changes every day."
+    "note": "The song order changes every day.",
+    "lyrics": "Текст песни"
   }
 }

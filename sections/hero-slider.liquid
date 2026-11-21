@@ -106,7 +106,14 @@
         <div data-slide-info="{{ forloop.index0 }}" {% unless forloop.first %}hidden{% endunless %}>
           <h2>{% if auto_slide %}{% render 'short-title', title: product.title %}{% else %}{% if block.settings.title != blank %}{{ block.settings.title }}{% else %}{% render 'short-title', title: product.title %}{% endif %}{% endif %}</h2>
           <div class="hpr">
-            {%- if product != blank -%}{{ product.price | money }}{%- else -%}{{ block.settings.price }}{%- endif -%}
+            {%- if product != blank -%}
+              {%- if product.compare_at_price > product.price -%}
+                {%- assign hoff = product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price | round -%}
+                <s class="hpr-was">{{ product.compare_at_price | money }}</s>
+              {%- endif -%}
+              <span class="hpr-now">{{ product.price | money }}</span>
+              {%- if product.compare_at_price > product.price -%}<span class="hpr-off">-{{ hoff }}%</span>{%- endif -%}
+            {%- else -%}{{ block.settings.price }}{%- endif -%}
           </div>
 
           {%- if product != blank and product.variants.size > 1 and product.variants.size <= 6 -%}

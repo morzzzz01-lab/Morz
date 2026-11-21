@@ -46,21 +46,182 @@
   }
   function clean(t) { return (t || '').replace(/\s*[\(\[](official|lyric|audio|video|visuali|hd|4k)[^\)\]]*[\)\]]/gi, '').trim(); }
   function setIcon(p) { elPlay.innerHTML = p ? ICON_PAUSE : ICON_PLAY; fab.classList.toggle('on', p); }
+  /* the song is always identified by its video id (never by its position: YouTube can leave out a video that may not be
+     embedded, and then every position after it shifts, so names, the song played on a tap and the lyrics would not match) */
+  function liOf(id) { return id ? elList.querySelector('li[data-id="' + id + '"]') : null; }
   function info() {
     if (!player || !player.getVideoData) return;
-    var d = player.getVideoData() || {};
-    var cur = player.getPlaylistIndex ? player.getPlaylistIndex() : -1;
-    var li = elList.children[cur], fixed = li && li.getAttribute('data-name');
-    elTitle.textContent = fixed || clean(d.title || '');
+    syncList();
+    var d = player.getVideoData() || {}, id = d.video_id, li = liOf(id);
+    elTitle.textContent = clean(d.title || '') || (li && li.getAttribute('data-name')) || clean(TITLES[id] || '') || '\u00a0';
     elArtist.textContent = '';
-    [].forEach.call(elList.children, function (li, n) { li.classList.toggle('cur', n === cur); });
+    [].forEach.call(elList.children, function (x) { x.classList.toggle('cur', x === li); });
   }
+  /* the list shows exactly the songs the player really has, in its order */
+  var listIds = '';
+  function buildList(arr) {
+    listIds = arr.join(',');
+    elList.innerHTML = '';
+    arr.forEach(function (id, n) {
+      var li = document.createElement('li');
+      li.setAttribute('data-id', id);
+      li.innerHTML = '<span>' + (n + 1) + '</span><span></span>';
+      var t = TITLES[id] ? clean(TITLES[id]) : '';
+      if (t) li.setAttribute('data-name', t);
+      li.children[1].textContent = t || '\u2026';
+      li.addEventListener('click', function () {
+        var pl = []; try { pl = player.getPlaylist() || []; } catch (e) {}
+        var k = pl.indexOf(id);
+        userPaused = false;
+        if (k > -1) player.playVideoAt(k); else player.loadPlaylist({ playlist: pl.length ? pl : ids, index: 0 });
+      });
+      elList.appendChild(li);
+    });
+  }
+  function syncList() {
+    var pl = []; try { pl = player.getPlaylist() || []; } catch (e) {}
+    if (pl.length && pl.join(',') !== listIds) buildList(pl);
+  }
+  /* ---- lyrics: the words of the song that is playing, in time with it (synced lyrics from lrclib.net) ----
+     shown as a soft karaoke line at the bottom of the screen: the line being sung fills in, the next one waits below */
+  var LY = { id: null, lines: null, idx: -2, on: true, raw: -1, base: 0, at: 0, raf: 0, playing: false };
+  try { LY.on = localStorage.getItem('morz_lyrics') !== 'off'; } catch (e) {}
+  var lyBtn = q('[data-mx-lyr]'), lyLabel = lyBtn ? lyBtn.getAttribute('title') : 'Lyrics';
+  var lyBox = document.createElement('div');
+  lyBox.className = 'mx-lyr'; lyBox.setAttribute('aria-hidden', 'true');
+  lyBox.innerHTML = '<div class="mx-lyr-in"></div><button type="button" class="mx-lyr-x" tabindex="-1">&times;</button>';
+  document.body.appendChild(lyBox);
+  var lyIn = lyBox.firstChild, lyCur = null, lyNext = null;
+  function lySetBtn() { if (lyBtn) lyBtn.setAttribute('aria-pressed', LY.on ? 'true' : 'false'); }
+  lySetBtn();
+  function lyToggle(on) {
+    LY.on = on; lySetBtn();
+    try { localStorage.setItem('morz_lyrics', on ? 'on' : 'off'); } catch (e) {}
+    lyShow(); if (on) lyLoop();
+  }
+  if (lyBtn) lyBtn.addEventListener('click', function () { lyToggle(!LY.on); });
+  lyBox.lastChild.setAttribute('aria-label', lyLabel);
+  lyBox.lastChild.addEventListener('click', function () { lyToggle(false); });
+  function lyShow() {
+    var muted = false; try { muted = player && player.isMuted && player.isMuted(); } catch (e) {}
+    var vis = !!(LY.on && LY.playing && !muted && LY.lines && LY.lines.length && !document.documentElement.classList.contains('intro-on'));
+    if (vis !== lyBox.classList.contains('on')) lyBox.classList.toggle('on', vis);
+  }
+  function lyParse(txt) {
+    var out = [];
+    (txt || '').split(/\r?\n/).forEach(function (row) {
+      var tags = row.match(/\[\d+:\d+(?:[.:]\d+)?\]/g); if (!tags) return;
+      var words = row.replace(/\[[^\]]*\]/g, '').trim();
+      tags.forEach(function (tg) { var m = tg.match(/\[(\d+):(\d+)(?:[.:](\d+))?\]/); out.push({ t: +m[1] * 60 + +m[2] + (m[3] ? +('0.' + m[3]) : 0), s: words }); });
+    });
+    out.sort(function (a, b) { return a.t - b.t; });
+    return out;
+  }
+  function norm(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim(); }
+  function cleanT(t) {
+    return (t || '').replace(/[\(\[][^\)\]]*[\)\]]/g, ' ').replace(/\|.*$/, ' ').replace(/\blyrics?\b.*$/i, ' ')
+      .replace(/\b(official|music|video|audio|hd|4k|remaster(ed)?|version)\b/gi, ' ').replace(/["“”]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  /* only lyrics of this very song: its name must be in the video title, and the recording must be as long as the video
+     (within 4 s), so the words stay in time; anything less certain shows no lyrics rather than wrong ones */
+  function lyPick(list, title, author, dur) {
+    var T = ' ' + norm(cleanT(title)) + ' ', A = norm(author), best = null, bs = 1e9;
+    (Array.isArray(list) ? list : []).forEach(function (r) {
+      if (!r || !r.syncedLyrics || r.instrumental) return;
+      var tn = norm(r.trackName).replace(/\b(feat|ft)\b.*$/, '').trim(), an = norm(r.artistName);
+      if (tn.length < 3 || T.indexOf(' ' + tn + ' ') < 0) return;
+      var am = an.split(' ').filter(function (w) { return w.length > 2 && w !== 'the' && w !== 'and'; })
+        .some(function (w) { return T.indexOf(' ' + w + ' ') > -1 || (A && A.indexOf(w) > -1); });
+      var dd = dur > 0 && r.duration ? Math.abs(r.duration - dur) : 3;
+      if (dd > 4) return;
+      var sc = dd + (am ? 0 : 10) - tn.length * .05;
+      if (sc < bs) { bs = sc; best = r; }
+    });
+    return best ? lyParse(best.syncedLyrics) : null;
+  }
+  function lyFetch(id, title, author, dur) {
+    var key = 'morz_lyr2_' + id;
+    try { var c = sessionStorage.getItem(key); if (c) return Promise.resolve(JSON.parse(c)); } catch (e) {}
+    var base = 'https://lrclib.net/api/search?', ct = cleanT(title);
+    var tries = ['q=' + encodeURIComponent(ct)];
+    ct.split(/\s[-–—:]\s?/).forEach(function (part) { part = part.trim(); if (part.length > 2 && part !== ct) tries.push('track_name=' + encodeURIComponent(part)); });
+    function next(i) {
+      if (i >= tries.length) return Promise.resolve(null);
+      return fetch(base + tries[i]).then(function (r) { if (!r.ok) throw 0; return r.json(); })
+        .then(function (list) { return lyPick(list, title, author, dur); }, function () { return null; })
+        .then(function (res) { return res || next(i + 1); });
+    }
+    return next(0).then(function (res) { try { sessionStorage.setItem(key, JSON.stringify(res || [])); } catch (e) {} return res || []; });
+  }
+  function lyLoad() {
+    if (!player || !player.getVideoData) return;
+    var d = player.getVideoData() || {}, id = d.video_id;
+    if (!id || id === LY.id) return;
+    LY.id = id; LY.lines = null; LY.idx = -2; lyIn.innerHTML = ''; lyCur = lyNext = null; lyShow();
+    /* the title of the video that is really playing (not a list position) */
+    var title = d.title || TITLES[id] || '', dur = 0;
+    try { dur = player.getDuration() || 0; } catch (e) {}
+    if (!title || !dur) { LY.id = null; if (LY.playing) setTimeout(lyLoad, 700); return; }
+    lyFetch(id, title, d.author || '', dur).then(function (lines) {
+      if (LY.id !== id) return;
+      LY.lines = lines && lines.length ? lines : null; LY.idx = -2; lyShow(); lyLoop();
+    });
+  }
+  function lyLine(txt, cls) {
+    var p = document.createElement('p'), bx = document.createElement('span'), sp = document.createElement('span'); p.className = 'mx-ly ' + cls;
+    sp.textContent = txt || '\u266A \u266A';
+    if (!txt) p.classList.add('mx-ly-note');
+    bx.appendChild(sp); p.appendChild(bx); lyIn.appendChild(p); return p;
+  }
+  /* move to line i: the sung line slides up and fades out, the waiting line moves up into place, a new one fades in below */
+  function lyGo(i) {
+    var L = LY.lines;
+    if (lyCur) { var o = lyCur; o.style.setProperty('--p', '100%'); o.className = o.className.replace(/\bis-cur\b/, 'is-gone'); setTimeout(function () { o.remove(); }, 950); }
+    if (lyNext && LY.idx === i - 1) { lyCur = lyNext; lyCur.className = lyCur.className.replace(/\bis-next\b/, 'is-cur'); }
+    else { if (lyNext) lyNext.remove(); lyCur = i >= 0 ? lyLine(L[i].s, 'is-cur is-new') : null; if (lyCur) { void lyCur.offsetWidth; lyCur.classList.remove('is-new'); } }
+    lyNext = L[i + 1] ? lyLine(L[i + 1].s, 'is-next is-new') : null;
+    if (lyNext) { void lyNext.offsetWidth; lyNext.classList.remove('is-new'); }
+    LY.idx = i;
+  }
+  /* the song's own clock; it is only carried forward between YouTube's updates while the song really plays,
+     and never more than a quarter second, so the words can never run ahead of a song that is still loading */
+  function lyTime() {
+    var raw = 0, st = -1; try { raw = player.getCurrentTime() || 0; st = player.getPlayerState(); } catch (e) {}
+    var now = performance.now();
+    if (raw !== LY.raw) { LY.raw = raw; LY.base = raw; LY.at = now; }
+    return LY.base + (st === 1 ? Math.min(.25, (now - LY.at) / 1000) : 0);
+  }
+  var LAG = .3; /* each line shows a moment after its singing starts (never before) */
+  function lyTick() {
+    LY.raf = 0;
+    if (!LY.on || !LY.playing || !LY.lines) { lyShow(); return; }
+    lyShow();
+    var L = LY.lines, t = lyTime() - LAG, i = -1, lo = 0, hi = L.length - 1;
+    while (lo <= hi) { var m = (lo + hi) >> 1; if (L[m].t <= t) { i = m; lo = m + 1; } else hi = m - 1; }
+    if (i !== LY.idx) {
+      if (Math.abs(i - LY.idx) > 1) { lyIn.innerHTML = ''; lyCur = lyNext = null; LY.idx = -2; }
+      lyGo(i);
+    }
+    if (lyCur && i >= 0) {
+      /* the words light up at about singing speed (not in a quick sweep) */
+      var st = L[i].t, en = L[i + 1] ? L[i + 1].t : st + 4, len = Math.min((en - st) * .95, .9 + (L[i].s || '').length * .1);
+      var pr = Math.max(0, Math.min(1, (t - st) / Math.max(.3, len)));
+      lyCur.style.setProperty('--p', (pr * 100).toFixed(1) + '%');
+    }
+    LY.raf = requestAnimationFrame(lyTick);
+  }
+  function lyLoop() { if (!LY.raf && LY.on && LY.playing && LY.lines) LY.raf = requestAnimationFrame(lyTick); }
+  function lyPlaying(p) { LY.playing = p; if (p) { lyLoad(); lyLoop(); } lyShow(); }
+  document.addEventListener('visibilitychange', function () { if (document.hidden && LY.raf) { cancelAnimationFrame(LY.raf); LY.raf = 0; } else lyLoop(); });
+
   function onState(e) {
     var S = window.YT.PlayerState;
-    if (e.data === S.PLAYING) { setIcon(true); started = true; info(); }
-    else if (e.data === S.PAUSED) { setIcon(false); }
-    else if (e.data === S.ENDED) { advance(); }
+    if (e.data === S.PLAYING) { setIcon(true); started = true; info(); lyPlaying(true); }
+    else if (e.data === S.PAUSED) { setIcon(false); lyPlaying(false); }
+    else if (e.data === S.ENDED) { lyPlaying(false); advance(); }
     else if (e.data === S.CUED) { info(); }
+    /* loading or switching songs: the words wait (and the old song's words are gone at once) until it really plays */
+    if (e.data === S.BUFFERING || e.data === -1 || e.data === S.CUED) { lyPlaying(false); lyLoad(); }
   }
   /* YouTube moves on to the next song by itself; only step in when it did not (stuck/blocked), and never skip a song twice */
   var advT = 0;
@@ -72,7 +233,7 @@
         var st = player.getPlayerState(), S = window.YT.PlayerState, now2 = player.getPlaylistIndex();
         if (userPaused || st === S.PLAYING || st === S.BUFFERING) return;
         if (now2 !== at && st !== S.ENDED) return;
-        var n = (at + 1) % Math.max(1, ids.length); player.playVideoAt(n);
+        var pl = player.getPlaylist() || ids, n = (at + 1) % Math.max(1, pl.length); player.playVideoAt(n);
       } catch (x) {}
     }, 1500);
   }
@@ -97,18 +258,11 @@
       wasPlaying = at > -1 && !saved.paused;
       player.loadPlaylist({ playlist: ids, index: start.n, startSeconds: start.t || 0 });
       player.setLoop(true);
-      elList.innerHTML = '';
-      ids.forEach(function (id, n) {
-        var li = document.createElement('li');
-        li.innerHTML = '<span>' + (n + 1) + '</span><span></span>';
-        li.children[1].textContent = '…';
-        li.addEventListener('click', function () { player.playVideoAt(n); });
-        elList.appendChild(li);
-      });
+      buildList(ids);
     }
     ids.forEach(function (id, n) {
       var u = 'https://www.youtube.com/watch?v=' + id;
-      var set = function (d) { var li = elList.children[n]; if (d && d.title && li && !li.getAttribute('data-name')) { var t = clean(d.title); li.setAttribute('data-name', t); li.children[1].textContent = t; if (n === (player.getPlaylistIndex ? player.getPlaylistIndex() : -1)) elTitle.textContent = t; } };
+      var set = function (d) { if (!d || !d.title) return; TITLES[id] = TITLES[id] || d.title; var li = liOf(id); if (li && !li.getAttribute('data-name')) { var t = clean(d.title); li.setAttribute('data-name', t); li.children[1].textContent = t; } };
       fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent(u)).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(set)
         .catch(function () { return fetch('https://noembed.com/embed?url=' + encodeURIComponent(u)).then(function (r) { return r.json(); }).then(set); })
         .catch(function () {});

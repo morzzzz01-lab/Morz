@@ -57,6 +57,7 @@
     "title": "Dagens julhits",
     "prev": "Föregående låt",
     "next": "Nästa låt",
-    "play": "Spela / pausa"
+    "play": "Spela / pausa",
+    "lyrics": "Låttext"
   }
 }
