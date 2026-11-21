@@ -92,6 +92,7 @@
 (function () {
   if (window.__xmCardSnow) return;
   window.__xmCardSnow = true;
+  document.documentElement.classList.add('xm-cardsnow');
   var O = 7, T = 26, H = 26 + 34, R = 14, cards = [], ro = null, io = null, n = 0;
   function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   function paint(card) {
@@ -209,16 +210,17 @@
     c.style.left = -O + 'px'; c.style.top = -T + 'px';
     card.__xmCap = c; card.__xmSeed = 1013 + (n++) * 7919; card.__xmW = 0;
     card.appendChild(c); card.classList.add('xm-hc');
-    paint(card);
+    /* without the opening animation it is painted at once (there from the first moment); while the logo is being
+       written it is painted a card at a time in quiet moments, so the handwriting never stutters */
+    if (document.documentElement.classList.contains('intro-on')) queue(card); else paint(card);
     if (ro) ro.observe(card);
-    if (io) io.observe(card); else c.classList.add('is-set');
   }
+  var q = [], qOn = false;
+  function idle(fn) { (window.requestIdleCallback || function (f) { return setTimeout(f, 30); })(fn, { timeout: 2000 }); }
+  function queue(card) { if (q.indexOf(card) < 0) q.push(card); if (!qOn) { qOn = true; idle(run); } }
+  function run() { var t0 = performance.now(); while (q.length && performance.now() - t0 < 6) paint(q.shift()); if (q.length) idle(run); else qOn = false; }
   function scan() { [].forEach.call(document.querySelectorAll('.prods .p'), add); }
-  if (window.ResizeObserver) ro = new ResizeObserver(function (es) { es.forEach(function (e) { paint(e.target); }); });
-  var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (window.IntersectionObserver && !still) io = new IntersectionObserver(function (es) {
-    es.forEach(function (e) { if (e.isIntersecting) { var c = e.target.__xmCap; setTimeout(function () { c.classList.add('is-set'); }, 120); io.unobserve(e.target); } });
-  }, { rootMargin: '0px 0px -8% 0px' });
+  if (window.ResizeObserver) ro = new ResizeObserver(function (es) { es.forEach(function (e) { if (e.target.__xmW !== Math.round(e.target.offsetWidth)) queue(e.target); }); });
   function start() {
     scan();
     var main = document.getElementById('MainContent'), t = 0;
@@ -226,14 +228,7 @@
     document.addEventListener('morz:navigate', scan);
     window.addEventListener('resize', function () { cards = document.querySelectorAll('.prods .p.xm-hc'); [].forEach.call(cards, paint); });
   }
-  /* painted only after the opening logo animation, so it never takes time away from the handwriting */
-  function ready() {
-    var h = document.documentElement;
-    if (!h.classList.contains('intro-on')) return start();
-    var mo = new MutationObserver(function () { if (!h.classList.contains('intro-on')) { mo.disconnect(); setTimeout(start, 200); } });
-    mo.observe(h, { attributes: true, attributeFilter: ['class'] });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
 
 /* Logo shine: the logo's own shape is used as a mask, so a soft golden glint can sweep across exactly the letters */
@@ -275,7 +270,7 @@
   function build() {
     if (document.querySelector('.xm-mode')) return;
     var g = document.createElement('div'); g.className = 'xm-mode'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'Light or dark');
-    g.innerHTML = '<button type="button" data-mode="light" aria-pressed="false">' + sun + '<span>Light</span></button><button type="button" data-mode="dark" aria-pressed="false">' + moon + '<span>Dark</span></button>';
+    g.innerHTML = '<button type="button" data-mode="light" aria-pressed="false" aria-label="Light" title="Light">' + sun + '</button><button type="button" data-mode="dark" aria-pressed="false" aria-label="Dark" title="Dark">' + moon + '</button>';
     g.addEventListener('click', function (e) { var b = e.target.closest('button[data-mode]'); if (b) apply(b.getAttribute('data-mode'), true); });
     var nav = document.querySelector('header.top nav.main');
     if (nav) { var fab = nav.querySelector('.mx-fab'); if (fab) nav.insertBefore(g, fab); else nav.appendChild(g); }

@@ -538,13 +538,11 @@ html.xm-caps .bundle:nth-child(3)::before{background-position-x:-260px}
 
 /* ---- v59: snow that has settled on each product card (painted per card by xmas.js) ---- */
 .prods .p.xm-hc::after{display:none}
-.xm-snowcap{position:absolute;z-index:3;pointer-events:none;display:block;filter:drop-shadow(0 3px 2.5px rgba(10,20,40,.3));
-  opacity:0;transform:translate3d(0,-9px,0) scaleY(.9);transform-origin:50% 100%;
-  transition:opacity .9s cubic-bezier(.22,1,.36,1),transform 1.1s cubic-bezier(.22,1,.36,1)}
-.xm-snowcap.is-set{opacity:1;transform:none}
+.xm-snowcap{position:absolute;z-index:3;pointer-events:none;display:block;filter:drop-shadow(0 3px 2.5px rgba(10,20,40,.3))}
+/* the cards' own snow replaces the old strip from the very first moment (no strip first, no snow dropping in) */
+html.xm-cardsnow .prods .p::after{display:none}
 /* a few glints twinkling on the snow */
 html.xm-caps .prods .p.xm-hc::before{display:block;left:8%;right:8%;top:-16px;height:14px;z-index:4}
-@media(prefers-reduced-motion:reduce){.xm-snowcap{transition:none;opacity:1;transform:none}}
 
 /* ---- v59: song lyrics (karaoke line at the bottom of the screen) ---- */
 .mx-ctl .mx-lyrbtn{width:auto;height:2.1rem;padding:0 .75rem;margin-left:.3rem;display:inline-flex;align-items:center;gap:.35rem;border-radius:2rem;font:700 .78rem/1 var(--font,system-ui);opacity:.6;transition:opacity .25s,background-color .25s,color .25s}
@@ -613,3 +611,17 @@ header.top .xm-logo{animation:xm-logo-in 1.1s cubic-bezier(.22,1,.36,1) .15s bot
 .xi-logo>.xi-nib.on{opacity:1}
 /* skipped early: the hat and the bulbs go straight to how they end, so the whole logo shows before the wind */
 .xi.is-done .xi-hat,.xi.is-done .xi-hat .xi-pom,.xi.is-done .xi-b::after,.xi.is-done .xi-b::before{animation-delay:0s!important}
+
+/* ---- v62: header links, light/dark and the music button are icons only (their names stay as labels) ---- */
+nav.main{align-items:center;column-gap:.7rem}
+nav.main a.nv-i{display:inline-flex;align-items:center;justify-content:center;flex:none;width:2.15rem;height:2.15rem;padding:0;border:0;border-radius:50%;
+  transition:background-color .25s ease,box-shadow .25s ease,transform .25s cubic-bezier(.22,1,.36,1)}
+nav.main a.nv-i svg{width:19px;height:19px;display:block}
+@media(hover:hover){nav.main a.nv-i:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}}
+nav.main a.nv-i[aria-current=page]{background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1.5px var(--blue)}
+.xm-light nav.main a.nv-i:hover,.xm-light nav.main a.nv-i[aria-current=page]{background:#eef2f7}
+.xm-mode button{width:1.9rem;height:1.75rem;padding:0;justify-content:center}
+.xm-mode svg{width:15px;height:15px}
+.mx-fab--nav{width:2.15rem;height:2.15rem;padding:0;justify-content:center;border-radius:50%}
+.mx-fab--nav svg{width:16px;height:16px}
+.mx-fab:not(.mx-fab--nav){width:2.9rem;padding:0;justify-content:center}

@@ -713,18 +713,24 @@
         else if (spk) { spk.remove(); spk = null; }
       }
     }
-    var stepBusy = false;
+    var stepBusy = false, heads = [];
     function step(e) {
       ctx.beginPath();
       while (p < PEN.length && PEN[p][3] * PTS <= e) {
         var q = PEN[p], r = Math.max(2.5, q[2]) * S * .98, cx = (q[0] + .5) * S, cy = (q[1] + .5) * S;
-        /* inside one stroke (no pen lift) fill the gap to the previous dot, so the ink is one smooth line, never beads */
+        /* inside one stroke (no pen lift) the gap is filled from the nearest end of the same line, so the ink is one smooth
+           line, never beads; a letter whose two parts grow at the same time (the r: stem and arm) keeps them as two clean
+           lines instead of being webbed together */
         var q0 = p > 0 ? PEN[p - 1] : null;
-        if (q0 && q[3] - q0[3] < 40) {
-          var ax = (q0[0] + .5) * S, ay = (q0[1] + .5) * S, ar = Math.max(2.5, q0[2]) * S * .98, gd = Math.sqrt((cx - ax) * (cx - ax) + (cy - ay) * (cy - ay));
+        if (!q0 || q[3] - q0[3] >= 40) heads = [];
+        var hj = -1, hd = 1e9;
+        for (var hk = 0; hk < heads.length; hk++) { var hx = heads[hk][0] - q[0], hy = heads[hk][1] - q[1], hdd = hx * hx + hy * hy; if (hdd < hd) { hd = hdd; hj = hk; } }
+        if (hj > -1 && hd <= 100) {
+          var h0 = heads[hj], ax = (h0[0] + .5) * S, ay = (h0[1] + .5) * S, ar = Math.max(2.5, h0[2]) * S * .98, gd = Math.sqrt((cx - ax) * (cx - ax) + (cy - ay) * (cy - ay));
           var gn = Math.floor(gd / (Math.min(r, ar) * .45));
           for (var gk = 1; gk < gn; gk++) { var gu = gk / gn, gx = ax + (cx - ax) * gu, gy = ay + (cy - ay) * gu, gr = ar + (r - ar) * gu; ctx.moveTo(gx + gr, gy); ctx.arc(gx, gy, gr, 0, 6.2832); }
-        }
+          heads[hj] = q;
+        } else { heads.push(q); if (heads.length > 3) heads.shift(); }
         ctx.moveTo(cx + r, cy); ctx.arc(cx, cy, r, 0, 6.2832);
         p++;
       }
