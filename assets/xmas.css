@@ -590,9 +590,9 @@ header.top .xm-logo{animation:xm-logo-in 1.1s cubic-bezier(.22,1,.36,1) .15s bot
 
 /* ---- v59: smoother motion (same pictures, same colours) ---- */
 /* loading screen: the hat lands with a soft settle, the pompom swings out smoothly */
-.xi-hat{animation:xi-hat-drop .95s cubic-bezier(.22,1,.36,1) 4.08s forwards}
+.xi-hat{animation:xi-hat-drop .95s cubic-bezier(.22,1,.36,1) 3.38s forwards}
 @keyframes xi-hat-drop{0%{opacity:0;transform:translate3d(0,-125%,0)}14%{opacity:1}72%{transform:translate3d(0,1.2%,0)}100%{opacity:1;transform:none}}
-.xi-hat .xi-pom{animation:xi-pom-swing 2.6s cubic-bezier(.37,0,.63,1) 4.78s both}
+.xi-hat .xi-pom{animation:xi-pom-swing 2.6s cubic-bezier(.37,0,.63,1) 4.08s both}
 /* snowman arms wave and Santa bobs on smooth sine curves */
 .xm-dress .xa-r,.xm-dress .xa-l,.xm-fly2 img,.xm-fly2 svg,.xtb,.xm-sg2 .xtm,.xm-sg2 .xtm2,.xm-sg .xr{animation-timing-function:cubic-bezier(.45,0,.55,1)}
 .xm-chunk,.xm-bit,.xm-puff,.xm-twig,.xm-mound,.xm-skirt,.xm-drift{backface-visibility:hidden}
@@ -605,10 +605,6 @@ header.top .xm-logo{animation:xm-logo-in 1.1s cubic-bezier(.22,1,.36,1) .15s bot
 .xi-spk i.h::after{content:"";position:absolute;left:36%;top:36%;width:28%;height:28%;border-radius:50%;
   background:radial-gradient(circle closest-side,#fff 0,#fff 30%,rgba(255,246,200,.95) 55%,rgba(255,220,140,0) 100%)}
 .xi-spk{transition:opacity .3s ease}
-.xi-logo>.xi-nib{inset:auto;left:-4.5px;top:-4.5px;width:9px;height:9px;border-radius:50%;pointer-events:none;opacity:0;will-change:transform,opacity;
-  background:radial-gradient(circle at 34% 30%,#6b6262 0,#1a1717 55%,#050404 100%);
-  box-shadow:0 3px 6px rgba(0,0,0,.28),0 0 0 1.5px rgba(255,255,255,.55);transition:opacity .22s ease}
-.xi-logo>.xi-nib.on{opacity:1}
 /* skipped early: the hat and the bulbs go straight to how they end, so the whole logo shows before the wind */
 .xi.is-done .xi-hat,.xi.is-done .xi-hat .xi-pom,.xi.is-done .xi-b::after,.xi.is-done .xi-b::before{animation-delay:0s!important}
 
@@ -625,3 +621,14 @@ nav.main a.nv-i[aria-current=page]{background:rgba(255,255,255,.14);box-shadow:i
 .mx-fab--nav{width:2.15rem;height:2.15rem;padding:0;justify-content:center;border-radius:50%}
 .mx-fab--nav svg{width:16px;height:16px}
 .mx-fab:not(.mx-fab--nav){width:2.9rem;padding:0;justify-content:center}
+
+/* ---- v63: while the logo is written, the shop underneath is not painted at all (it is covered anyway),
+   so the phone spends all its effort on the handwriting; it shows again as the intro clears ---- */
+html.intro-on body>*:not(#XIntro):not(.xi-gust){visibility:hidden}
+html.intro-on header.top .xm-logo{animation-play-state:paused}
+/* light / dark in the top row, next to search and the language / currency button */
+.xm-mode--top{margin:0 .1rem 0 0}
+/* small phones: everything stays on one row (logo, light/dark, search, language/currency, cart) */
+@media(max-width:30rem){header.top .wrap{column-gap:.45rem}.xm-mode--top button{width:1.45rem;height:1.5rem}.xm-mode--top svg{width:13px;height:13px}}
+@media(max-width:26rem){.gl .gl-lang{display:none}}
+@media(max-width:23rem){.gl summary>span{display:none!important}header.top .wrap{padding-left:.8rem;padding-right:.8rem}}

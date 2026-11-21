@@ -78,12 +78,22 @@
     }
     return c;
   }
-  try {
-    var c = cap(); if (!c) return;
-    var done = function (u) { document.documentElement.style.setProperty('--xm-cap', 'url("' + u + '")'); document.documentElement.classList.add('xm-caps'); };
-    if (c.toBlob && window.URL && URL.createObjectURL) c.toBlob(function (bl) { if (bl) done(URL.createObjectURL(bl)); }, 'image/png');
-    else done(c.toDataURL('image/png'));
-  } catch (e) {}
+  function make() {
+    try {
+      var c = cap(); if (!c) return;
+      var done = function (u) { document.documentElement.style.setProperty('--xm-cap', 'url("' + u + '")'); document.documentElement.classList.add('xm-caps'); };
+      if (c.toBlob && window.URL && URL.createObjectURL) c.toBlob(function (bl) { if (bl) done(URL.createObjectURL(bl)); }, 'image/png');
+      else done(c.toDataURL('image/png'));
+    } catch (e) {}
+  }
+  /* painted once the logo has been written, so it never takes time away from the handwriting */
+  var h = document.documentElement;
+  if (!h.classList.contains('intro-on')) make();
+  else {
+    var went = false, go = function () { if (went) return; went = true; (window.requestIdleCallback || setTimeout)(make, { timeout: 2000 }); };
+    document.addEventListener('morz:pen-done', go);
+    new MutationObserver(function (m, o) { if (!h.classList.contains('intro-on')) { o.disconnect(); go(); } }).observe(h, { attributes: true, attributeFilter: ['class'] });
+  }
 })();
 
 /* Snow that has really settled on each product card: painted to the card's own width, piled a little higher in the middle,
@@ -215,10 +225,17 @@
     if (document.documentElement.classList.contains('intro-on')) queue(card); else paint(card);
     if (ro) ro.observe(card);
   }
-  var q = [], qOn = false;
-  function idle(fn) { (window.requestIdleCallback || function (f) { return setTimeout(f, 30); })(fn, { timeout: 2000 }); }
-  function queue(card) { if (q.indexOf(card) < 0) q.push(card); if (!qOn) { qOn = true; idle(run); } }
-  function run() { var t0 = performance.now(); while (q.length && performance.now() - t0 < 6) paint(q.shift()); if (q.length) idle(run); else qOn = false; }
+  /* while the logo is being written nothing is painted at all; after that, a card at a time only in real spare time */
+  var q = [], qOn = false, hold = document.documentElement.classList.contains('intro-on');
+  function idle(fn) { (window.requestIdleCallback || function (f) { return setTimeout(function () { f({ timeRemaining: function () { return 50; } }); }, 30); })(fn, { timeout: 2500 }); }
+  function queue(card) { if (q.indexOf(card) < 0) q.push(card); if (!qOn && !hold) { qOn = true; idle(run); } }
+  function run(dl) {
+    if (q.length && (!dl || dl.didTimeout || dl.timeRemaining() > 9)) paint(q.shift());
+    if (q.length) idle(run); else qOn = false;
+  }
+  function release() { if (!hold) return; hold = false; if (q.length && !qOn) { qOn = true; idle(run); } }
+  document.addEventListener('morz:pen-done', release);
+  if (hold) new MutationObserver(function (m, o) { if (!document.documentElement.classList.contains('intro-on')) { o.disconnect(); release(); } }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   function scan() { [].forEach.call(document.querySelectorAll('.prods .p'), add); }
   if (window.ResizeObserver) ro = new ResizeObserver(function (es) { es.forEach(function (e) { if (e.target.__xmW !== Math.round(e.target.offsetWidth)) queue(e.target); }); });
   function start() {
@@ -272,9 +289,8 @@
     var g = document.createElement('div'); g.className = 'xm-mode'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'Light or dark');
     g.innerHTML = '<button type="button" data-mode="light" aria-pressed="false" aria-label="Light" title="Light">' + sun + '</button><button type="button" data-mode="dark" aria-pressed="false" aria-label="Dark" title="Dark">' + moon + '</button>';
     g.addEventListener('click', function (e) { var b = e.target.closest('button[data-mode]'); if (b) apply(b.getAttribute('data-mode'), true); });
-    var nav = document.querySelector('header.top nav.main');
-    if (nav) { var fab = nav.querySelector('.mx-fab'); if (fab) nav.insertBefore(g, fab); else nav.appendChild(g); }
-    else { var w = document.querySelector('header.top .wrap'), cart = w && w.querySelector('.cartb'); if (w) w.insertBefore(g, cart || null); }
+    var w = document.querySelector('header.top .wrap');
+    if (w) { var at = w.querySelector(':scope > .hb-search') || w.querySelector(':scope > details.gl') || w.querySelector(':scope > .cartb'); w.insertBefore(g, at || null); g.classList.add('xm-mode--top'); }
     apply(get(), false);
   }
   apply(get(), false);
