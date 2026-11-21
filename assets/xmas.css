@@ -632,3 +632,8 @@ html.intro-on header.top .xm-logo{animation-play-state:paused}
 @media(max-width:30rem){header.top .wrap{column-gap:.45rem}.xm-mode--top button{width:1.45rem;height:1.5rem}.xm-mode--top svg{width:13px;height:13px}}
 @media(max-width:26rem){.gl .gl-lang{display:none}}
 @media(max-width:23rem){.gl summary>span{display:none!important}header.top .wrap{padding-left:.8rem;padding-right:.8rem}}
+
+/* ---- v64: live chat (Tidio) in the bottom-right corner ----
+   it stays out of the way of the opening logo, and the lyrics line and the music hint move up so they never sit under it */
+html.intro-on #tidio-chat,html.intro-on #tidio-chat iframe{visibility:hidden!important}
+body:has(#tidio-chat) .mx-lyr,body:has(#tidio-chat) .mx-toast{bottom:calc(5.6rem + env(safe-area-inset-bottom,0px))}
