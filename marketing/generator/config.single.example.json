@@ -1,0 +1,26 @@
+{
+  "template": "single.html",
+  "seed": 314,
+  "currency": "$",
+  "hook": ["POV:", "your cat", "meets the", "*Christmas tree*"],
+  "hookSmall": "wait for it",
+  "punch": "WHAT?",
+  "product": {
+    "name": "Cat Christmas Tree Hoodie",
+    "now": 34.99, "was": 69.99,
+    "hero": "https://cdn.shopify.com/s/files/1/0827/8802/4547/files/1000000938.png",
+    "colors": [
+      {"label": "Royal Blue",   "img": "https://cdn.shopify.com/s/files/1/0827/8802/4547/files/WhatCatChristmasTreeWhite_12_copy.jpg", "swatch": "#1638d8", "ink": "#fff"},
+      {"label": "Pink",         "img": "https://cdn.shopify.com/s/files/1/0827/8802/4547/files/WhatCatChristmasTreeT-Shirt-Black_11_copy.jpg", "swatch": "#f6b8c8"},
+      {"label": "Dark Heather", "img": "https://cdn.shopify.com/s/files/1/0827/8802/4547/files/WhatCatChristmasTreeWhite_2_copy.jpg", "swatch": "#55565a", "ink": "#fff"},
+      {"label": "Mauve",        "img": "https://cdn.shopify.com/s/files/1/0827/8802/4547/files/WhatCatChristmasTreeWhite_6_copy.jpg", "swatch": "#b4423f", "ink": "#fff"}
+    ]
+  },
+  "colorsTitle": "5 colours",
+  "features": ["Soft fleece lining", "Adjustable hood", "Sizes S to 3XL"],
+  "priceTitle": "Christmas price",
+  "priceSub": "Perfect gift for cat lovers",
+  "cta": "Shop at",
+  "url": "morz.lol",
+  "stills": [1.9, 3.4, 5.3, 6.3, 10.2, 13.5]
+}

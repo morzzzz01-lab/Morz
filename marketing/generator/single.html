@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<!-- Single-product "POV / sticker" reel. Config: see config.single.example.json -->
+<style>
+  html,body{margin:0;width:1080px;height:1920px;overflow:hidden;font-family:Inter,sans-serif;background:#f4ecdf;color:#141414}
+  #bg{position:absolute;inset:0;background:
+      radial-gradient(900px 700px at 50% 38%,#fffaf2 0%,rgba(255,250,242,0) 70%),
+      repeating-linear-gradient(135deg,rgba(0,0,0,.025) 0 2px,transparent 2px 22px)}
+  canvas{position:absolute;inset:0}
+  .layer{position:absolute;inset:0;opacity:0}
+  .hook{position:absolute;left:80px;right:80px;top:470px}
+  .hook div{font-family:'Inter Display',Inter;font-weight:900;font-size:150px;line-height:1.02;letter-spacing:-.03em;opacity:0}
+  .hook .pov{display:inline-block;background:#141414;color:#f4ecdf;padding:6px 30px 14px;border-radius:24px;font-size:110px}
+  .hook .em{color:#d62839}
+  .small{position:absolute;left:0;right:0;text-align:center;font-weight:800;font-size:46px;letter-spacing:.2em;text-transform:uppercase}
+  .sticker{position:absolute;font-family:'Inter Display',Inter;font-weight:900;border-radius:28px;padding:14px 40px 22px;
+           box-shadow:0 10px 0 rgba(0,0,0,.85);border:6px solid #141414;white-space:nowrap}
+  .hero{position:absolute;left:50%;top:330px;width:900px;height:1100px;margin-left:-450px;object-fit:contain;
+        filter:drop-shadow(0 50px 50px rgba(0,0,0,.28))}
+  .card{position:absolute;left:50%;top:360px;width:760px;height:1038px;margin-left:-380px;border-radius:36px;overflow:hidden;
+        border:14px solid #fff;box-shadow:0 30px 60px rgba(0,0,0,.25)}
+  .card img{width:100%;height:100%;object-fit:cover;object-position:35% 50%}
+  .pill{position:absolute;left:110px;right:110px;height:150px;border-radius:80px;background:#fff;border:6px solid #141414;
+        box-shadow:0 10px 0 #141414;display:flex;align-items:center;font-weight:800;font-size:62px;padding-left:40px;opacity:0}
+  .pill i{font-style:normal;flex:none;width:96px;height:96px;border-radius:50%;background:#1f9d55;color:#fff;
+          display:flex;align-items:center;justify-content:center;font-size:62px;margin-right:36px}
+  .was{position:absolute;left:0;right:0;top:560px;text-align:center;font-weight:800;font-size:120px;color:#8a8278}
+  .was:after{content:'';position:absolute;left:50%;top:52%;height:14px;background:#d62839;border-radius:8px;
+             width:var(--strike,0px);margin-left:-260px;transform:rotate(-6deg)}
+  .now{position:absolute;left:0;right:0;top:740px;text-align:center;font-family:'Inter Display',Inter;font-weight:900;font-size:260px;letter-spacing:-.04em;line-height:1}
+  .cta{position:absolute;left:50%;top:1200px;transform:translateX(-50%);background:#141414;color:#f4ecdf;font-weight:900;font-size:70px;
+       padding:36px 70px;border-radius:999px;white-space:nowrap}
+  #segs{position:absolute;left:40px;right:40px;top:40px;display:flex;gap:12px}
+  #segs b{flex:1;height:10px;border-radius:6px;background:rgba(0,0,0,.12);overflow:hidden}
+  #segs b span{display:block;height:100%;width:0;background:#141414}
+</style></head>
+<body>
+<div id="bg"></div>
+<canvas id="fx" width="1080" height="1920"></canvas>
+<div id="root"></div>
+<div id="segs"></div>
+<script>
+const C=window.CONFIG, P=C.product;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const em=s=>esc(s).replace(/\*(.+?)\*/g,'<span class="em">$1</span>');
+const off=P.was?Math.round((1-P.now/P.was)*100):0;
+const cur=C.currency||'$';
+
+// ---- timeline (seconds) ----
+const nC=P.colors.length, CS=1.0;
+const S={hook:[0,2.6],hero:[2.6,4.6],colors:[4.6,4.6+nC*CS]};
+S.feat=[S.colors[1],S.colors[1]+2.8]; S.price=[S.feat[1],S.feat[1]+3.4];
+const DUR=S.price[1]; window.DURATION=DUR;
+const order=['hook','hero','colors','feat','price'];
+
+const root=document.getElementById('root');
+root.innerHTML=`
+<div class="layer" id="L_hook">
+  <div class="hook">${C.hook.map((l,i)=>`<div>${i===0?`<span class="pov">${esc(l)}</span>`:em(l)}</div>`).join('')}</div>
+  <div class="small" style="top:1330px;color:#d62839" id="wait">${esc(C.hookSmall||'wait for it')}</div>
+</div>
+<div class="layer" id="L_hero">
+  <img class="hero" src="${P.hero}">
+  <div class="sticker" id="what" style="left:430px;top:1250px;background:#d62839;color:#fff;font-size:150px">${esc(C.punch||'WHAT?')}</div>
+  <div class="small" style="top:190px">${esc(P.name)}</div>
+</div>
+<div class="layer" id="L_colors">
+  ${P.colors.map((c,i)=>`<div class="card" id="c${i}"><img src="${c.img}"></div>
+    <div class="sticker" id="cl${i}" style="left:120px;top:1300px;background:${c.swatch||'#fff'};color:${c.ink||'#141414'};font-size:84px">${esc(c.label)}</div>`).join('')}
+  <div class="sticker" style="left:50%;top:170px;transform:translateX(-50%) rotate(-3deg);background:#ffd24a;font-size:84px">${esc(C.colorsTitle||nC+' colours')}</div>
+</div>
+<div class="layer" id="L_feat">
+  <img class="hero" src="${P.hero}" style="top:170px;width:560px;height:700px;margin-left:-280px">
+  ${C.features.map((f,i)=>`<div class="pill" id="f${i}" style="top:${930+i*190}px"><i>&#10003;</i>${esc(f)}</div>`).join('')}
+</div>
+<div class="layer" id="L_price">
+  <div class="small" style="top:300px">${esc(C.priceTitle||'Christmas price')}</div>
+  ${P.was?`<div class="was" id="was">${cur}${P.was}</div>`:''}
+  <div class="now" id="now">${cur}${P.now}</div>
+  ${off>0?`<div class="sticker" id="off" style="left:700px;top:400px;background:#d62839;color:#fff;font-size:96px">-${off}%</div>`:''}
+  <div class="cta" id="cta">${esc(C.cta||'Shop at')} ${esc(C.url)}</div>
+  <div class="small" style="top:1380px;font-size:40px;letter-spacing:.12em" id="sizes">${esc(C.priceSub||'')}</div>
+</div>`;
+document.getElementById('segs').innerHTML=order.map(()=>'<b><span></span></b>').join('');
+
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const eo=x=>1-Math.pow(1-clamp(x),3);
+const back=(x,c=2.2)=>{x=clamp(x);return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const $=id=>document.getElementById(id);
+const pop=(el,lt,rot=0)=>{if(!el)return;el.style.opacity=lt>0?1:0;el.style.transform=(el.dataset.base||'')+` scale(${back(lt/.32)}) rotate(${rot}deg)`};
+
+// confetti
+let seed=(C.seed||3)%2147483646+1;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const COLS=['#d62839','#1f9d55','#ffd24a','#141414'];
+const bits=[...Array(70)].map(()=>({x:rnd()*1080,y:rnd()*1920,s:8+rnd()*14,v:50+rnd()*90,r:rnd()*6.28,w:(rnd()-.5)*4,c:COLS[Math.floor(rnd()*4)],k:rnd()<.5}));
+const ctx=$('fx').getContext('2d');
+
+window.render=function(t){
+  ctx.clearRect(0,0,1080,1920);
+  for(const b of bits){const y=(b.y+b.v*t)%1980-30;ctx.save();ctx.translate(b.x+Math.sin(t+b.r)*20,y);ctx.rotate(b.r+b.w*t);
+    ctx.globalAlpha=.55;ctx.fillStyle=b.c;if(b.k)ctx.fillRect(-b.s/2,-b.s/4,b.s,b.s/2);else{ctx.beginPath();ctx.arc(0,0,b.s/3,0,6.283);ctx.fill();}ctx.restore();}
+
+  order.forEach((k,i)=>{const [a,b]=S[k];const on=t>=a&&t<b;$('L_'+k).style.opacity=on?1:0;
+    $('segs').children[i].firstChild.style.width=(clamp((t-a)/(b-a))*100)+'%';});
+
+  // hook: one line per beat
+  const hk=$('L_hook').querySelectorAll('.hook div');
+  hk.forEach((d,i)=>{const lt=t-(.15+i*.45);d.style.opacity=lt>0?1:0;d.style.transform=`translateY(${(1-eo(lt/.25))*40}px) scale(${back(lt/.3,1.4)})`;});
+  const w=$('wait');w.style.opacity=t>1.9?(.5+.5*Math.sin(t*12)):0;
+
+  // hero
+  let lt=t-S.hero[0];
+  const h=$('L_hero').querySelector('.hero');
+  const shake=lt>.45&&lt<.75?Math.sin(lt*120)*10:0;
+  h.style.transform=`translateX(${shake}px) scale(${.3+.7*back(lt/.4,1.6)+.02*lt})`;
+  const wt=$('what');wt.dataset.base='';pop(wt,lt-.45,-8+2*Math.sin(t*6));
+
+  // colours: hard cut each beat, alternating tilt
+  P.colors.forEach((c,i)=>{const a=S.colors[0]+i*CS, l=t-a, on=l>=0&&l<CS;
+    const card=$('c'+i), lab=$('cl'+i);
+    card.style.opacity=on?1:0;lab.style.opacity=on&&l>.12?1:0;
+    const tilt=(i%2?4:-4);
+    card.style.transform=`rotate(${tilt*(1-.3*eo(l/.3))}deg) scale(${1.08-.08*eo(l/.25)+.03*l})`;
+    lab.style.transform=`rotate(${-tilt}deg) scale(${back((l-.12)/.25)})`;});
+
+  // features
+  lt=t-S.feat[0];
+  $('L_feat').querySelector('.hero').style.transform=`scale(${.9+.1*eo(lt/.4)}) rotate(${Math.sin(t*2)*2}deg)`;
+  C.features.forEach((f,i)=>{const el=$('f'+i),l=lt-(.25+i*.55);el.style.opacity=l>0?1:0;
+    el.style.transform=`translateX(${(1-eo(l/.3))*-900}px)`;
+    el.querySelector('i').style.transform=`scale(${back((l-.25)/.25)})`;});
+
+  // price
+  lt=t-S.price[0];
+  const was=$('was');if(was){was.style.opacity=lt>.1?1:0;was.style.setProperty('--strike',(eo((lt-.45)/.25)*520)+'px');}
+  const now=$('now');now.style.opacity=lt>.85?1:0;now.style.transform=`scale(${back((lt-.85)/.3,2.6)})`;
+  const o=$('off');if(o)pop(o,lt-1.25,12+3*Math.sin(t*5));
+  const cta=$('cta');cta.style.opacity=lt>1.6?1:0;cta.style.transform=`translateX(-50%) scale(${back((lt-1.6)/.3)*(1+.04*Math.sin(lt*8)*clamp(lt-2))})`;
+  $('sizes').style.opacity=clamp((lt-1.9)/.3);
+};
+</script>
+</body></html>

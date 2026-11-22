@@ -7,18 +7,20 @@ const fs=require('fs'),path=require('path'),os=require('os');
   const C=JSON.parse(fs.readFileSync(cfgPath,'utf8'));
   const work=fs.mkdtempSync(path.join(os.tmpdir(),'reel-'));
   for(const f of fs.readdirSync(path.join(__dirname,'assets'))) fs.copyFileSync(path.join(__dirname,'assets',f),path.join(work,f));
-  fs.copyFileSync(path.join(__dirname,'scene.html'),path.join(work,'scene.html'));
-  for(const [i,p] of C.products.entries()){
-    if(/^https?:/.test(p.img)){const r=await fetch(p.img);if(!r.ok)throw new Error('image '+p.img+' '+r.status);
-      fs.writeFileSync(path.join(work,`p${i}.img`),Buffer.from(await r.arrayBuffer()));p.img=`p${i}.img`;}
-  }
+  fs.copyFileSync(path.join(__dirname,C.template||'scene.html'),path.join(work,'scene.html'));
+  // download every http(s) "img" value anywhere in the config
+  let k=0;const walk=async o=>{for(const key in o){const v=o[key];
+    if(key==='img'&&typeof v==='string'&&/^https?:/.test(v)){const r=await fetch(v);if(!r.ok)throw new Error('image '+v+' '+r.status);
+      const f=`img${k++}`;fs.writeFileSync(path.join(work,f),Buffer.from(await r.arrayBuffer()));o[key]=f;}
+    else if(v&&typeof v==='object') await walk(v);}};
+  await walk(C);
   const b=await chromium.launch();const pg=await b.newPage({viewport:{width:1080,height:1920}});
   await pg.addInitScript(c=>{window.CONFIG=c},C);
   await pg.goto('file://'+path.join(work,'scene.html'));await pg.waitForLoadState('networkidle');
   await pg.evaluate(()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))));
   const dur=await pg.evaluate(()=>DURATION), fps=30, n=Math.round(dur*fps);
   if(flag==='--stills'){ // contact sheet frames for a quick visual check
-    const ts=[1.5,...C.products.map((_,i)=>2.5+i*(C.segment||2.5)+1.4),dur-1];
+    const ts=C.stills||[1.5,...C.products.map((_,i)=>2.5+i*(C.segment||2.5)+1.4),dur-1];
     for(const [i,t] of ts.entries()){await pg.evaluate(t=>render(t),t);await pg.screenshot({path:out.replace(/\.mp4$/,`_still${i}.png`)});}
     await b.close();return;
   }
