@@ -58,5 +58,15 @@
     "prev": "Música anterior",
     "next": "Próxima música",
     "play": "Tocar / pausar"
+  },
+  "footer": {
+    "shop": "Loja",
+    "help": "Ajuda e políticas",
+    "shipping": "Informações de envio",
+    "refund": "Política de troca e reembolso",
+    "privacy": "Política de privacidade",
+    "terms": "Termos de serviço",
+    "contact": "Fale conosco",
+    "track": "Rastrear pedido"
   }
 }

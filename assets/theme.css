@@ -574,3 +574,18 @@ html:not(:focus-within){scroll-behavior:auto}
 .rt{display:flex;align-items:center;gap:.1rem;margin:.1rem 0 .35rem;font-size:.85rem;line-height:1;color:var(--line)}
 .rt .on{color:#ffb400}.rt small{margin-left:.3rem;color:var(--muted);font-size:.75rem}
 [data-slide-info][hidden],.fl[hidden]{display:none!important}
+
+/* ---- footer: columns with policies, contact and social ---- */
+footer.ft .ft-grid{display:grid;gap:2rem;grid-template-columns:1fr;align-items:start}
+@media(min-width:44rem){footer.ft .ft-grid{grid-template-columns:1.4fr repeat(3,minmax(0,1fr))}}
+.ft-col h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;margin:0 0 .8rem;color:var(--ink)}
+.ft-col ul{list-style:none;margin:0;padding:0;display:grid;gap:.5rem;font-size:.9rem;color:var(--muted)}
+.ft-col a:hover{color:var(--ink);text-decoration:underline}
+.social{list-style:none;display:flex;gap:.6rem;margin:1rem 0 0;padding:0}
+.social a{display:inline-flex;align-items:center;justify-content:center;width:2.4rem;height:2.4rem;border:1px solid var(--line);border-radius:50%;color:var(--ink);background:var(--panel)}
+.social a:hover{border-color:var(--ink)}
+footer.ft .foot-bottom{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between}
+
+/* ---- plug / voltage warning on electrical products ---- */
+.plug-note{display:flex;gap:.6rem;align-items:flex-start;margin:1rem 0;padding:.8rem 1rem;border:1px solid #d9a400;border-radius:.7rem;background:#2a2100;color:#ffe9a8;font-size:.88rem;line-height:1.45}
+.plug-note svg{flex:0 0 auto;margin-top:.1rem}

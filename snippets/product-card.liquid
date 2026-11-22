@@ -1,13 +1,13 @@
 {%- comment -%} Usage: {% render 'product-card', product: product, index: forloop.index, badge: 'New', badge_n: 0 %} (badge optional) {%- endcomment -%}
 <div class="p" style="--d:{{ index | default: 1 | times: 28 }}ms">
-  <a class="ph" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+  <a class="ph" href="{{ product.url }}" tabindex="-1" aria-hidden="true">
     {%- if product.featured_media -%}
       {%- assign main_id = product.featured_media.id -%}
       {%- assign second = nil -%}
       {%- for m in product.media -%}
         {%- if m.media_type == 'image' and m.id != main_id and second == nil -%}{%- assign second = m -%}{%- endif -%}
       {%- endfor -%}
-      {{ product.featured_media.preview_image | image_url: width: 900 | image_tag: class: 'pimg pimg-main', widths: '360, 540, 720, 900', sizes: '(min-width: 48rem) 32vw, 92vw', loading: 'lazy', alt: product.title }}
+      {{ product.featured_media.preview_image | image_url: width: 900 | image_tag: class: 'pimg pimg-main', widths: '360, 540, 720, 900', sizes: '(min-width: 48rem) 32vw, 92vw', loading: 'lazy', alt: '' }}
       {%- if second -%}
         {{ second.preview_image | image_url: width: 900 | image_tag: class: 'pimg pimg-alt', widths: '360, 540, 720, 900', sizes: '(min-width: 48rem) 32vw, 92vw', loading: 'lazy', alt: '' }}
       {%- endif -%}

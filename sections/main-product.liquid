@@ -61,6 +61,7 @@
             <span class="cart-txt" data-cart-label>{{ 'products.add' | t }}</span>
           </button>
         </div>
+        {% render 'plug-notice', product: product %}
         <div class="bundles" data-bundles hidden></div>
         <p class="card-note" data-card-note hidden><strong>Check your colour &amp; size.</strong> Card checkout is for 1 item of the style you picked (<b data-card-sel></b>). At checkout you will need to enter your colour and size again. Want 2 or more, or different styles? <span data-note-more>Use the cart button.</span></p>
         <p class="form-error" data-form-error role="alert" hidden></p>

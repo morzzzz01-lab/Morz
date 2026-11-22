@@ -1,3 +1,4 @@
+{%- assign brand_name = settings.brand_name | default: shop.name -%}
 {%- assign logo_style = 'height:' | append: settings.logo_height | append: 'px;width:auto' -%}
 {%- assign show_loc = false -%}
 {%- if section.settings.show_localization -%}
@@ -9,12 +10,12 @@
   <div class="xm-string" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i><i class="b"></i></div>
   <div class="wrap">
     <button type="button" class="menu-btn" data-menu-open aria-label="{{ 'general.menu' | t }}" aria-controls="MenuDrawer" aria-haspopup="dialog"><span></span><span></span><span></span></button>
-    <a href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+    <a href="{{ routes.root_url }}" aria-label="{{ settings.brand_name | default: shop.name | escape }}">
       <span class="xm-logo">
       {%- if settings.logo != blank -%}
-        {{ settings.logo | image_url: height: 200 | image_tag: class: 'mark', alt: shop.name, loading: 'eager', style: logo_style }}
+        {{ settings.logo | image_url: height: 200 | image_tag: class: 'mark', alt: brand_name, loading: 'eager', style: logo_style }}
       {%- else -%}
-        <img class="mark mark--xm" src="{{ 'morz-logo-mini-light.png' | asset_url }}" alt="{{ shop.name | escape }}" width="38" height="50" style="{{ logo_style }}">
+        <img class="mark mark--xm" src="{{ 'morz-logo-mini-light.png' | asset_url }}" alt="{{ settings.brand_name | default: shop.name | escape }}" width="38" height="50" style="{{ logo_style }}">
       {%- endif -%}
       </span>
     </a>
@@ -41,8 +42,9 @@
               {%- if localization.available_countries.size > 1 -%}
                 <label>{{ 'general.country' | t }}
                 <select name="country_code" aria-label="{{ 'general.country' | t }}" data-autosubmit>
+                  {%- assign cur_codes = localization.available_countries | map: 'currency' | map: 'iso_code' | uniq -%}
                   {%- for country in localization.available_countries -%}
-                    <option value="{{ country.iso_code }}" {% if country.iso_code == localization.country.iso_code %}selected{% endif %}>{{ country.name }} ({{ country.currency.iso_code }})</option>
+                    <option value="{{ country.iso_code }}" {% if country.iso_code == localization.country.iso_code %}selected{% endif %}>{{ country.name }}{% if cur_codes.size > 1 %} ({{ country.currency.iso_code }}){% endif %}</option>
                   {%- endfor -%}
                 </select></label>
               {%- endif -%}
@@ -101,29 +103,34 @@
     <div class="md-results" data-menu-results hidden></div>
 
     <div class="md-list" data-menu-list>
+      {%- comment -%} The main menu is already shown in the header bar, so the drawer repeats it only when it has sub-menus (the header bar shows top-level links only) or the setting asks for it. This avoids listing Home / Contact / Track your order twice. {%- endcomment -%}
+      {%- assign menu_has_children = false -%}
+      {%- for link in drawer_menu.links -%}{%- if link.links.size > 0 -%}{%- assign menu_has_children = true -%}{%- endif -%}{%- endfor -%}
+      {%- if section.settings.drawer_repeat_menu or menu_has_children -%}
       {%- if drawer_menu.links.size > 0 -%}
-        <div class="md-group" data-menu-group>
-          <h3>{{ 'general.menu_categories' | t }}</h3>
-          <ul>
-            {%- for link in drawer_menu.links -%}{%- if link.type == 'catalog_link' or link.title == 'Catalog' -%}{%- continue -%}{%- endif -%}
-              {%- if link.links.size > 0 -%}
-                <li data-menu-item data-label="{{ link.title | downcase | escape }}">
-                  <details>
-                    <summary>{{ link.title }}</summary>
-                    <ul>
-                      <li data-menu-item data-label="{{ link.title | downcase | escape }}"><a href="{% render 'safe-url', link: link %}">{{ 'general.view_all' | t }} {{ link.title }}</a></li>
-                      {%- for child in link.links -%}
-                        <li data-menu-item data-label="{{ child.title | downcase | escape }}"><a href="{% render 'safe-url', link: child %}">{{ child.title }}</a></li>
-                      {%- endfor -%}
-                    </ul>
-                  </details>
-                </li>
-              {%- else -%}
-                <li data-menu-item data-label="{{ link.title | downcase | escape }}"><a href="{% render 'safe-url', link: link %}">{{ link.title }}</a></li>
-              {%- endif -%}
-            {%- endfor -%}
-          </ul>
-        </div>
+          <div class="md-group" data-menu-group>
+            <h3>{{ 'general.menu_categories' | t }}</h3>
+            <ul>
+              {%- for link in drawer_menu.links -%}{%- if link.type == 'catalog_link' or link.title == 'Catalog' -%}{%- continue -%}{%- endif -%}
+                {%- if link.links.size > 0 -%}
+                  <li data-menu-item data-label="{{ link.title | downcase | escape }}">
+                    <details>
+                      <summary>{{ link.title }}</summary>
+                      <ul>
+                        <li data-menu-item data-label="{{ link.title | downcase | escape }}"><a href="{% render 'safe-url', link: link %}">{{ 'general.view_all' | t }} {{ link.title }}</a></li>
+                        {%- for child in link.links -%}
+                          <li data-menu-item data-label="{{ child.title | downcase | escape }}"><a href="{% render 'safe-url', link: child %}">{{ child.title }}</a></li>
+                        {%- endfor -%}
+                      </ul>
+                    </details>
+                  </li>
+                {%- else -%}
+                  <li data-menu-item data-label="{{ link.title | downcase | escape }}"><a href="{% render 'safe-url', link: link %}">{{ link.title }}</a></li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
       {%- endif -%}
 
       {%- if section.settings.show_collections -%}
@@ -161,6 +168,7 @@
     { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
     { "type": "checkbox", "id": "show_currency", "label": "Show currency code next to country", "default": false },
     { "type": "checkbox", "id": "show_search", "label": "Show search", "default": true },
+    { "type": "checkbox", "id": "drawer_repeat_menu", "label": "Repeat the main menu inside the menu drawer", "default": false, "info": "Off: the main menu appears only once, in the header bar." },
     { "type": "checkbox", "id": "show_collections", "label": "List all collections in the menu drawer", "default": true, "info": "The menu drawer search looks through the menu links and all collections." },
     { "type": "checkbox", "id": "show_localization", "label": "Show language and currency selector", "default": true, "info": "Languages and currencies are managed in Settings → Markets / Languages." }
   ]

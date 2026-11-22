@@ -88,7 +88,15 @@
     "by": "Yazar: {{ author }}"
   },
   "footer": {
-    "rights": "Tüm hakları saklıdır."
+    "rights": "Tüm hakları saklıdır.",
+    "shop": "Mağaza",
+    "help": "Yardım ve politikalar",
+    "shipping": "Kargo bilgileri",
+    "refund": "İade ve geri ödeme politikası",
+    "privacy": "Gizlilik politikası",
+    "terms": "Hizmet şartları",
+    "contact": "Bize ulaşın",
+    "track": "Siparişini takip et"
   },
   "contact": {
     "title": "Bize ulaşın",

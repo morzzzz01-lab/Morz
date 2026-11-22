@@ -1,30 +1,74 @@
-<footer>
-  <div class="wrap">
-    <div>
+{%- liquid
+  assign brand = settings.brand_name | default: shop.name
+  assign info_menu = linklists[section.settings.info_menu]
+  assign shop_menu = linklists[section.settings.shop_menu]
+  assign contact_email = section.settings.email
+-%}
+<footer class="ft">
+  <div class="wrap ft-grid">
+    <div class="ft-brand">
       <span class="xm-logo">
       {%- if settings.logo != blank -%}
-        {{ settings.logo | image_url: height: 200 | image_tag: class: 'mark', alt: shop.name, loading: 'lazy' }}
+        {{ settings.logo | image_url: height: 200 | image_tag: class: 'mark', alt: brand, loading: 'lazy' }}
       {%- else -%}
-        <img class="mark mark--xm" src="{{ 'morz-logo-mini-light.png' | asset_url }}" alt="{{ shop.name | escape }}" width="38" height="50" loading="lazy">
+        <img class="mark mark--xm" src="{{ 'morz-logo-mini-light.png' | asset_url }}" alt="{{ brand | escape }}" width="38" height="50" loading="lazy">
       {%- endif -%}
       </span>
       {%- if section.settings.line_1 != blank -%}<p>{{ section.settings.line_1 }}</p>{%- endif -%}
       {%- if section.settings.line_2 != blank -%}<p>{{ section.settings.line_2 }}</p>{%- endif -%}
+      {%- render 'social-icons' -%}
     </div>
 
+    {%- if shop_menu.links.size > 0 -%}
+      <nav class="ft-col" aria-label="{{ 'footer.shop' | t }}">
+        <h2>{{ 'footer.shop' | t }}</h2>
+        <ul>
+          {%- for link in shop_menu.links -%}{%- if link.type == 'catalog_link' or link.title == 'Catalog' -%}{%- continue -%}{%- endif -%}
+            <li><a href="{% render 'safe-url', link: link %}">{{ link.title }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
+    <nav class="ft-col" aria-label="{{ 'footer.help' | t }}">
+      <h2>{{ 'footer.help' | t }}</h2>
+      <ul>
+        {%- if info_menu.links.size > 0 -%}
+          {%- for link in info_menu.links -%}{%- if link.type == 'catalog_link' or link.title == 'Catalog' -%}{%- continue -%}{%- endif -%}
+            <li><a href="{% render 'safe-url', link: link %}">{{ link.title }}</a></li>
+          {%- endfor -%}
+        {%- else -%}
+          {%- comment -%} Always list the four policies shoppers and payment providers look for.
+            Shopify serves them at /policies/... once they are filled in under Settings → Policies. {%- endcomment -%}
+          <li><a href="{{ shop.shipping_policy.url | default: '/policies/shipping-policy' }}">{{ 'footer.shipping' | t }}</a></li>
+          <li><a href="{{ shop.refund_policy.url | default: '/policies/refund-policy' }}">{{ 'footer.refund' | t }}</a></li>
+          <li><a href="{{ shop.privacy_policy.url | default: '/policies/privacy-policy' }}">{{ 'footer.privacy' | t }}</a></li>
+          <li><a href="{{ shop.terms_of_service.url | default: '/policies/terms-of-service' }}">{{ 'footer.terms' | t }}</a></li>
+          {%- if section.settings.contact_page != blank -%}
+            <li><a href="{{ section.settings.contact_page.url }}">{{ 'footer.contact' | t }}</a></li>
+          {%- endif -%}
+          {%- if section.settings.track_url != blank -%}
+            <li><a href="{{ section.settings.track_url }}">{{ 'footer.track' | t }}</a></li>
+          {%- endif -%}
+        {%- endif -%}
+      </ul>
+    </nav>
+
+    {%- if contact_email != blank or section.settings.phone != blank or section.settings.hours != blank -%}
+      <div class="ft-col">
+        <h2>{{ 'footer.contact' | t }}</h2>
+        <ul>
+          {%- if contact_email != blank -%}<li><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></li>{%- endif -%}
+          {%- if section.settings.phone != blank -%}<li><a href="tel:{{ section.settings.phone | replace: ' ', '' }}">{{ section.settings.phone }}</a></li>{%- endif -%}
+          {%- if section.settings.hours != blank -%}<li class="muted">{{ section.settings.hours }}</li>{%- endif -%}
+        </ul>
+      </div>
+    {%- endif -%}
   </div>
 
   <div class="wrap foot-bottom">
-    {%- assign info_menu = linklists[section.settings.info_menu] -%}
-    <nav class="policies" aria-label="Footer">
-      {%- if info_menu.links.size > 0 -%}
-        {%- for link in info_menu.links -%}{%- if link.type == 'catalog_link' or link.title == 'Catalog' -%}{%- continue -%}{%- endif -%}<a href="{{ link.url }}">{{ link.title }}</a>{%- endfor -%}
-      {%- else -%}
-        {%- for policy in shop.policies -%}<a href="{{ policy.url }}">{{ policy.title }}</a>{%- endfor -%}
-      {%- endif -%}
-    </nav>
     {%- if section.settings.show_payment_icons -%}{% render 'secure-note' %}{% render 'payment-icons' %}{%- endif -%}
-    <p class="copy">&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ 'footer.rights' | t }}</p>
+    <p class="copy">&copy; {{ 'now' | date: '%Y' }} {{ brand }}. {{ 'footer.rights' | t }}</p>
   </div>
 </footer>
 
@@ -34,7 +78,14 @@
   "settings": [
     { "type": "text", "id": "line_1", "label": "Line 1", "default": "" },
     { "type": "text", "id": "line_2", "label": "Line 2", "default": "Gifts that glow for everyone on your list." },
-    { "type": "link_list", "id": "info_menu", "label": "Policy / info menu", "info": "If empty, your store policies (refund, shipping, privacy, terms) are shown automatically." },
+    { "type": "link_list", "id": "shop_menu", "label": "Shop menu (optional)" },
+    { "type": "link_list", "id": "info_menu", "label": "Help / policy menu", "info": "If empty, links to Shipping, Refund & Return, Privacy and Terms are shown automatically. Fill the texts in Settings → Policies." },
+    { "type": "page", "id": "contact_page", "label": "Contact page", "info": "Used when no Help menu is chosen." },
+    { "type": "url", "id": "track_url", "label": "Track your order link", "info": "Used when no Help menu is chosen." },
+    { "type": "header", "content": "Contact" },
+    { "type": "text", "id": "email", "label": "Email", "info": "Shown in the footer so customers can reach you." },
+    { "type": "text", "id": "phone", "label": "Phone" },
+    { "type": "text", "id": "hours", "label": "Support hours", "info": "For example: Mon–Fri 10:00–18:00" },
     { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": true, "info": "Icons come from the payment methods that are actually enabled in your store." }
   ]
 }

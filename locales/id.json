@@ -58,5 +58,15 @@
     "prev": "Lagu sebelumnya",
     "next": "Lagu berikutnya",
     "play": "Putar / jeda"
+  },
+  "footer": {
+    "shop": "Toko",
+    "help": "Bantuan & kebijakan",
+    "shipping": "Informasi pengiriman",
+    "refund": "Kebijakan pengembalian & refund",
+    "privacy": "Kebijakan privasi",
+    "terms": "Ketentuan layanan",
+    "contact": "Hubungi kami",
+    "track": "Lacak pesanan"
   }
 }

@@ -1,0 +1,33 @@
+{%- comment -%} Plug / voltage warning for electrical products (heated blankets etc.).
+  Shown when the product is tagged "electric", or its title / tags / option values contain
+  one of the words in Theme settings → Electrical products. Usage: {% render 'plug-notice', product: product %} {%- endcomment -%}
+{%- if settings.plug_notice and settings.plug_text != blank -%}
+  {%- liquid
+    assign tags_str = product.tags | join: ' '
+    assign hay = product.title | append: ' ' | append: tags_str
+    for option in product.options_with_values
+      assign vals = option.values | join: ' '
+      assign hay = hay | append: ' ' | append: option.name | append: ' ' | append: vals
+    endfor
+    assign hay = hay | downcase
+    assign show_plug = false
+    assign tags_d = tags_str | downcase | split: ' '
+    if tags_d contains 'electric'
+      assign show_plug = true
+    endif
+    assign kws = settings.plug_keywords | split: ','
+    for kw in kws
+      assign k = kw | strip | downcase
+      if k != blank and hay contains k
+        assign show_plug = true
+        break
+      endif
+    endfor
+  -%}
+  {%- if show_plug -%}
+    <p class="plug-note" role="note">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
+      <span>{{ settings.plug_text }}</span>
+    </p>
+  {%- endif -%}
+{%- endif -%}

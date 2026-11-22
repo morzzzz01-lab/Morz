@@ -87,7 +87,15 @@
     "by": "작성자: {{ author }}"
   },
   "footer": {
-    "rights": "모든 권리 보유."
+    "rights": "모든 권리 보유.",
+    "shop": "쇼핑",
+    "help": "도움말 및 정책",
+    "shipping": "배송 정보",
+    "refund": "반품 및 환불 정책",
+    "privacy": "개인정보 처리방침",
+    "terms": "서비스 약관",
+    "contact": "문의하기",
+    "track": "주문 조회"
   },
   "contact": {
     "title": "문의하기",

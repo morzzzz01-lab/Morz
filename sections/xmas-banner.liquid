@@ -1,3 +1,4 @@
+{%- assign brand_name = settings.brand_name | default: shop.name -%}
 <section class="xm-banner" id="xmas">
   <div class="xm-orns" aria-hidden="true">
     <span class="o o1"></span><span class="o o2"></span><span class="o o3"></span><span class="o o4"></span>
@@ -5,9 +6,9 @@
   <div class="wrap">
     <span class="xm-logo xm-logo--big">
       {%- if settings.logo != blank -%}
-        {{ settings.logo | image_url: width: 480 | image_tag: alt: shop.name, loading: 'lazy' }}
+        {{ settings.logo | image_url: width: 480 | image_tag: alt: brand_name, loading: 'lazy' }}
       {%- else -%}
-        <img class="mark--xm" src="{{ 'morz-logo-mini-light.png' | asset_url }}" alt="{{ shop.name | escape }}" width="308" height="404" loading="lazy">
+        <img class="mark--xm" src="{{ 'morz-logo-mini-light.png' | asset_url }}" alt="{{ settings.brand_name | default: shop.name | escape }}" width="308" height="404" loading="lazy">
       {%- endif -%}
     </span>
     {%- if section.settings.heading != blank -%}<h2>{{ section.settings.heading }}</h2>{%- endif -%}

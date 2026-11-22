@@ -58,5 +58,15 @@
     "prev": "Bài trước",
     "next": "Bài tiếp theo",
     "play": "Phát / tạm dừng"
+  },
+  "footer": {
+    "shop": "Cửa hàng",
+    "help": "Trợ giúp & chính sách",
+    "shipping": "Thông tin giao hàng",
+    "refund": "Chính sách đổi trả & hoàn tiền",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản dịch vụ",
+    "contact": "Liên hệ",
+    "track": "Theo dõi đơn hàng"
   }
 }

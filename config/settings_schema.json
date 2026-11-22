@@ -52,6 +52,13 @@
     "name": "Logo",
     "settings": [
       {
+        "type": "text",
+        "id": "brand_name",
+        "label": "Brand name",
+        "default": "MORZ",
+        "info": "Written the same way everywhere on the site (logo text, footer, page titles). Leave empty to use the store name."
+      },
+      {
         "type": "image_picker",
         "id": "logo",
         "label": "Logo",
@@ -88,6 +95,72 @@
         "id": "show_currency_code",
         "label": "Show currency code on prices",
         "default": false
+      }
+    ]
+  },
+  {
+    "name": "Social media",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Paste full links (https://...). Only filled-in links are shown in the footer."
+      },
+      {
+        "type": "text",
+        "id": "social_instagram",
+        "label": "Instagram",
+        "placeholder": "https://instagram.com/yourshop"
+      },
+      {
+        "type": "text",
+        "id": "social_facebook",
+        "label": "Facebook",
+        "placeholder": "https://facebook.com/yourshop"
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok",
+        "label": "TikTok",
+        "placeholder": "https://tiktok.com/@yourshop"
+      },
+      {
+        "type": "text",
+        "id": "social_youtube",
+        "label": "YouTube"
+      },
+      {
+        "type": "text",
+        "id": "social_pinterest",
+        "label": "Pinterest"
+      },
+      {
+        "type": "text",
+        "id": "social_x",
+        "label": "X (Twitter)"
+      }
+    ]
+  },
+  {
+    "name": "Electrical products",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "plug_notice",
+        "label": "Show plug / voltage warning on electrical products",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "plug_keywords",
+        "label": "Detect by words in title, tags or options",
+        "default": "US Plug,Heated,Electric,110V",
+        "info": "Comma separated. A product tagged \"electric\" always shows the warning."
+      },
+      {
+        "type": "textarea",
+        "id": "plug_text",
+        "label": "Warning text",
+        "default": "Electrical item with a US plug (110–120V). For 220–240V countries (Mongolia, Europe, Asia) use a voltage converter of at least the product's wattage — a plug adapter alone is not enough and can damage the item."
       }
     ]
   }

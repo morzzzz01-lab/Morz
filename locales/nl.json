@@ -58,5 +58,15 @@
     "prev": "Vorig nummer",
     "next": "Volgend nummer",
     "play": "Afspelen / pauzeren"
+  },
+  "footer": {
+    "shop": "Winkel",
+    "help": "Hulp & beleid",
+    "shipping": "Verzendinformatie",
+    "refund": "Retour- en terugbetalingsbeleid",
+    "privacy": "Privacybeleid",
+    "terms": "Servicevoorwaarden",
+    "contact": "Contact",
+    "track": "Bestelling volgen"
   }
 }

@@ -90,7 +90,15 @@
     "by": "By {{ author }}"
   },
   "footer": {
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "shop": "Shop",
+    "help": "Help & policies",
+    "shipping": "Shipping information",
+    "refund": "Refund & return policy",
+    "privacy": "Privacy policy",
+    "terms": "Terms of service",
+    "contact": "Contact us",
+    "track": "Track your order"
   },
   "contact": {
     "title": "Contact us",

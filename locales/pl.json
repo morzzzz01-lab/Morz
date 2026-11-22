@@ -58,5 +58,15 @@
     "prev": "Poprzedni utwór",
     "next": "Następny utwór",
     "play": "Odtwarzaj / pauza"
+  },
+  "footer": {
+    "shop": "Sklep",
+    "help": "Pomoc i zasady",
+    "shipping": "Informacje o wysyłce",
+    "refund": "Zwroty i reklamacje",
+    "privacy": "Polityka prywatności",
+    "terms": "Regulamin",
+    "contact": "Kontakt",
+    "track": "Śledź zamówienie"
   }
 }

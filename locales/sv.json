@@ -58,5 +58,15 @@
     "prev": "Föregående låt",
     "next": "Nästa låt",
     "play": "Spela / pausa"
+  },
+  "footer": {
+    "shop": "Butik",
+    "help": "Hjälp & villkor",
+    "shipping": "Fraktinformation",
+    "refund": "Retur- och återbetalningspolicy",
+    "privacy": "Integritetspolicy",
+    "terms": "Användarvillkor",
+    "contact": "Kontakta oss",
+    "track": "Spåra beställning"
   }
 }

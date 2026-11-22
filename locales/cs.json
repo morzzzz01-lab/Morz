@@ -58,5 +58,15 @@
     "prev": "Předchozí skladba",
     "next": "Další skladba",
     "play": "Přehrát / pozastavit"
+  },
+  "footer": {
+    "shop": "Obchod",
+    "help": "Pomoc a zásady",
+    "shipping": "Informace o doručení",
+    "refund": "Vrácení a refundace",
+    "privacy": "Zásady ochrany osobních údajů",
+    "terms": "Obchodní podmínky",
+    "contact": "Kontaktujte nás",
+    "track": "Sledovat objednávku"
   }
 }

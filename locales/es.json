@@ -88,7 +88,15 @@
     "by": "Por {{ author }}"
   },
   "footer": {
-    "rights": "Todos los derechos reservados."
+    "rights": "Todos los derechos reservados.",
+    "shop": "Tienda",
+    "help": "Ayuda y políticas",
+    "shipping": "Información de envío",
+    "refund": "Política de devoluciones y reembolsos",
+    "privacy": "Política de privacidad",
+    "terms": "Términos del servicio",
+    "contact": "Contáctanos",
+    "track": "Rastrear pedido"
   },
   "contact": {
     "title": "Contáctanos",

@@ -87,7 +87,15 @@
     "by": "投稿者：{{ author }}"
   },
   "footer": {
-    "rights": "無断転載を禁じます。"
+    "rights": "無断転載を禁じます。",
+    "shop": "ショップ",
+    "help": "ヘルプと規約",
+    "shipping": "配送について",
+    "refund": "返品・返金ポリシー",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "contact": "お問い合わせ",
+    "track": "注文を追跡"
   },
   "contact": {
     "title": "お問い合わせ",

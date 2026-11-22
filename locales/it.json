@@ -58,5 +58,15 @@
     "prev": "Brano precedente",
     "next": "Brano successivo",
     "play": "Riproduci / pausa"
+  },
+  "footer": {
+    "shop": "Negozio",
+    "help": "Aiuto e informative",
+    "shipping": "Informazioni sulla spedizione",
+    "refund": "Resi e rimborsi",
+    "privacy": "Informativa sulla privacy",
+    "terms": "Termini di servizio",
+    "contact": "Contattaci",
+    "track": "Traccia l'ordine"
   }
 }

@@ -13,7 +13,6 @@
       elProg = q('[data-mx-prog]'), elDate = q('[data-mx-date]'), elList = q('[data-mx-list]');
   var ICON_PLAY = '<path d="M7 4v16l13-8z"/>', ICON_PAUSE = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
   var now = new Date(), player = null, ready = false, started = false, ids = [], wantPlay = false, userPaused = false, wasPlaying = false;
-  try { elDate.textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }); } catch (e) {}
 
   function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   function dailyOrder(list) {
