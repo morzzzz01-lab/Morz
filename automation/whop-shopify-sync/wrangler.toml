@@ -1,0 +1,12 @@
+name = "morz-whop-shopify-sync"
+main = "src/worker.js"
+compatibility_date = "2025-10-01"
+
+[vars]
+SHOPIFY_SHOP = "fr81ag-tb.myshopify.com"
+
+# Secrets (never put them in this file):
+#   npx wrangler secret put WHOP_API_KEY
+#   npx wrangler secret put WHOP_WEBHOOK_SECRET
+#   npx wrangler secret put SHOPIFY_CLIENT_ID
+#   npx wrangler secret put SHOPIFY_CLIENT_SECRET
