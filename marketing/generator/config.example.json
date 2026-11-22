@@ -1,0 +1,19 @@
+{
+  "theme": "night",
+  "fx": "snow",
+  "motion": "slide",
+  "seed": 7,
+  "currency": "$",
+  "kicker": "Christmas Drop",
+  "headline": "Gifts that\n*steal* the\n_show_",
+  "offWord": "OFF",
+  "products": [
+    {"name": "Sequin Plush Santa Hat", "now": 15.99, "was": 19.99, "img": "https://cdn.shopify.com/s/files/1/0827/8802/4547/files/1000023009.png"},
+    {"name": "Velvet Santa Gloves", "now": 9.99, "was": 12.99, "img": "https://cdn.shopify.com/s/files/1/0827/8802/4547/files/1000023007.png"},
+    {"name": "Peace Dove Ornament", "now": 12.99, "was": 19.99, "img": "https://cdn.shopify.com/s/files/1/0827/8802/4547/files/1000023013.png"}
+  ],
+  "outroHeadline": "Up to\n*35% OFF*",
+  "outroSub": "Holiday sale · limited time",
+  "cta": "Shop now",
+  "url": "morz.lol"
+}
