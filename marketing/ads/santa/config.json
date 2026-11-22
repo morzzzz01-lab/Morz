@@ -1,0 +1,14 @@
+{
+  "template": "../ads/santa/scene.html",
+  "audioScript": "audio_santa.py",
+  "duration": 18.5,
+  "price": "$23.99",
+  "url": "morz.lol",
+  "images": {
+    "shot1": {"img": "img/shot1.jpg"}, "shot2": {"img": "img/shot2.jpg"}, "shot3": {"img": "img/shot3.jpg"},
+    "shot4": {"img": "img/shot4.jpg"}, "shot5": {"img": "img/shot5.jpg"}, "shot6": {"img": "img/shot6.jpg"},
+    "hero":  {"img": "img/hero.png"}
+  },
+  "products": [],
+  "stills": [0.5, 1.6, 2.7, 4.5, 7.8, 9.0, 12.8, 14.2, 17.0]
+}

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<!-- "WAIT... WHY IS SANTA DANCING UPSIDE DOWN?!" photo-motion reel. Timeline in seconds, 120 BPM (0.5 s per beat). -->
+<style>
+  html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#000;font-family:'Inter Display',Inter,'Noto Color Emoji',sans-serif}
+  #stage{position:absolute;inset:0;overflow:hidden;transform-origin:50% 50%}
+  .shot{position:absolute;left:0;top:0;width:1920px;height:1920px;transform-origin:0 0;opacity:0;will-change:transform}
+  #heroWrap{position:absolute;inset:0;opacity:0;overflow:hidden}
+  #rays{position:absolute;left:50%;top:52%;width:3000px;height:3000px;margin:-1500px 0 0 -1500px;
+        background:repeating-conic-gradient(from 0deg,rgba(255,210,74,.22) 0deg 10deg,rgba(255,210,74,0) 10deg 20deg)}
+  #heroBg{position:absolute;inset:0;background:radial-gradient(900px 900px at 50% 55%,#c8102e 0%,#7a0a1c 55%,#2a0309 100%)}
+  #hero{position:absolute;left:50%;top:600px;width:1180px;height:1180px;margin-left:-590px;filter:drop-shadow(0 50px 50px rgba(0,0,0,.55))}
+  canvas{position:absolute;inset:0;pointer-events:none}
+  #vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)}
+  #flash{position:absolute;inset:0;background:#fff;opacity:0}
+  .cap{position:absolute;left:40px;right:40px;text-align:center;font-weight:900;text-transform:uppercase;color:#fff;
+       font-size:112px;line-height:1.02;letter-spacing:-.01em;-webkit-text-stroke:16px #000;paint-order:stroke fill;opacity:0;
+       text-shadow:0 10px 0 rgba(0,0,0,.35)}
+  .cap .y{color:#ffd24a}
+  .cap.mid{font-size:96px}
+  .cap.small{font-size:80px;text-transform:none}
+  #price{position:absolute;left:0;right:0;top:250px;text-align:center;opacity:0}
+  #price .only{font-weight:900;font-size:90px;color:#fff;letter-spacing:.08em;-webkit-text-stroke:12px #000;paint-order:stroke fill}
+  #price .amt{font-weight:900;font-size:250px;line-height:.95;color:#ffd24a;-webkit-text-stroke:18px #000;paint-order:stroke fill;letter-spacing:-.03em}
+  #shop{position:absolute;left:50%;top:1500px;transform:translateX(-50%);background:#ffd24a;color:#111;font-weight:900;font-size:92px;
+        padding:34px 90px;border-radius:999px;border:8px solid #000;box-shadow:0 14px 0 #000;opacity:0;white-space:nowrap}
+  #url{position:absolute;left:0;right:0;top:1720px;text-align:center;color:#fff;font-weight:800;font-size:60px;letter-spacing:.06em;opacity:0;
+       -webkit-text-stroke:8px #000;paint-order:stroke fill}
+</style></head>
+<body>
+<div id="stage">
+  <div id="shots"></div>
+  <div id="heroWrap"><div id="heroBg"></div><div id="rays"></div><img id="hero"></div>
+  <canvas id="fx" width="1080" height="1920"></canvas>
+  <div id="vig"></div>
+</div>
+<div id="caps"></div>
+<div id="price"><div class="only">ONLY</div><div class="amt"></div></div>
+<div id="shop">SHOP NOW</div>
+<div id="url"></div>
+<div id="flash"></div>
+<script>
+const C=window.CONFIG, I=C.images;
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,x)=>a+(b-a)*x;
+const eo=x=>1-Math.pow(1-clamp(x),3), eio=x=>{x=clamp(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const back=(x,c=2.2)=>{x=clamp(x);return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+
+// ---- shots: [img, start, end, from{fx,fy,s,r}, to{...}, extra] ; fx/fy = focus point in the photo (0..1) placed at screen centre
+const SH=[
+ ['shot3', 0.00, 2.00, {fx:.50,fy:.80,s:2.7,r:0}, {fx:.50,fy:.52,s:1.02,r:0}, {hook:1}],
+ ['shot2', 2.00, 2.50, {fx:.47,fy:.50,s:1.30,r:-4},{fx:.47,fy:.50,s:1.15,r:0}],
+ ['shot4', 2.50, 3.00, {fx:.42,fy:.52,s:1.00,r:3}, {fx:.42,fy:.52,s:1.18,r:0}],
+ ['shot1', 3.00, 3.50, {fx:.38,fy:.50,s:1.25,r:0}, {fx:.45,fy:.50,s:1.10,r:-2}],
+ ['shot5', 3.50, 4.00, {fx:.45,fy:.62,s:1.00,r:-3},{fx:.45,fy:.62,s:1.20,r:0}],
+ /* 4.0-5.0 hero spin */
+ ['shot3', 5.00, 5.50, {fx:.50,fy:.50,s:1.25,r:5}, {fx:.50,fy:.50,s:1.05,r:0}],
+ ['shot2', 5.50, 6.00, {fx:.50,fy:.42,s:1.45,r:0}, {fx:.50,fy:.42,s:1.20,r:0}],
+ ['shot1', 6.00, 7.25, {fx:.30,fy:.50,s:1.10,r:0}, {fx:.62,fy:.50,s:1.10,r:0}, {whip:1}],
+ ['shot5', 7.25, 8.50, {fx:.45,fy:.66,s:1.00,r:0}, {fx:.45,fy:.66,s:1.35,r:-3}, {whip:1}],
+ ['shot6', 8.50, 9.75, {fx:.55,fy:.50,s:1.00,r:0}, {fx:.52,fy:.55,s:1.18,r:0}, {whip:1,notes:1}],
+ ['shot4', 9.75,11.00, {fx:.40,fy:.55,s:1.05,r:-2},{fx:.42,fy:.50,s:1.28,r:2}, {whip:1}],
+ ['shot3',11.00,13.60, {fx:.50,fy:.50,s:1.02,r:0}, {fx:.50,fy:.50,s:1.12,r:0}],
+ ['shot2',13.60,15.00, {fx:.48,fy:.48,s:1.20,r:0}, {fx:.48,fy:.48,s:1.38,r:0}],
+];
+const HERO=[4.0,5.0], END=15.0, DUR=C.duration||18.5; window.DURATION=DUR;
+$('shots').innerHTML=SH.map((s,i)=>`<img class="shot" id="s${i}" src="${I[s[0]].img}">`).join('');
+$('hero').src=I.hero.img;
+$('price').querySelector('.amt').textContent=C.price;
+$('url').textContent=C.url;
+
+// ---- captions: [html, start, end, top, cls]
+const CAPS=[
+ ['WAIT...',0.05,2.0,300],
+ ['WHAT IS SANTA',0.50,2.0,430],
+ ['<span class="y">DOING?!</span>',1.00,2.0,545],
+ ['CHRISTMAS JUST<br><span class="y">GOT WEIRD</span> 😂',2.0,6.0,300],
+ ['THE MOST <span class="y">UNEXPECTED</span><br>CHRISTMAS<br>DECORATION 🎅',6.0,11.0,250,'mid'],
+ ['there, fixed it.',12.45,13.30,330,'small'],
+ ['YOUR CHRISTMAS<br><span class="y">NEEDS THIS.</span>',13.6,15.0,300],
+];
+$('caps').innerHTML=CAPS.map((c,i)=>`<div class="cap ${c[4]||''}" id="c${i}" style="top:${c[3]}px">${c[0]}</div>`).join('');
+const BEATBUMP=[3,4,6];
+
+// ---- particles: music notes + sparkles
+let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const notes=[...Array(26)].map(()=>({x:150+rnd()*780,d:rnd()*3,s:60+rnd()*60,w:rnd()*6.28,c:['#ffd24a','#fff','#7CFC9A'][Math.floor(rnd()*3)],g:rnd()<.5?'♪':'♫'}));
+const sparks=[...Array(60)].map(()=>({x:rnd()*1080,y:rnd()*1920,p:rnd()*6.28,s:6+rnd()*14}));
+const ctx=$('fx').getContext('2d');
+function drawNotes(t,t0,y0){ctx.font='bold 90px "DejaVu Sans"';ctx.textAlign='center';
+  for(const n of notes){const l=((t-t0)*0.9+n.d)%3; const y=y0-l*420, a=clamp(l*3)*clamp((3-l)*1.2);
+    ctx.globalAlpha=a*.9;ctx.fillStyle=n.c;ctx.save();ctx.translate(n.x+Math.sin(t*3+n.w)*40,y);ctx.rotate(Math.sin(t*4+n.w)*.3);
+    ctx.font=`bold ${n.s}px "DejaVu Sans"`;ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=6;ctx.strokeText(n.g,0,0);ctx.fillText(n.g,0,0);ctx.restore();}
+  ctx.globalAlpha=1;}
+function drawSparks(t){for(const s of sparks){const a=.5+.5*Math.sin(t*4+s.p*3);ctx.globalAlpha=a;ctx.fillStyle='#ffe9a8';
+  const k=s.s*(.6+.4*a);ctx.beginPath();ctx.moveTo(s.x,s.y-k);ctx.lineTo(s.x+k/4,s.y);ctx.lineTo(s.x,s.y+k);ctx.lineTo(s.x-k/4,s.y);ctx.fill();
+  ctx.beginPath();ctx.moveTo(s.x-k,s.y);ctx.lineTo(s.x,s.y+k/4);ctx.lineTo(s.x+k,s.y);ctx.lineTo(s.x,s.y-k/4);ctx.fill();}ctx.globalAlpha=1;}
+
+window.render=function(t){
+  ctx.clearRect(0,0,1080,1920);
+  // shots
+  SH.forEach((s,i)=>{const [k,a,b,f,g,x]=s, el=$('s'+i), on=t>=a&&t<b; el.style.opacity=on?1:0; if(!on)return;
+    let p=(t-a)/(b-a), e=eio(p);
+    if(x&&x.hook){ // hold the extreme close-up with micro-shake, then whip-zoom out on the beat at 1.0s
+      e=t<1?0:eo((t-1)/.35); }
+    const fx=lerp(f.fx,g.fx,e), fy=lerp(f.fy,g.fy,e), sc=lerp(f.s,g.s,e), r=lerp(f.r,g.r,e);
+    let dx=0,dy=0,blur=0;
+    if(x&&x.hook&&t<1){dx=Math.sin(t*70)*8;dy=Math.cos(t*55)*8;}
+    if(x&&x.hook&&t>=1&&t<1.35){blur=(1-eo((t-1)/.35))*14;}
+    if(x&&x.whip){const q=t-a; if(q<.14){dx=(1-q/.14)*-700;blur=(1-q/.14)*30;} }
+    el.style.filter=blur?`blur(${blur}px)`:'';
+    el.style.transformOrigin=`${fx*1920}px ${fy*1920}px`;
+    el.style.transform=`translate(${540-fx*1920+dx}px,${960-fy*1920+dy}px) rotate(${r}deg) scale(${sc})`;
+  });
+  // hero spin (4-5s): one full turn, as the product spins
+  const hw=$('heroWrap'), hero=$('hero');
+  const inHero=(t>=HERO[0]&&t<HERO[1])||t>=END;
+  hw.style.opacity=inHero?1:0;
+  $('rays').style.transform=`rotate(${t*25}deg)`;
+  if(t>=HERO[0]&&t<HERO[1]){const q=(t-HERO[0])/(HERO[1]-HERO[0]);
+    hero.style.top='560px';
+    hero.style.transform=`scaleX(${Math.cos(eio(q)*Math.PI*2)}) scale(${.85+.15*back(q/.3)}) translateY(${Math.sin(q*Math.PI*4)*-20}px)`;}
+  if(t>=END){const q=t-END; hero.style.top='560px';
+    hero.style.transform=`scale(${.6+.4*back(q/.45,1.6)}) translateY(${Math.sin(q*3)*-14}px) rotate(${Math.sin(q*2.2)*2}deg)`;
+    drawSparks(t);}
+  // music notes over the box shot and the end card
+  if(t>=8.5&&t<9.75) drawNotes(t,8.5,1750);
+  if(t>=END+.2) drawNotes(t,END,1500);
+
+  // stage flip joke (11.9-12.4 flip, 13.3-13.6 flip back)
+  let rot=0; if(t>=11.9&&t<13.3) rot=180*eio((t-11.9)/.5); else if(t>=13.3&&t<13.6) rot=180*(1-eio((t-13.3)/.3));
+  $('stage').style.transform=`rotate(${rot}deg) scale(${1+.25*Math.sin(Math.PI*clamp(rot/180))})`;
+
+  // captions
+  CAPS.forEach((c,i)=>{const el=$('c'+i), l=t-c[1], on=t>=c[1]&&t<c[2]; el.style.opacity=on?1:0; if(!on)return;
+    let s=back(l/.25,2.6); if(BEATBUMP.includes(i)) s*=1+.05*Math.max(0,Math.cos(((t%.5)/.5)*Math.PI/2*1))*(t%.5<.12?1:0);
+    el.style.transform=`scale(${s}) rotate(${i%2?1.5:-1.5}deg)`;});
+
+  // end card
+  const q=t-END-.3; const pr=$('price'); pr.style.opacity=q>0?1:0; pr.style.transform=`scale(${back(q/.3,2.8)}) rotate(-2deg)`;
+  const sh=$('shop'),q2=t-END-.8; sh.style.opacity=q2>0?1:0;
+  sh.style.transform=`translateX(-50%) scale(${back(q2/.3)*(1+.05*Math.max(0,Math.sin(q2*Math.PI*2)))})`;
+  $('url').style.opacity=clamp((t-END-1.1)/.3);
+
+  // white flash on the big hits
+  let fl=0; for(const h of [1.0,2.0,13.6,END]){const d=t-h; if(d>=0&&d<.18) fl=Math.max(fl,(1-d/.18)*.85);} $('flash').style.opacity=fl;
+};
+</script>
+</body></html>

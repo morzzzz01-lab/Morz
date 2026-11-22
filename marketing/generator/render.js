@@ -12,6 +12,8 @@ const fs=require('fs'),path=require('path'),os=require('os');
   let k=0;const walk=async o=>{for(const key in o){const v=o[key];
     if(key==='img'&&typeof v==='string'&&/^https?:/.test(v)){const r=await fetch(v);if(!r.ok)throw new Error('image '+v+' '+r.status);
       const f=`img${k++}`;fs.writeFileSync(path.join(work,f),Buffer.from(await r.arrayBuffer()));o[key]=f;}
+    else if(key==='img'&&typeof v==='string'&&fs.existsSync(path.resolve(path.dirname(cfgPath),v))){
+      const f=`img${k++}`;fs.copyFileSync(path.resolve(path.dirname(cfgPath),v),path.join(work,f));o[key]=f;}
     else if(v&&typeof v==='object') await walk(v);}};
   await walk(C);
   const b=await chromium.launch();const pg=await b.newPage({viewport:{width:1080,height:1920}});
@@ -29,7 +31,8 @@ const fs=require('fs'),path=require('path'),os=require('os');
   for(let i=0;i<n;i++){await pg.evaluate(t=>render(t),i/fps);ff.stdin.write(await pg.screenshot({type:'jpeg',quality:92}));}
   ff.stdin.end();await new Promise(r=>ff.on('close',r));await b.close();
   const wav=path.join(work,'music.wav');
-  execFileSync('python3',[path.join(__dirname,'music.py'),String(C.seed||7),String(dur),wav],{stdio:'inherit'});
+  if(C.audioScript) execFileSync('python3',[path.join(__dirname,C.audioScript),path.resolve(cfgPath),String(dur),wav],{stdio:'inherit'});
+  else execFileSync('python3',[path.join(__dirname,'music.py'),String(C.seed||7),String(dur),wav],{stdio:'inherit'});
   execFileSync('ffmpeg',['-y','-loglevel','error','-i',silent,'-i',wav,'-c:v','copy','-c:a','aac','-b:a','192k','-shortest','-movflags','+faststart',out],{stdio:'inherit'});
   fs.rmSync(work,{recursive:true,force:true});
   console.log('wrote',out,dur+'s');
