@@ -17,7 +17,8 @@ Make and publish today's MorZ marketing reel. Fully automatic: no approval step.
    If text overflows or an image is missing, fix the config and re-check. Then render the full video.
 6. Host: the repo (morzzzz01-lab/Morz) is public, so commit the video as
    `marketing/reels/<YYYY-MM-DD>.mp4` on this session's own branch, push, and use
-   `https://raw.githubusercontent.com/morzzzz01-lab/Morz/<branch>/marketing/reels/<YYYY-MM-DD>.mp4`.
+   `https://raw.githubusercontent.com/morzzzz01-lab/Morz/<commit-sha>/marketing/reels/<YYYY-MM-DD>.mp4`
+   (use the commit SHA, not the branch name: the branch URL can serve a stale cached file).
    Check it returns 200 with `curl -sI` first. Do NOT use the Shopify CDN: Facebook gets 429 from it.
 7. Captions: Instagram/Facebook caption (2–3 lines, emojis, price hook, "Shop at morz.lol", 6–8 hashtags)
    and a shorter TikTok caption. No false claims (no "free shipping", "last day", etc. unless true).
