@@ -37,6 +37,8 @@ export default {
     let event;
     try { event = JSON.parse(raw); } catch { return new Response('bad json', { status: 400 }); }
     if (event.type !== 'payment.succeeded') return new Response('ignored ' + event.type);
+    // Whop "send test event" uses placeholder ids like pay_xxxxxxxxxxxxxx: never turn those into orders
+    if (!event.data || !event.data.id || /x{8,}$/.test(event.data.id)) return new Response('ignored test event');
 
     try {
       const result = await handlePayment(event.data, env);

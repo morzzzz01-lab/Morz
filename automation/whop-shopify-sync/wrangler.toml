@@ -10,3 +10,6 @@ SHOPIFY_SHOP = "fr81ag-tb.myshopify.com"
 #   npx wrangler secret put WHOP_WEBHOOK_SECRET
 #   npx wrangler secret put SHOPIFY_CLIENT_ID
 #   npx wrangler secret put SHOPIFY_CLIENT_SECRET
+
+[observability]
+enabled = true
