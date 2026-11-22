@@ -30,6 +30,7 @@
         <s class="was" data-compare {% unless current_variant.compare_at_price > current_variant.price %}hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</s>
         <span data-price>{{ current_variant.price | money }}</span>
         {%- if settings.show_currency_code -%}<small class="cur">{{ cart.currency.iso_code }}</small>{%- endif -%}
+        <span class="so-tag" data-soldout {% if current_variant.available %}hidden{% endif %}>{{ 'products.sold_out' | t }}</span>
       </p>
 
       {%- form 'product', product, class: 'pform', data-product-form: 'true', data-ptitle: product.title, data-phandle: product.handle -%}
@@ -56,9 +57,10 @@
           <input class="qty-input" id="qty-{{ section.id }}" type="number" name="quantity" value="1" min="1">
           <a class="btn btn-buy btn-card" href="#" data-card-link hidden></a>
           <button class="btn btn-buy btn-card" type="button" data-checkout-btn hidden>{{ 'products.buy_now' | t }}</button>
-          <button class="btn btn-cart" type="submit" name="add" data-add-btn aria-label="{{ 'products.add' | t }}" title="{{ 'products.add' | t }}">
+          {%- if current_variant.available -%}{%- assign cart_label = 'products.add' | t -%}{%- else -%}{%- assign cart_label = 'products.sold_out' | t -%}{%- endif -%}
+          <button class="btn btn-cart" type="submit" name="add" data-add-btn aria-label="{{ cart_label }}" title="{{ cart_label }}"{% unless current_variant.available %} disabled{% endunless %}>
             <svg class="cart-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21 8H6"/></svg>
-            <span class="cart-txt" data-cart-label>{{ 'products.add' | t }}</span>
+            <span class="cart-txt" data-cart-label>{{ cart_label }}</span>
           </button>
         </div>
         <div class="bundles" data-bundles hidden></div>
@@ -80,7 +82,7 @@
   </div>
 
   <script type="application/json" data-variants>
-    [{%- for v in product.variants -%}{"id":{{ v.id }},"options":{{ v.options | json }},"available":{{ true | json }},"media":{{ v.featured_media.id | json }},"price":{{ v.price | money | json }},"compare":{% if v.compare_at_price > v.price %}{{ v.compare_at_price | money | json }}{% else %}null{% endif %}}{% unless forloop.last %},{% endunless %}{%- endfor -%}]
+    [{%- for v in product.variants -%}{"id":{{ v.id }},"options":{{ v.options | json }},"available":{{ v.available | json }},"media":{{ v.featured_media.id | json }},"price":{{ v.price | money | json }},"compare":{% if v.compare_at_price > v.price %}{{ v.compare_at_price | money | json }}{% else %}null{% endif %}}{% unless forloop.last %},{% endunless %}{%- endfor -%}]
   </script>
   <script type="application/ld+json">{{ product | structured_data }}</script>
 </section>

@@ -154,7 +154,7 @@
       var v = variants.filter(function (x) {
         return x.options.every(function (val, i) { return o.length === 0 || val === o[i]; });
       })[0];
-      if (!v) { btn.disabled = true; setCartLabel(M.strings.unavailable); return; }
+      if (!v) { btn.disabled = true; setCartLabel(M.strings.unavailable); if (onVariant) onVariant(o, null); return; }
       idInput.value = v.id;
       if (priceEl) priceEl.textContent = v.price;
       if (cmpEl) {
@@ -249,8 +249,27 @@
     function bigSize(o) {
       return o.some(function (val) { return /^x{2,}-?\s?(l|large)$|^[23]\s?xl$/i.test((val || '').trim()); });
     }
-    function refreshBuy(o) {
+    var soldTag = $('[data-soldout]', root);
+    function currentVariant(o) {
+      return variants.filter(function (x) {
+        return x.options.every(function (val, i) { return o.length === 0 || val === o[i]; });
+      })[0] || null;
+    }
+    function refreshBuy(o, v) {
       o = o || selected();
+      if (v === undefined) v = currentVariant(o);
+      /* Sold out (or no such variant): hide every way to pay, including the Whop card / bundle links */
+      var sold = !v || !v.available;
+      if (soldTag) soldTag.hidden = !sold;
+      root.classList.toggle('is-soldout', sold);
+      if (sold) {
+        if (cardBtn) cardBtn.hidden = true;
+        if (coBtn) coBtn.hidden = true;
+        if (noteEl) noteEl.hidden = true;
+        if (bundleBox) bundleBox.hidden = true;
+        return;
+      }
+      if (bundleBox && bundleEls.length) bundleBox.hidden = false;
       var one = !qtyEl || Number(qtyEl.value) <= 1;
       if (cardLinks.length && cardBtn) {
         var L = (cardLinks.length > 1 && bigSize(o)) ? cardLinks[cardLinks.length - 1] : cardLinks[0];

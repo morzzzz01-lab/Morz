@@ -1,5 +1,5 @@
 {%- comment -%} Usage: {% render 'product-card', product: product, index: forloop.index, badge: 'New', badge_n: 0 %} (badge optional) {%- endcomment -%}
-<div class="p" style="--d:{{ index | default: 1 | times: 28 }}ms">
+<div class="p{% unless product.available %} is-soldout{% endunless %}" style="--d:{{ index | default: 1 | times: 28 }}ms">
   <a class="ph" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
     {%- if product.featured_media -%}
       {%- assign main_id = product.featured_media.id -%}
@@ -14,10 +14,11 @@
     {%- else -%}
       {{ 'product-1' | placeholder_svg_tag: 'ph-svg' }}
     {%- endif -%}
-    {%- if product.compare_at_price > product.price and true -%}
+    {%- if product.available and product.compare_at_price > product.price -%}
       {%- assign off = product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price | round -%}
       <span class="sale-badge">-{{ off }}%</span>
     {%- endif -%}
+    {%- unless product.available -%}<span class="so-badge">{{ 'products.sold_out' | t }}</span>{%- endunless -%}
     {%- if badge != blank -%}<span class="rank-badge rank-{{ badge_n | plus: 1 }}">{{ badge }}</span>{%- endif -%}
     <span class="vw">{{ 'products.view' | t }}</span>
   </a>
@@ -28,7 +29,7 @@
       {{ product.price | money }}
       {%- if settings.show_currency_code -%}<small class="cur">{{ cart.currency.iso_code }}</small>{%- endif -%}
     </span>
-    {%- if true -%}
+    {%- if product.available -%}
       {%- if product.has_only_default_variant -%}
         <button type="button" class="add" data-add-to-cart data-variant-id="{{ product.selected_or_first_available_variant.id }}" aria-label="{{ 'cart.add_named' | t: title: product.title }}">+</button>
       {%- else -%}

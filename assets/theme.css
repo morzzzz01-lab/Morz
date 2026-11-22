@@ -574,3 +574,10 @@ html:not(:focus-within){scroll-behavior:auto}
 .rt{display:flex;align-items:center;gap:.1rem;margin:.1rem 0 .35rem;font-size:.85rem;line-height:1;color:var(--line)}
 .rt .on{color:#ffb400}.rt small{margin-left:.3rem;color:var(--muted);font-size:.75rem}
 [data-slide-info][hidden],.fl[hidden]{display:none!important}
+
+/* sold out */
+.so-badge{position:absolute;top:.6rem;left:.6rem;z-index:3;background:#111;color:#fff;font-weight:800;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .6rem;border-radius:.35rem}
+.p.is-soldout .pimg{filter:grayscale(.55) brightness(.92)}
+.so-tag{display:inline-block;margin-left:.6rem;vertical-align:middle;background:#111;color:#fff;font-weight:800;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;padding:.3rem .6rem;border-radius:.35rem}
+.so-tag[hidden]{display:none}
+.product-page.is-soldout .qty-input{display:none}
