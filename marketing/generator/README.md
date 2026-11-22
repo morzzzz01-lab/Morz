@@ -24,6 +24,6 @@ Length = 2.5 s intro + 2.5 s per product + 2.5 s outro. Use 3–5 products.
 ## Automated run (each scheduled post)
 1. Query Shopify for ACTIVE products with an image; skip ones used in `history.json` recently.
 2. Pick 3–5 products, a theme/fx/motion/seed different from the last run, write a fresh headline.
-3. Render, check the stills, then upload the MP4 to Shopify Files to get a public URL.
+3. Render, check the stills, then push the MP4 to the public repo and use its raw GitHub URL.
 4. Publish to Instagram (Reel), Facebook (Reel) and TikTok with the captions, via the social connector.
-5. Append the run to `history.json` and commit.
+5. See DAILY_TASK.md for the full scheduled-run steps.
