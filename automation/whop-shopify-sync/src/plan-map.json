@@ -1954,20 +1954,103 @@
 "plan_tRtB53OES4ZhO": {
 "t": "Solar Globe Fairy Lights, 39 ft \"Bundle\" 4x  Best offer!",
 "q": 4,
-"p": null,
-"v": []
+"p": "gid://shopify/Product/15449869549795",
+"v": [
+[
+"gid://shopify/ProductVariant/67817437200611",
+"Multicolor"
+]
+]
 },
 "plan_8CcEhSWf8Zcwu": {
 "t": "Solar Globe Fairy Lights, 39 ft \"Bundle\" 2x",
 "q": 2,
-"p": null,
-"v": []
+"p": "gid://shopify/Product/15449869549795",
+"v": [
+[
+"gid://shopify/ProductVariant/67817437200611",
+"Multicolor"
+]
+]
 },
 "plan_f8dKm5IFzDehm": {
 "t": "Gnome Christmas Hoodie \"Bundle\" 2x",
 "q": 2,
-"p": null,
-"v": []
+"p": "gid://shopify/Product/15451566047459",
+"v": [
+[
+"gid://shopify/ProductVariant/67831161618659",
+"White / S"
+],
+[
+"gid://shopify/ProductVariant/67831161716963",
+"White / M"
+],
+[
+"gid://shopify/ProductVariant/67831161553123",
+"White / L"
+],
+[
+"gid://shopify/ProductVariant/67831161946339",
+"White / XL"
+],
+[
+"gid://shopify/ProductVariant/67831161520355",
+"White / 2XL"
+],
+[
+"gid://shopify/ProductVariant/67831161848035",
+"White / 3XL"
+],
+[
+"gid://shopify/ProductVariant/67831161880803",
+"Black / S"
+],
+[
+"gid://shopify/ProductVariant/67831161684195",
+"Black / M"
+],
+[
+"gid://shopify/ProductVariant/67831162044643",
+"Black / L"
+],
+[
+"gid://shopify/ProductVariant/67831161913571",
+"Black / XL"
+],
+[
+"gid://shopify/ProductVariant/67831161979107",
+"Black / 2XL"
+],
+[
+"gid://shopify/ProductVariant/67831161815267",
+"Black / 3XL"
+],
+[
+"gid://shopify/ProductVariant/67831161585891",
+"Athletic Heather / S"
+],
+[
+"gid://shopify/ProductVariant/67831161651427",
+"Athletic Heather / M"
+],
+[
+"gid://shopify/ProductVariant/67831161749731",
+"Athletic Heather / L"
+],
+[
+"gid://shopify/ProductVariant/67831162077411",
+"Athletic Heather / XL"
+],
+[
+"gid://shopify/ProductVariant/67831161782499",
+"Athletic Heather / 2XL"
+],
+[
+"gid://shopify/ProductVariant/67831162011875",
+"Athletic Heather / 3XL"
+]
+]
 },
 "plan_vHxOWPn7HkDhe": {
 "t": "Solar Globe Fairy Lights, 39 ft \"Bundle\" 4x  Best offer!",
@@ -3257,14 +3340,32 @@
 "plan_sdYh2c6neqctK": {
 "t": "Iron LED Candle Lantern",
 "q": 1,
-"p": null,
-"v": []
+"p": "gid://shopify/Product/15449870139619",
+"v": [
+[
+"gid://shopify/ProductVariant/67817441165539",
+"Set of 3 (All Colors)"
+]
+]
 },
 "plan_zLulKzzjXqvRb": {
 "t": "Iron LED Candle Lantern",
 "q": 1,
-"p": null,
-"v": []
+"p": "gid://shopify/Product/15449870139619",
+"v": [
+[
+"gid://shopify/ProductVariant/67817441198307",
+"Red"
+],
+[
+"gid://shopify/ProductVariant/67817441132771",
+"White"
+],
+[
+"gid://shopify/ProductVariant/67817441231075",
+"Green"
+]
+]
 },
 "plan_N0URdF7tqUSwS": {
 "t": "Snowflake Projector Lamp",

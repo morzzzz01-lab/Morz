@@ -21,5 +21,15 @@ for pl in plans:
         'p': sp['id'] if sp else None,
         'v': [[v['id'], v['title']] for v in sp['variants']['nodes']] if sp else [],
     }
+# manual links for plans whose checkout link is not in a product description
+import os
+ov_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src', 'plan-overrides.json')
+if os.path.exists(ov_path):
+    by_id = {p['id']: p for p in prods}
+    for pid, ov in json.load(open(ov_path)).items():
+        if pid.startswith('_') or pid not in out or ov['p'] not in by_id: continue
+        vs = [[v['id'], v['title']] for v in by_id[ov['p']]['variants']['nodes']]
+        if 'only' in ov: vs = [x for x in vs if x[1] in ov['only']]
+        out[pid].update(p=ov['p'], q=ov['q'], v=vs)
 json.dump(out, open(sys.argv[3], 'w'), indent=0, ensure_ascii=False)
 print(len(out), 'plans;', sum(1 for v in out.values() if v['p']), 'linked to Shopify products')

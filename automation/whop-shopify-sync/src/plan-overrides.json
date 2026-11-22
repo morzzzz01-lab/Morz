@@ -1,0 +1,8 @@
+{
+  "_comment": "Whop plans whose checkout link is not in the Shopify product description. p = Shopify product, only = restrict to these variant titles, q = quantity.",
+  "plan_tRtB53OES4ZhO": {"p": "gid://shopify/Product/15449869549795", "q": 4},
+  "plan_8CcEhSWf8Zcwu": {"p": "gid://shopify/Product/15449869549795", "q": 2},
+  "plan_f8dKm5IFzDehm": {"p": "gid://shopify/Product/15451566047459", "q": 2},
+  "plan_zLulKzzjXqvRb": {"p": "gid://shopify/Product/15449870139619", "q": 1, "only": ["Red", "White", "Green"]},
+  "plan_sdYh2c6neqctK": {"p": "gid://shopify/Product/15449870139619", "q": 1, "only": ["Set of 3 (All Colors)"]}
+}
