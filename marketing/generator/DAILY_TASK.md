@@ -31,4 +31,4 @@ Make and publish today's MorZ marketing reel. Fully automatic: no approval step.
      before retrying. Never publish the same reel twice.
    - TikTok: Windsor cannot post to TikTok. Skip it; the owner uploads it by hand (the video link is in the summary).
    If one platform fails, still publish to the other, and report the error.
-9. Finish with a short summary: products, links to the three posts, any errors.
+9. Finish with a short summary: products, the Instagram and Facebook post links, the raw video link (for manual TikTok upload) and a TikTok caption, any errors.
