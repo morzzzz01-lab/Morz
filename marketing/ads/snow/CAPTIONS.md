@@ -34,8 +34,12 @@ https://morz.lol/products/projector-lamp-high-brightness-christmas-snowflake-ind
 #snowflakeprojector #christmasdecor #roomdecor #cozychristmas #morz
 (extra for TikTok if wanted: #roomtransformation #christmasvibes)
 
-## Note on the projection shots
-The dark-room projection shots are built from the product's real projection pattern (cropped from the
-store's own product image), in pure white light, drifting slowly as the description says. They are a
-visual of the real pattern, not camera footage. The two room shots with the family and the tree are the
-store's real product photos.
+## v2 edit (marketing/reels/2026-11-22-snowflake-projector-v2.mp4)
+Built only from the store's real photos: the family-room projection photo, the tree + projector + beam photo,
+and three product angles. No synthetic snow, no generated room. With only two real projection photos (no video),
+each is used for several *different regions* (tight crops), which is called out to the owner.
+Hook text: "YOUR CEILING COULD LOOK LIKE THIS?!" (owner's brief). Earlier A/B/C hook tests are in reels/hooks/
+(those used the v1 simulated wall and are superseded).
+
+## Note on v1
+v1 (2026-11-22-snowflake-projector.mp4) used a simulated dark wall built from the real pattern image; replaced by v2.

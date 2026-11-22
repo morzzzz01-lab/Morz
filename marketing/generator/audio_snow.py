@@ -1,4 +1,4 @@
-"""Original 120 BPM Christmas track + sound design for the snowflake projector reel.
+"""Original 120 BPM Christmas track + sound design for the snowflake projector reel (v2 edit).
 Usage: python3 audio_santa.py <config.json> <seconds> <out.wav>   (all sounds synthesized here, no samples)"""
 import sys, wave, numpy as np
 D = float(sys.argv[2]); out = sys.argv[3]
@@ -49,13 +49,16 @@ def groove(a0, a1, intensity=1.0):
         if beat == 0: add(mus, t, glock(m(root+12), 1.6, .08))
         t += B; i += 1
 
-# hook: hard hit on the reveal at 0.10 s, groove from the first frame of light
 def shimmer(a=.12):
     return sum(glock(m(n), 1.6, a/3) for n in (96, 100, 103, 108))
-groove(0.10, 11.5)
-for k, n in enumerate([84, 88, 91, 96, 91, 96, 100, 103]): add(mus, 11.0+k*B/8, glock(m(n), .5, .08))
-groove(12.0, D-.6, .95)
-for n in (72, 76, 79, 84): add(mus, D-.6, glock(m(n), .6, .1))
+def tick(a=.35):
+    t = tt(.05); return a*rng.standard_normal(len(t))*np.exp(-t*120)
+# groove starts on the very first frame (no intro), drops out for one beat before the match cut, back on the reveal
+groove(0.0, 4.5)
+for k, n in enumerate([84, 88, 91, 96, 100, 103, 108, 112]): add(mus, 4.5+k*B/8, glock(m(n), .4, .07))
+groove(5.0, 11.0)
+groove(11.0, D-.5, .9)
+for n in (72, 76, 79, 84): add(mus, D-.5, glock(m(n), .5, .1))
 
 # ---------- SFX ----------
 def whoosh(d=.35, a=.5, up=True):
@@ -85,10 +88,17 @@ def pop(a=.4):
     t = tt(.08); return a*np.sin(2*np.pi*(900-6000*t)*t)*np.exp(-t*50)
 
 
-add(sfx, 0.06, whoosh(.18, .7)); add(sfx, 0.10, impact(1.0)); add(sfx, 0.10, shimmer(.5))
-for t0 in (1.5, 2.25, 3.0, 3.75, 4.5, 5.25, 6.75, 7.5, 8.25, 9.0, 10.0, 11.0): add(sfx, t0-.1, whoosh(.2, .28))
-add(sfx, 6.0, impact(.55)); add(sfx, 6.0, shimmer(.25))
-add(sfx, 11.0, riser(1.0, .3)); add(sfx, 12.0, impact(.95)); add(sfx, 12.2, ding(.3)); add(sfx, 12.9, pop())
+add(sfx, 0.0, impact(.85)); add(sfx, 0.0, shimmer(.45))
+add(sfx, 0.48, whoosh(.45, .6))                       # pull-back reveal
+for t0 in (1.0, 1.5, 2.5, 7.5, 10.25): add(sfx, t0, tick(.4))   # punch-ins
+for t0 in (2.0, 3.0, 6.25, 7.0, 8.0, 9.5): add(sfx, t0-.08, whoosh(.16, .3)); add(sfx, t0, impact(.35))
+add(sfx, 3.42, whoosh(.26, .45))                      # whip pan
+add(sfx, 4.0, riser(1.0, .32))                        # push into the lens
+add(sfx, 5.0, impact(1.0)); add(sfx, 5.0, shimmer(.5)); add(sfx, 5.02, whoosh(.5, .45, up=False))
+add(sfx, 8.35, whoosh(.7, .4))                        # follow the beam
+add(sfx, 10.9, whoosh(.2, .4)); add(sfx, 11.0, impact(.8)); add(sfx, 11.25, ding(.3)); add(sfx, 11.75, pop())
+add(sfx, 12.0, shimmer(.25))
+for t0 in (12.5, 13.5, 14.5): add(sfx, t0, tick(.25)); add(sfx, 5.75, tick(.35))                          # light sweep over the product
 y = mus*0.8 + sfx*0.9
 f = int(.6*sr); y[-f:] *= np.linspace(1, 0, f)
 y = np.tanh(y*1.6)/np.tanh(1.6); y = y/np.abs(y).max()*.92

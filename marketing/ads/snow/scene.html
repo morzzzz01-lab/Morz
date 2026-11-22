@@ -1,147 +1,132 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8">
-<!-- "WHY IS IT SNOWING INSIDE?!" 15 s reel, 120 BPM. CONFIG.hook picks opening A/B/C; CONFIG.duration can cut it short (hook tests). -->
+<!-- Snowflake projector v2: creator-style edit built only from the store's real photos.
+     Keyframed virtual camera per shot (focus point fx/fy in the photo, scale s, roll r), speed-ramp easings,
+     beat punches, handheld shake, hard cuts on the beat (120 BPM). No synthetic snow, no fake room. -->
 <style>
   html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#000;font-family:'Inter Display',Inter,'Noto Color Emoji',sans-serif}
-  .shot{position:absolute;inset:0;overflow:hidden;opacity:0}
-  .wall{position:absolute;inset:-40%;background:radial-gradient(ellipse at 50% 50%,#0d1626 0%,#070b14 45%,#020306 100%)}
-  .cone{position:absolute;inset:-40%;background:radial-gradient(ellipse 34% 30% at 50% 50%,rgba(220,235,255,.13),rgba(220,235,255,0) 70%)}
-  .pat{position:absolute;inset:-60%;background-repeat:repeat;
-       -webkit-mask-image:radial-gradient(ellipse 25% 21% at 50% 50%,#000 25%,rgba(0,0,0,.5) 65%,transparent 100%)}
-  .pat.a{filter:drop-shadow(0 0 10px rgba(235,245,255,.75)) blur(.6px)}
-  .pat.b{opacity:.32;filter:blur(2.2px)}
-  .plane{position:absolute;inset:0;transform-style:preserve-3d}
-  .photo{position:absolute;left:0;top:0;transform-origin:0 0}
-  .prodbg{position:absolute;inset:0;background:radial-gradient(900px 1000px at 50% 48%,#18243a 0%,#0a0f1a 55%,#030408 100%)}
-  .prod{position:absolute;filter:drop-shadow(0 40px 40px rgba(0,0,0,.6))}
-  .beam{position:absolute;mix-blend-mode:screen;pointer-events:none}
-  .grade{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 45%,rgba(0,0,0,.6) 100%)}
-  .cap{position:absolute;left:40px;right:40px;text-align:center;font-weight:900;color:#fff;text-transform:uppercase;
-       font-size:104px;line-height:1.0;letter-spacing:-.01em;-webkit-text-stroke:16px #000;paint-order:stroke fill;opacity:0;
-       text-shadow:0 0 40px rgba(120,180,255,.35)}
-  .cap .b{color:#bfe3ff}
-  .cap.hook{font-size:150px;line-height:.95}
-  .cap.kick{font-size:62px;letter-spacing:.04em;color:#bfe3ff;-webkit-text-stroke:10px #000}
-  #price{position:absolute;left:0;right:0;top:230px;text-align:center;opacity:0;font-weight:900;font-size:260px;color:#fff;
-         letter-spacing:-.03em;-webkit-text-stroke:18px #000;paint-order:stroke fill;text-shadow:0 0 60px rgba(150,200,255,.6)}
-  #shop{position:absolute;left:50%;top:1500px;transform:translateX(-50%);background:#fff;color:#0b1220;font-weight:900;font-size:90px;
-        padding:32px 96px;border-radius:999px;border:8px solid #000;box-shadow:0 0 50px rgba(160,210,255,.7);opacity:0;white-space:nowrap}
-  #url{position:absolute;left:0;right:0;top:1715px;text-align:center;color:#fff;font-weight:800;font-size:58px;letter-spacing:.06em;opacity:0;
-       -webkit-text-stroke:8px #000;paint-order:stroke fill}
-  #flash{position:absolute;inset:0;background:#e8f2ff;opacity:0}
-  #black{position:absolute;inset:0;background:#000}
+  .shot{position:absolute;inset:0;overflow:hidden;visibility:hidden}
+  .img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+  .dark{position:absolute;inset:0;background:radial-gradient(1000px 1100px at 50% 45%,#22344f 0%,#0e1828 55%,#05080e 100%)}
+  .light{position:absolute;inset:0;background:radial-gradient(1100px 1200px at 50% 42%,#ffffff 0%,#eef3f9 55%,#dbe4ef 100%)}
+  .shadow{position:absolute;left:50%;width:700px;height:90px;margin-left:-350px;border-radius:50%;
+          background:radial-gradient(ellipse,rgba(20,30,50,.35),rgba(20,30,50,0) 70%)}
+  .glow{position:absolute;border-radius:50%;mix-blend-mode:screen;pointer-events:none;
+        background:radial-gradient(circle,rgba(255,255,255,.55) 0%,rgba(220,235,255,.18) 35%,rgba(220,235,255,0) 70%)}
+  .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light}
+  /* TikTok-native caption: white bold text on a rounded dark box */
+  .cap{position:absolute;left:0;right:0;text-align:center;opacity:0}
+  .cap span{display:inline;background:rgba(10,12,18,.82);color:#fff;font-weight:800;font-size:74px;line-height:1.42;
+            padding:.08em .34em;border-radius:20px;-webkit-box-decoration-break:clone;box-decoration-break:clone;letter-spacing:.005em}
+  #price{position:absolute;left:0;right:0;top:1215px;text-align:center;font-weight:900;font-size:200px;letter-spacing:-.035em;color:#0c1626;opacity:0;line-height:1}
+  #name{position:absolute;left:0;right:0;top:1150px;text-align:center;font-weight:600;font-size:40px;letter-spacing:.22em;color:#5b6b82;opacity:0;text-transform:uppercase}
+  #shop{position:absolute;left:50%;top:1460px;transform:translateX(-50%);background:#0c1626;color:#fff;font-weight:800;font-size:66px;
+        padding:30px 88px;border-radius:999px;opacity:0;white-space:nowrap;letter-spacing:.04em}
+  #url{position:absolute;left:0;right:0;top:1615px;text-align:center;color:#5b6b82;font-weight:700;font-size:42px;letter-spacing:.1em;opacity:0}
+  #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
 </style></head>
 <body>
 <div id="shots"></div>
 <div id="caps"></div>
+<div id="name">Snowflake Projector Lamp</div>
 <div id="price">$25.99</div>
 <div id="shop">SHOP NOW</div>
-<div id="url"></div>
+<div id="url">morz.lol</div>
 <div id="flash"></div>
-<div id="black"></div>
 <script>
 const C=window.CONFIG, I=C.images, $=id=>document.getElementById(id);
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), lerp=(a,b,x)=>a+(b-a)*x;
-const eo=x=>1-Math.pow(1-clamp(x),3), eio=x=>{x=clamp(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
-const back=(x,c=2.2)=>{x=clamp(x);return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
-const DUR=C.duration||15; window.DURATION=DUR;
-const HOOKS={
-  A:{big:'WHY IS IT<br><span class="b">SNOWING</span><br>INSIDE?!', kick:'wait... look at the ceiling!', open:'wall'},
-  B:{big:'<span style="font-size:122px">THIS LIGHT<br>CHANGES THE<br><span class="b">WHOLE ROOM.</span></span>', kick:'', open:'wall'},
-  C:{big:'IMAGINE<br><span class="b">WAKING UP</span><br>TO THIS...', kick:'', open:'ceiling'},
+const EASE={
+  lin:x=>x,
+  out:x=>1-Math.pow(1-x,4),                                   // fast start, glide (speed ramp down)
+  in:x=>x*x*x,                                                // accelerate into the cut
+  ramp:x=>x<.5?Math.pow(2,20*x-10)/2:(2-Math.pow(2,-20*x+10))/2, // slow-FAST-slow speed ramp
+  io:x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2,
 };
-const H=HOOKS[C.hook||'A'];
-$('url').textContent=C.url||'morz.lol';
+const back=(x,c=2.2)=>{x=clamp(x);return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const DUR=15; window.DURATION=DUR;
 
 // ---------- shots ----------
-// proj: {mode:'wall'|'ceiling'|'macro'|'corner', z0,z1 (zoom), lamp:bool}
-// photo:{img, w,h, f0:[fx,fy,s], f1:[fx,fy,s]}
-// prod: {img, w0,w1 (display width), cy, dx0,dx1, beam:bool}
+// k: keyframes [time, fx, fy, s, rollDeg, ease-into-this-key]; fx/fy = point of the photo held at screen centre
+// cover: clamp so the photo always fills the frame; punch: beat times for a quick punch-in; shake: handheld amount
 const S=[
- {a:0.10,b:1.50,t:'proj',mode:H.open,z0:1.7,z1:1.0,hook:1},
- {a:1.50,b:2.25,t:'proj',mode:'ceiling',z0:1.0,z1:1.15},
- {a:2.25,b:3.00,t:'photo',img:'room',w:2000,h:1372,f0:[.30,.50,1.45],f1:[.40,.48,1.55]},
- {a:3.00,b:3.75,t:'photo',img:'tree',w:2000,h:1340,f0:[.24,.42,1.55],f1:[.28,.40,1.75]},
- {a:3.75,b:4.50,t:'proj',mode:'macro',z0:2.4,z1:2.1},
- {a:4.50,b:5.25,t:'photo',img:'room',w:2000,h:1372,f0:[.62,.45,1.75],f1:[.55,.50,1.42]},
- {a:5.25,b:6.00,t:'proj',mode:'corner',z0:1.05,z1:1.15},
- {a:6.00,b:6.75,t:'prod',img:'hero',w0:1500,w1:1250,cy:980,dx0:0,dx1:0,beam:1},
- {a:6.75,b:7.50,t:'prod',img:'side',w0:1100,w1:1250,cy:960,dx0:-120,dx1:40},
- {a:7.50,b:8.25,t:'prod',img:'front',w0:1250,w1:1100,cy:940,dx0:60,dx1:-20},
- {a:8.25,b:9.00,t:'photo',img:'tree',w:2000,h:1340,f0:[.70,.48,1.70],f1:[.66,.45,1.95]},
- {a:9.00,b:10.0,t:'proj',mode:'wall',z0:1.12,z1:1.0,lamp:1},
- {a:10.0,b:11.0,t:'photo',img:'room',w:2000,h:1372,f0:[.45,.52,1.45],f1:[.48,.46,1.62]},
- {a:11.0,b:12.0,t:'proj',mode:'ceiling',z0:1.2,z1:1.05},
- {a:12.0,b:99, t:'end'},
+ {id:'hook', img:'room', w:2000,h:1372, a:0.0, b:2.0, cover:1, shake:1, punch:[1.0,1.5],
+  k:[[0.0,.640,.270,3.30,-2.0],[0.50,.630,.285,3.05,-1.0,'lin'],[0.95,.520,.500,1.55,0,'out'],[2.0,.470,.500,1.62,1.2,'lin']]},
+ {id:'tree', img:'tree', w:2000,h:1340, a:2.0, b:3.0, cover:1, shake:1, punch:[2.0,2.5],
+  k:[[2.0,.240,.400,2.00,0],[3.0,.215,.400,2.25,-1.5,'lin']]},
+ {id:'detail', img:'room', w:2000,h:1372, a:3.0, b:4.0, cover:1, shake:1, punch:[3.0],
+  k:[[3.0,.440,.570,2.40,-2],[3.42,.445,.565,2.28,-1,'lin'],[3.66,.190,.420,2.20,1,'ramp'],[4.0,.190,.420,2.08,2,'lin']]},
+ {id:'lamp', img:'tree', w:2000,h:1340, a:4.0, b:5.0, cover:1, shake:.8, punch:[4.0],
+  k:[[4.0,.420,.460,1.60,0],[4.55,.500,.455,1.62,0,'lin'],[5.0,.605,.449,1.95,0,'in']]},
+ // match cut: lens ring of the cut-out lands exactly where the lens ring was in the previous shot (radius ~520px)
+ {id:'hero', img:'hero', w:2000,h:2000, a:5.0, b:6.25, bg:'dark', shake:.45, glow:1,
+  punch:[5.75],
+  k:[[5.0,.300,.320,1.265,0],[5.5,.470,.470,.56,-3,'out'],[6.25,.440,.440,.66,3,'lin']]},
+ {id:'side', img:'side', w:2000,h:2000, a:6.25, b:7.0, bg:'dark', shake:.45, punch:[6.25],
+  k:[[6.25,.640,.460,.78,2],[7.0,.470,.500,.60,-1,'out']]},
+ {id:'front', img:'front', w:2000,h:2000, a:7.0, b:8.0, bg:'dark', shake:.45, punch:[7.0],
+  k:[[7.0,.540,.500,.62,0],[7.49,.580,.460,.70,1,'lin'],[7.5,.700,.310,1.40,0,'cut'],[8.0,.700,.310,1.56,-1,'lin']]},
+ {id:'beam', img:'tree', w:2000,h:1340, a:8.0, b:9.5, cover:1, shake:1, punch:[8.0],
+  k:[[8.0,.560,.470,2.30,0],[8.35,.545,.465,2.30,0,'lin'],[9.05,.230,.410,2.10,-1,'ramp'],[9.5,.220,.400,2.18,-2,'lin']]},
+ {id:'cozy', img:'room', w:2000,h:1372, a:9.5, b:11.0, cover:1, shake:1, punch:[9.5,10.25],
+  k:[[9.5,.300,.550,1.75,0],[10.24,.330,.550,1.86,1,'lin'],[10.25,.740,.640,1.80,0,'cut'],[11.0,.705,.630,1.95,1.5,'lin']]},
+ {id:'end', img:'hero', w:2000,h:2000, a:11.0, b:99, bg:'light', shake:.15, glow:1, end:1,
+  punch:[11.25,12.5,13.5,14.5],
+  k:[[11.0,.500,.812,.40,-4],[11.45,.500,.764,.47,0,'out'],[13.2,.490,.752,.49,2,'io'],[15.0,.505,.745,.515,-1.5,'io']]},
 ];
 const host=$('shots');
-function projHTML(i){return `<div class="plane" id="pl${i}"><div class="wall"></div><div class="cone"></div>
-  <div class="pat b" id="pb${i}" style="background-image:url(${I.pattern.img})"></div>
-  <div class="pat a" id="pa${i}" style="background-image:url(${I.pattern.img})"></div></div>`;}
-S.forEach((s,i)=>{let h='';
-  if(s.t==='proj') h=projHTML(i)+(s.lamp?`<img class="prod" id="lamp${i}" src="${I.hero.img}" style="width:520px;left:-40px;top:1380px;transform:scaleX(-1) rotate(-18deg)"><canvas class="beam" id="bm${i}" width="1080" height="1920" style="left:0;top:0"></canvas>`:'');
-  if(s.t==='photo') h=`<img class="photo" id="ph${i}" src="${I[s.img].img}"><div class="grade"></div>`;
-  if(s.t==='prod') h=`<div class="prodbg"></div><canvas class="beam" id="bm${i}" width="1080" height="1920" style="left:0;top:0"></canvas><img class="prod" id="pr${i}" src="${I[s.img].img}">`;
-  if(s.t==='end') h=projHTML(i)+`<div class="grade" style="background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,0) 30%,rgba(0,0,0,0) 60%,rgba(0,0,0,.6))"></div><img class="prod" id="pr${i}" src="${I.hero.img}">`;
-  host.insertAdjacentHTML('beforeend',`<div class="shot" id="s${i}">${h}</div>`);});
+S.forEach((s,i)=>{
+  host.insertAdjacentHTML('beforeend',`<div class="shot" id="s${i}">
+    ${s.bg?`<div class="${s.bg}"></div>`:''}${s.end?'<div class="shadow" id="shd" style="top:1080px"></div>':''}
+    <img class="img" id="im${i}" src="${I[s.img].img}" style="width:${s.w}px;height:${s.h}px">
+    ${s.glow?`<div class="glow" id="gl${i}"></div>`:''}${s.end?'<canvas class="sweep" id="sw" width="1080" height="1920"></canvas>':''}</div>`);});
 
-// ---------- captions ----------
+// ---------- captions (each line appears once) ----------
 const CAPS=[
- [H.big,'hook',330,0.12,1.50],
- ...(H.kick?[[H.kick,'kick',250,0.55,1.50]]:[]),
- ['IT LOOKS LIKE A<br><span class="b">WINTER WONDERLAND.</span>','',300,1.50,3.0],
- ['YOUR ROOM.<br><span class="b">A WHOLE NEW VIBE.</span>','',300,3.0,6.0],
- ['THE LITTLE LIGHT<br><span class="b">BEHIND IT.</span>','',260,6.0,9.0],
- ['CHRISTMAS MAGIC<br><span class="b">AT HOME.</span>','',300,9.0,12.0],
- ['MAKE YOUR ROOM FEEL<br><span class="b">LIKE CHRISTMAS</span>','',560,12.5,99],
+ ['YOUR CEILING COULD<br>LOOK LIKE THIS?!',250,0.0,2.0],
+ ['LOOK AT THAT.',270,2.0,5.0],
+ ['THIS LITTLE PROJECTOR<br>DOES THAT.',250,5.0,8.0],
+ ['INSTANT CHRISTMAS<br>ATMOSPHERE.',250,8.0,11.0],
 ];
-$('caps').innerHTML=CAPS.map((c,i)=>`<div class="cap ${c[1]}" id="c${i}" style="top:${c[2]}px">${c[0]}</div>`).join('');
-const lastCap=$('c'+(CAPS.length-1)); lastCap.style.fontSize='80px';
+$('caps').innerHTML=CAPS.map((c,i)=>`<div class="cap" id="c${i}" style="top:${c[1]}px"><span>${c[0]}</span></div>`).join('');
 
-// pattern drift: the product's pattern drifts slowly (per product description), so keep it gentle
-function drift(i,t,scale){const pa=$('pa'+i),pb=$('pb'+i); if(!pa)return;
-  const sz=1892*scale*1.05; pa.style.backgroundSize=`${sz}px auto`; pb.style.backgroundSize=`${sz*.5}px auto`;
-  pa.style.backgroundPosition=`${t*22}px ${t*48}px`; pb.style.backgroundPosition=`${-t*14+300}px ${t*30+200}px`;}
-function beam(cv,x0,y0,x1,y1,spread,alpha){const g=cv.getContext('2d');g.clearRect(0,0,1080,1920);
-  const ang=Math.atan2(y1-y0,x1-x0),len=Math.hypot(x1-x0,y1-y0);g.save();g.translate(x0,y0);g.rotate(ang);
-  const gr=g.createLinearGradient(0,0,len,0);gr.addColorStop(0,`rgba(235,245,255,${alpha})`);gr.addColorStop(1,'rgba(235,245,255,0)');
-  g.fillStyle=gr;g.beginPath();g.moveTo(0,-30);g.lineTo(len,-spread);g.lineTo(len,spread);g.lineTo(0,30);g.closePath();g.fill();g.restore();}
+// ---------- camera ----------
+function cam(s,t){const k=s.k;let j=0;while(j<k.length-1&&t>=k[j+1][0])j++;
+  if(j>=k.length-1)return k[k.length-1].slice(1,5);
+  const A=k[j],B=k[j+1],e=B[5]||'io';if(e==='cut')return A.slice(1,5);
+  const p=EASE[e](clamp((t-A[0])/(B[0]-A[0])));return [1,2,3,4].map(n=>lerp(A[n],B[n],p));}
+function shake(t,a){return [a*(7*Math.sin(t*5.1)+4*Math.sin(t*8.3+1.3)+2*Math.sin(t*13.7+.4)),
+                            a*(6*Math.sin(t*4.3+2.1)+4*Math.sin(t*9.1+.2)+2*Math.sin(t*15.2+2.2)),
+                            a*(.35*Math.sin(t*3.7+.7)+.2*Math.sin(t*7.9))];}
+function punchAmt(s,t){let m=1;for(const b of (s.punch||[])){const d=t-b;if(d>=0&&d<.45)m*=1+.085*Math.exp(-d*9);}return m;}
 
 window.render=function(t){
-  S.forEach((s,i)=>{const el=$('s'+i),on=t>=s.a&&t<s.b;el.style.opacity=on?1:0;if(!on)return;
-    const p=(t-s.a)/Math.min(s.b-s.a,3), e=eio(p);
-    if(s.t==='proj'||s.t==='end'){
-      let z=s.t==='end'?1.05:(s.hook?lerp(s.z0,s.z1,eo((t-s.a)/.38)):lerp(s.z0,s.z1,e));
-      const mode=s.t==='end'?'wall':s.mode;
-      let tf=`scale(${z})`;
-      if(mode==='ceiling') tf=`perspective(1400px) rotateX(${lerp(48,40,e)}deg) scale(${z*1.5}) translateY(${-p*80}px)`;
-      if(mode==='corner')  tf=`perspective(1400px) rotateY(${lerp(-34,-26,e)}deg) scale(${z*1.35})`;
-      if(mode==='macro')   tf=`scale(${z}) rotate(${lerp(-4,4,e)}deg)`;
-      $('pl'+i).style.transform=tf;
-      drift(i,t,mode==='macro'?1.5:1);
-      if(s.lamp){const l=$('lamp'+i);l.style.transform=`scaleX(-1) rotate(-18deg) translateY(${(1-eo((t-s.a)/.4))*200}px)`;
-        beam($('bm'+i),300,1560,560,820,330,.22);}
-    }
-    if(s.t==='photo'){const ph=$('ph'+i),[fx,fy,sc]=s.f0.map((v,k)=>lerp(v,s.f1[k],e));
-      ph.style.width=s.w+'px';ph.style.height=s.h+'px';
-      const wq=t-s.a<.12?(1-(t-s.a)/.12):0;
-      ph.style.filter=`brightness(.95) contrast(1.08) saturate(.9)${wq?` blur(${wq*18}px)`:''}`;
-      ph.style.transform=`translate(${540-fx*s.w*sc+wq*-300}px,${960-fy*s.h*sc}px) scale(${sc})`;}
-    if(s.t==='prod'){const pr=$('pr'+i),w=lerp(s.w0,s.w1,e);pr.style.width=w+'px';
-      pr.style.left=(540-w/2+lerp(s.dx0,s.dx1,e))+'px';pr.style.top=(s.cy-w/2)+'px';
-      pr.style.transform=`rotate(${lerp(-2,2,e)}deg)`;
-      if(s.beam) beam($('bm'+i),540+w*.0-w*.17,s.cy-w*.17,-200,-300,700,.35*(.85+.15*Math.sin(t*9)));
-      else $('bm'+i).getContext('2d').clearRect(0,0,1080,1920);}
-    if(s.t==='end'){const q=t-s.a,pr=$('pr'+i),w=lerp(720,780,clamp(q/3));pr.style.width=w+'px';
-      pr.style.left=(540-w/2)+'px';pr.style.top=(1000-w/2+60)+'px';pr.style.transform=`scale(${back(q/.4,1.4)})`;}
+  S.forEach((s,i)=>{const el=$('s'+i),on=t>=s.a&&t<s.b;el.style.visibility=on?'visible':'hidden';if(!on)return;
+    let [fx,fy,sc,r]=cam(s,t); sc*=punchAmt(s,t);
+    if(s.cover){ // keep the photo covering the frame (rotation margin included)
+      const m=1+Math.abs(r)*.02; sc=Math.max(sc,1920*m/s.h,1080*m/s.w);
+      const hw=540*m/(s.w*sc), hh=960*m/(s.h*sc); fx=clamp(fx,hw,1-hw); fy=clamp(fy,hh,1-hh);}
+    const [dx,dy,dr]=shake(t,s.shake||0);
+    const im=$('im'+i), ox=fx*s.w, oy=fy*s.h;
+    im.style.transformOrigin=`${ox}px ${oy}px`;
+    im.style.transform=`translate(${540-ox+dx}px,${960-oy+dy}px) rotate(${r+dr}deg) scale(${sc})`;
+    if(s.glow){const g=$('gl'+i); // the lamp's own white light, centred on the lens
+      const lx=540+(.300-fx)*s.w*sc+dx, ly=960+(.320-fy)*s.h*sc+dy, R=s.w*sc*.30*(1+.04*Math.sin(t*6));
+      g.style.left=(lx-R)+'px';g.style.top=(ly-R)+'px';g.style.width=g.style.height=(2*R)+'px';
+      g.style.opacity=s.end?.45:(.5-.15*clamp((t-s.a)/.6));}
+    if(s.end){const q=t-s.a;
+      $('shd').style.transform=`scale(${sc/.5})`;$('shd').style.top=(960+(.89-fy)*s.h*sc-45+dy)+'px';
+      const cv=$('sw'),g=cv.getContext('2d');g.clearRect(0,0,1080,1920);const x=lerp(-500,1600,clamp((q-1.0)/1.2));
+      if(q>1.0&&q<2.2){const gr=g.createLinearGradient(x-220,0,x+220,400);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,'rgba(255,255,255,.9)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,1080,1920);}}
   });
-  CAPS.forEach((c,i)=>{const el=$('c'+i),l=t-c[3],on=t>=c[3]&&t<c[4];el.style.opacity=on?1:0;if(!on)return;
-    el.style.transform=`scale(${back(l/.22,2.6)*(1+.04*Math.max(0,1-((t%.5)/.12)))}) rotate(${i%2?1.2:-1.2}deg)`;});
-  const q=t-12.2; $('price').style.opacity=q>0?1:0; $('price').style.transform=`scale(${back(q/.28,2.8)}) rotate(-2deg)`;
-  const q2=t-12.9; $('shop').style.opacity=q2>0?1:0; $('shop').style.transform=`translateX(-50%) scale(${back(q2/.3)*(1+.05*Math.max(0,Math.sin(q2*Math.PI*2)))})`;
-  $('url').style.opacity=clamp((t-13.2)/.25);
-  let fl=0;for(const h of [0.10,6.0,12.0]){const d=t-h;if(d>=0&&d<.2)fl=Math.max(fl,(1-d/.2)*(h<1?.9:.6));}$('flash').style.opacity=fl;
-  $('black').style.opacity=t<0.10?1:0;
+  CAPS.forEach((c,i)=>{const el=$('c'+i),on=t>=c[2]&&t<c[3];el.style.opacity=on?1:0;if(!on)return;
+    const l=t-c[2]; el.style.transform=`scale(${i===0?Math.min(1,.94+l*.6):back(l/.16,1.6)})`;});
+  const q=t-11.0;
+  $('name').style.opacity=clamp((q-.15)/.2);
+  $('price').style.opacity=q>.25?1:0; $('price').style.transform=`scale(${back((q-.25)/.25,2.4)})`;
+  $('shop').style.opacity=q>.75?1:0; $('shop').style.transform=`translateX(-50%) scale(${back((q-.75)/.25)*(1+.035*Math.max(0,Math.sin((q-1)*Math.PI*2)))})`;
+  $('url').style.opacity=clamp((q-1.0)/.2);
+  let fl=0;{const d=t-5.0;if(d>=0&&d<.08)fl=.3*(1-d/.08);} $('flash').style.opacity=fl;
 };
 </script>
 </body></html>
