@@ -28,6 +28,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (request.method === 'GET' && url.pathname === '/') return new Response('whop-shopify-sync ok');
+    if (request.method === 'GET' && url.pathname === '/health') return Response.json(await health(env));
     if (request.method !== 'POST' || url.pathname !== '/webhook') return new Response('not found', { status: 404 });
 
     const raw = await request.text();
@@ -50,6 +51,17 @@ export default {
     }
   },
 };
+
+/* Reports only whether each key works (no data, no secrets). */
+async function health(env) {
+  const out = { webhook_secret: !!env.WHOP_WEBHOOK_SECRET };
+  try {
+    const r = await fetch('https://api.whop.com/api/v1/memberships?first=1', { headers: { Authorization: `Bearer ${env.WHOP_API_KEY}` } });
+    out.whop = r.ok ? 'ok' : 'HTTP ' + r.status;
+  } catch (e) { out.whop = 'error'; }
+  try { await shopify(env, '{ shop { name } }'); out.shopify = 'ok'; } catch (e) { out.shopify = String(e.message).slice(0, 80); }
+  return out;
+}
 
 /* ------------------------------------------------------------------ signature */
 
