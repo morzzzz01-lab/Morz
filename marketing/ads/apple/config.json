@@ -1,0 +1,10 @@
+{
+  "template": "../ads/apple/scene.html",
+  "audioScript": "audio_apple.py",
+  "images": {
+    "body": {"img": "img/body.png"}, "full": {"img": "img/x0.png"},
+    "dark": {"img": "img/x1.png"}, "darkTall": {"img": "img/x5.png"}, "pair": {"img": "img/x4.png"}
+  },
+  "products": [],
+  "stills": [1.5, 3.3, 3.9, 5.5, 7.9, 9.6, 11.2, 14.0, 18.5]
+}

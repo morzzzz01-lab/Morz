@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<!-- "THIS IS NOT A REAL APPLE." cinematic photo-motion reel (19.5 s). -->
+<style>
+  html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#070504;font-family:Inter,'Noto Color Emoji',sans-serif;color:#f5ece2}
+  .L{position:absolute;inset:0;overflow:hidden;opacity:0}
+  .bgdark{position:absolute;inset:0;background:radial-gradient(1100px 1300px at 50% 46%,#2a1610 0%,#120a07 50%,#060403 100%)}
+  .glow{position:absolute;width:1400px;height:1400px;border-radius:50%;left:50%;margin-left:-700px;
+        background:radial-gradient(circle,rgba(255,170,80,.45) 0%,rgba(255,120,40,.12) 35%,rgba(255,120,40,0) 65%)}
+  .prod{position:absolute;left:50%;transform-origin:50% 50%}
+  .prod img{position:absolute;left:0;top:0;width:100%;height:100%;filter:saturate(1.18) contrast(1.06) brightness(.97)}
+  .refl{position:absolute;left:50%;transform-origin:50% 0;opacity:.28;
+        -webkit-mask-image:linear-gradient(0deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.9) 9.3%,rgba(0,0,0,0) 34%)}
+  .refl img{position:absolute;left:0;top:0;width:100%;height:100%}
+  .floor{position:absolute;left:0;right:0;height:900px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55))}
+  .sweep{position:absolute;inset:0;mix-blend-mode:screen;pointer-events:none}
+  .photo{position:absolute;left:0;top:0;transform-origin:0 0}
+  .grade{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 40%,rgba(0,0,0,.65) 100%)}
+  canvas{position:absolute;inset:0}
+  .t{position:absolute;left:60px;right:60px;text-align:center;opacity:0;text-shadow:0 4px 30px rgba(0,0,0,.8)}
+  .hk{font-weight:400!important;font-size:62px!important}
+  .thin{font-weight:300;font-size:58px;letter-spacing:.34em;text-transform:uppercase}
+  .bold{font-family:'Inter Display',Inter;font-weight:800;font-size:112px;letter-spacing:-.01em;line-height:1.02;text-transform:uppercase}
+  .serif{font-family:'Bitstream Charter',Charter,serif;font-style:italic;font-weight:400;font-size:150px;color:#ffcf8a;letter-spacing:-.01em}
+  .fin{font-size:98px;left:20px;right:20px}
+  #hookshade{position:absolute;left:0;right:0;top:0;height:900px;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0));pointer-events:none}
+  .label{font-weight:500;font-size:40px;letter-spacing:.26em;text-transform:uppercase;color:#f1dcc4}
+  .label:before{content:'';display:inline-block;width:70px;height:2px;background:#ffcf8a;vertical-align:middle;margin-right:24px}
+  .pill{display:inline-block;margin-top:26px;padding:28px 70px;border-radius:999px;background:#f5ece2;color:#1a0f0a;font-weight:800;font-size:64px;letter-spacing:.04em}
+  #grain{position:absolute;inset:0;mix-blend-mode:overlay;opacity:.16;pointer-events:none}
+  #bars{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 220px rgba(0,0,0,.6)}
+  #fade{position:absolute;inset:0;background:#000;pointer-events:none}
+</style></head>
+<body>
+<!-- S1+S2+S5: studio product layer (same set, camera moves) -->
+<div class="L" id="studio">
+  <div class="bgdark"></div>
+  <div class="glow" id="g1" style="top:120px"></div>
+  <div class="floor" style="top:1300px"></div>
+  <div class="refl" id="r1"><img id="r1b"><img id="r1f"></div>
+  <div class="prod" id="p1"><img id="p1b"><img id="p1f"><canvas class="sweep" id="sw1" width="600" height="600" style="width:100%;height:100%"></canvas></div>
+</div>
+<!-- S3: macro photos -->
+<div class="L" id="m1"><img class="photo" id="i1"><div class="grade"></div></div>
+<div class="L" id="m2"><img class="photo" id="i2"><div class="grade"></div></div>
+<div class="L" id="m3"><img class="photo" id="i3"><div class="grade"></div></div>
+<!-- S4: cozy bokeh set -->
+<div class="L" id="cozy">
+  <div class="bgdark" style="background:radial-gradient(1200px 1200px at 50% 55%,#2b170c 0%,#140a05 55%,#050302 100%)"></div>
+  <canvas id="bokeh" width="1080" height="1920"></canvas>
+  <div class="glow" id="g2" style="top:560px"></div>
+  <div class="floor" style="top:1350px"></div>
+  <div class="refl" id="r2"><img id="r2f"></div>
+  <div class="prod" id="p2"><img id="p2f"></div>
+  <canvas id="snow" width="1080" height="1920"></canvas>
+</div>
+
+<div id="hookshade"></div>
+<div id="texts"></div>
+<canvas id="grain" width="540" height="960"></canvas>
+<div id="bars"></div>
+<div id="fade"></div>
+<script>
+const C=window.CONFIG, I=C.images;
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), lerp=(a,b,x)=>a+(b-a)*x;
+const eo=x=>1-Math.pow(1-clamp(x),3), eio=x=>{x=clamp(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const sm=x=>{x=clamp(x);return x*x*(3-2*x)};
+const DUR=19.5; window.DURATION=DUR;
+for(const id of ['p1b','r1b']) $(id).src=I.body.img;
+for(const id of ['p1f','r1f','p2f','r2f']) $(id).src=I.full.img;
+$('i1').src=I.dark.img; $('i2').src=I.darkTall.img; $('i3').src=I.pair.img;
+
+// ---------- text cues: [html, class, top, in, out]
+const T=[
+ ['THIS IS NOT','thin hk',300,0.45,2.85],
+ ['WHAT YOU THINK...','thin hk',390,1.15,2.85],
+ ["IT'S ACTUALLY A",'thin',250,4.10,6.85],
+ ['candle.','serif',320,4.55,6.85],
+ ['TOO BEAUTIFUL','bold',260,7.25,11.85],
+ ['TO BURN?','bold',380,7.70,11.85],
+ ['100% handcrafted','label',1500,8.90,10.25],
+ ['gentle apple scent','label',1500,10.55,11.85],
+ ['arrives in a gift box','label',260,12.55,15.85],
+ ['table decor · secret santa · host gift','label',340,13.35,15.85],
+ ['THE CUTEST GIFT','bold fin',230,16.35,DUR],
+ ['THIS CHRISTMAS 🍎','bold fin',345,16.75,DUR],
+ ['<span class="pill">$19.99 — SHOP NOW</span>','',1470,17.35,DUR],
+ ['morz.lol','label',1660,17.75,DUR],
+];
+$('texts').innerHTML=T.map((c,i)=>`<div class="t ${c[1]}" id="t${i}" style="top:${c[2]}px">${c[0]}</div>`).join('');
+
+// ---------- helpers
+function placeProd(el,cx,cy,size){el.style.width=size+'px';el.style.height=size+'px';el.style.marginLeft=(-size/2+(cx-540))+'px';el.style.top=(cy-size/2)+'px';}
+function placeRefl(el,cx,baseY,size){ // mirror under the product; image bottom edge (alpha ends ~0.907 of height) sits on baseY
+  el.style.width=size+'px';el.style.height=size+'px';el.style.marginLeft=(-size/2+(cx-540))+'px';
+  el.style.top=(baseY - size*0.907)+'px'; el.style.transform='scaleY(-1)';el.style.transformOrigin='50% '+(size*0.907)+'px';}
+function photo(el,w,h,fx,fy,s,dx=0,dy=0){el.style.width=w+'px';el.style.height=h+'px';
+  el.style.transform=`translate(${540-fx*w*s+dx}px,${960-fy*h*s+dy}px) scale(${s})`;}
+function flick(t){return .86+.07*Math.sin(t*13.1)+.05*Math.sin(t*23.7+1)+.03*Math.sin(t*41.3+2);}
+
+// specular sweep painted into a canvas, masked by the apple body alpha
+const sw=$('sw1'), sctx=sw.getContext('2d'); const mask=new Image(); mask.src=I.body.img;
+function sweep(p,str){sctx.clearRect(0,0,600,600); if(str<=0||!mask.complete)return;
+  const x=lerp(-200,800,p); const g=sctx.createLinearGradient(x-90,0,x+90,600);
+  g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(.5,`rgba(255,226,200,${.22*str})`);g.addColorStop(1,'rgba(255,255,255,0)');
+  sctx.globalCompositeOperation='source-over';sctx.fillStyle=g;sctx.fillRect(0,0,600,600);
+  sctx.globalCompositeOperation='destination-in';sctx.drawImage(mask,0,0,600,600);}
+
+// bokeh + snow + grain
+let seed=5;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const bk=[...Array(46)].map(()=>({x:rnd()*1080,y:rnd()*1300,r:30+rnd()*70,a:.15+rnd()*.35,p:rnd()*6.28,c:rnd()<.8?'255,190,110':'255,120,90'}));
+const sn=[...Array(70)].map(()=>({x:rnd()*1080,y:rnd()*1920,r:2+rnd()*7,v:40+rnd()*70,p:rnd()*6.28}));
+const bctx=$('bokeh').getContext('2d'), nctx=$('snow').getContext('2d'), gctx=$('grain').getContext('2d');
+const grains=[0,1,2].map(()=>{const d=gctx.createImageData(540,960);for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255;}return d;});
+
+window.render=function(t){
+  // ---------- layer visibility (soft dissolves) ----------
+  const vis={studio:0,m1:0,m2:0,m3:0,cozy:0};
+  const xf=(a,b,d=.35)=>clamp((t-a)/d)*(1-clamp((t-b)/d));
+  vis.studio=Math.max(xf(-1,7.0),xf(15.85,99));
+  vis.m1=xf(7.0,8.7); vis.m2=xf(8.7,10.4); vis.m3=xf(10.4,12.0); vis.cozy=xf(12.0,15.85);
+  for(const k in vis) $(k).style.opacity=vis[k];
+
+  // ---------- studio camera ----------
+  const fl=flick(t);
+  if(t<7.5){
+    // S1 hold on glossy skin (top + wick out of frame), S2 pull back to full product
+    const pull=eio((t-2.95)/1.45);
+    const size=lerp(2900,860,pull), cx=540+lerp(110,0,pull)+Math.sin(t*.6)*10*(1-pull);
+    const cy=lerp(250,900,pull)+lerp(-40,0,clamp(t/3))*(1-pull);
+    placeProd($('p1'),cx,cy,size); placeRefl($('r1'),cx,cy+size*.407,size);
+    $('r1').style.opacity=.28*pull;
+    const lit=sm((t-3.25)/.5);               // match strike at 3.0, flame shows 3.25-3.75
+    $('p1f').style.opacity=lit; $('r1f').style.opacity=lit;
+    $('g1').style.opacity=lit*fl; $('g1').style.top=(cy-size*.55-300)+'px';
+    $('p1').style.transform=`perspective(2200px) rotateY(${lerp(-7,7,sm((t-3.6)/3.4))}deg) scale(${1+.035*sm((t-4.3)/2.7)})`;
+    sweep(clamp((t-.5)/2.2),1-pull*.4 - (t>5?0:0)); if(t>4.6) sweep(clamp((t-4.6)/2.2),.7);
+  } else {
+    // S5 final hero, centred
+    const q=t-15.85, size=lerp(980,900,sm(q/3.6)), cy=880;
+    placeProd($('p1'),540,cy,size); placeRefl($('r1'),540,cy+size*.407,size);
+    $('p1f').style.opacity=1;$('r1f').style.opacity=1;$('r1').style.opacity=.3;
+    $('g1').style.opacity=fl; $('g1').style.top=(cy-size*.55-300)+'px';
+    $('p1').style.transform=`perspective(2200px) rotateY(${lerp(5,-3,sm(q/3.6))}deg)`;
+    sweep(clamp((q-.4)/2.4),.6);
+  }
+
+  // ---------- S3 macro photos (slow push / drift) ----------
+  let p=(t-7.0)/2.0; photo($('i1'),2000,2000,lerp(.50,.50,p),lerp(.40,.36,p),lerp(1.55,1.85,eio(p)));
+  p=(t-8.7)/2.0;  photo($('i2'),2000,2616,lerp(.47,.52,p),lerp(.735,.725,p),lerp(1.40,1.52,eio(p)));
+  p=(t-10.4)/2.0; photo($('i3'),2000,2000,lerp(.42,.56,eio(p)),.60,1.55);
+  $('i1').style.filter=`brightness(${.92+.1*(fl-.86)*3})`; $('i2').style.filter=`brightness(${.92+.1*(fl-.86)*3})`;
+  $('i3').style.filter='brightness(.42) contrast(1.2) saturate(1.2) sepia(.3)';
+
+  // ---------- S4 cozy set ----------
+  const c=t-12.0, sz=lerp(760,840,sm(c/4)), ccx=540+lerp(-30,20,sm(c/4)), ccy=1010;
+  placeProd($('p2'),ccx,ccy,sz); placeRefl($('r2'),ccx,ccy+sz*.407,sz); $('r2').style.opacity=.3;
+  $('g2').style.opacity=fl; $('g2').style.top=(ccy-sz*.55-280)+'px'; $('g2').style.marginLeft=(-700+ccx-540)+'px';
+  if(vis.cozy>0){
+    bctx.clearRect(0,0,1080,1920);
+    for(const b of bk){bctx.globalAlpha=b.a*(.75+.25*Math.sin(t*1.6+b.p));const x=b.x+Math.sin(t*.3+b.p)*25-c*12;
+      const g=bctx.createRadialGradient(x,b.y,0,x,b.y,b.r);g.addColorStop(0,`rgba(${b.c},.9)`);g.addColorStop(.7,`rgba(${b.c},.55)`);g.addColorStop(1,`rgba(${b.c},0)`);
+      bctx.fillStyle=g;bctx.beginPath();bctx.arc(x,b.y,b.r,0,6.283);bctx.fill();}
+    nctx.clearRect(0,0,1080,1920);
+    for(const s of sn){const y=(s.y+s.v*t)%1960-20;nctx.globalAlpha=.5;nctx.fillStyle='#fff3e6';
+      nctx.beginPath();nctx.arc(s.x+Math.sin(t+s.p)*24,y,s.r,0,6.283);nctx.fill();}
+  }
+
+  // ---------- text ----------
+  T.forEach((c,i)=>{const el=$('t'+i);const a=clamp((t-c[3])/.6)*(1-clamp((t-c[4]+.3)/.3));
+    el.style.opacity=a; const b=(1-clamp((t-c[3])/.7))*12;
+    el.style.filter=b>0.1?`blur(${b}px)`:''; el.style.transform=`translateY(${(1-eo((t-c[3])/.9))*24}px)`;});
+
+  $('hookshade').style.opacity=1-clamp((t-2.7)/.5);
+  // grain + fade in/out from black
+  gctx.putImageData(grains[Math.floor(t*24)%3],0,0);
+  $('fade').style.opacity=Math.max(1-clamp(t/.6), clamp((t-(DUR-.45))/.45));
+};
+</script>
+</body></html>
