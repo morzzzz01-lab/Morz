@@ -29,6 +29,17 @@ export default {
     const url = new URL(request.url);
     if (request.method === 'GET' && url.pathname === '/') return new Response('whop-shopify-sync ok');
     if (request.method === 'GET' && url.pathname === '/health') return Response.json(await health(env));
+    // Re-process one Whop payment by id (e.g. after a fix). Protected by RESYNC_TOKEN; safe to repeat.
+    if (request.method === 'POST' && url.pathname === '/resync') {
+      if (!env.RESYNC_TOKEN || request.headers.get('authorization') !== 'Bearer ' + env.RESYNC_TOKEN) return new Response('forbidden', { status: 403 });
+      const id = url.searchParams.get('payment') || '';
+      const r = await fetch(`https://api.whop.com/api/v1/payments/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${env.WHOP_API_KEY}` } });
+      if (!r.ok) return new Response('whop payment HTTP ' + r.status, { status: 502 });
+      const payment = await r.json();
+      if (payment.status !== 'paid') return new Response('payment not paid: ' + payment.status, { status: 409 });
+      try { return Response.json(await handlePayment(payment, env)); }
+      catch (err) { return new Response('error: ' + (err && err.message || err), { status: 500 }); }
+    }
     if (request.method !== 'POST' || url.pathname !== '/webhook') return new Response('not found', { status: 404 });
 
     const raw = await request.text();
@@ -176,7 +187,8 @@ async function getAnswers(payment, env) {
   let list = payment.custom_field_responses;
   if (!list && payment.membership_id) {
     const r = await fetch(`https://api.whop.com/api/v1/memberships/${payment.membership_id}`, {
-      headers: { Authorization: `Bearer ${env.WHOP_API_KEY}` },
+      // custom_field_responses are only returned by the older (pre-2025-02) response format
+      headers: { Authorization: `Bearer ${env.WHOP_API_KEY}`, 'Api-Version-Date': '2025-01-01' },
     });
     if (!r.ok) throw new Error(`Whop membership ${payment.membership_id}: HTTP ${r.status}`);
     const m = await r.json();
