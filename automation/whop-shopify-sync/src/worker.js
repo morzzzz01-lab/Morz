@@ -142,6 +142,7 @@ async function handlePayment(payment, env) {
     sourceName: 'whop',
     sourceIdentifier: payment.id,
   };
+  if (charged <= 0) delete order.transactions;   // $0 (100% promo) orders: no payment transaction
   if (order.email === undefined) delete order.email;
   if (order.phone === undefined) delete order.phone;
 
