@@ -1,0 +1,12 @@
+{
+  "template": "../ads/snow/scene.html",
+  "audioScript": "audio_snow.py",
+  "hook": "A",
+  "url": "morz.lol",
+  "images": {
+    "pattern": {"img": "img/pattern.png"}, "hero": {"img": "img/x0.png"}, "side": {"img": "img/side.png"},
+    "front": {"img": "img/front.png"}, "room": {"img": "img/x5.png"}, "tree": {"img": "img/treebeam.png"}
+  },
+  "products": [],
+  "stills": [0.5, 1.9, 2.6, 3.4, 4.1, 5.6, 6.4, 7.1, 7.9, 8.6, 9.5, 11.5, 13.6]
+}

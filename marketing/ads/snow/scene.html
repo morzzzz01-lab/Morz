@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<!-- "WHY IS IT SNOWING INSIDE?!" 15 s reel, 120 BPM. CONFIG.hook picks opening A/B/C; CONFIG.duration can cut it short (hook tests). -->
+<style>
+  html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#000;font-family:'Inter Display',Inter,'Noto Color Emoji',sans-serif}
+  .shot{position:absolute;inset:0;overflow:hidden;opacity:0}
+  .wall{position:absolute;inset:-40%;background:radial-gradient(ellipse at 50% 50%,#0d1626 0%,#070b14 45%,#020306 100%)}
+  .cone{position:absolute;inset:-40%;background:radial-gradient(ellipse 34% 30% at 50% 50%,rgba(220,235,255,.13),rgba(220,235,255,0) 70%)}
+  .pat{position:absolute;inset:-60%;background-repeat:repeat;
+       -webkit-mask-image:radial-gradient(ellipse 25% 21% at 50% 50%,#000 25%,rgba(0,0,0,.5) 65%,transparent 100%)}
+  .pat.a{filter:drop-shadow(0 0 10px rgba(235,245,255,.75)) blur(.6px)}
+  .pat.b{opacity:.32;filter:blur(2.2px)}
+  .plane{position:absolute;inset:0;transform-style:preserve-3d}
+  .photo{position:absolute;left:0;top:0;transform-origin:0 0}
+  .prodbg{position:absolute;inset:0;background:radial-gradient(900px 1000px at 50% 48%,#18243a 0%,#0a0f1a 55%,#030408 100%)}
+  .prod{position:absolute;filter:drop-shadow(0 40px 40px rgba(0,0,0,.6))}
+  .beam{position:absolute;mix-blend-mode:screen;pointer-events:none}
+  .grade{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 45%,rgba(0,0,0,.6) 100%)}
+  .cap{position:absolute;left:40px;right:40px;text-align:center;font-weight:900;color:#fff;text-transform:uppercase;
+       font-size:104px;line-height:1.0;letter-spacing:-.01em;-webkit-text-stroke:16px #000;paint-order:stroke fill;opacity:0;
+       text-shadow:0 0 40px rgba(120,180,255,.35)}
+  .cap .b{color:#bfe3ff}
+  .cap.hook{font-size:150px;line-height:.95}
+  .cap.kick{font-size:62px;letter-spacing:.04em;color:#bfe3ff;-webkit-text-stroke:10px #000}
+  #price{position:absolute;left:0;right:0;top:230px;text-align:center;opacity:0;font-weight:900;font-size:260px;color:#fff;
+         letter-spacing:-.03em;-webkit-text-stroke:18px #000;paint-order:stroke fill;text-shadow:0 0 60px rgba(150,200,255,.6)}
+  #shop{position:absolute;left:50%;top:1500px;transform:translateX(-50%);background:#fff;color:#0b1220;font-weight:900;font-size:90px;
+        padding:32px 96px;border-radius:999px;border:8px solid #000;box-shadow:0 0 50px rgba(160,210,255,.7);opacity:0;white-space:nowrap}
+  #url{position:absolute;left:0;right:0;top:1715px;text-align:center;color:#fff;font-weight:800;font-size:58px;letter-spacing:.06em;opacity:0;
+       -webkit-text-stroke:8px #000;paint-order:stroke fill}
+  #flash{position:absolute;inset:0;background:#e8f2ff;opacity:0}
+  #black{position:absolute;inset:0;background:#000}
+</style></head>
+<body>
+<div id="shots"></div>
+<div id="caps"></div>
+<div id="price">$25.99</div>
+<div id="shop">SHOP NOW</div>
+<div id="url"></div>
+<div id="flash"></div>
+<div id="black"></div>
+<script>
+const C=window.CONFIG, I=C.images, $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), lerp=(a,b,x)=>a+(b-a)*x;
+const eo=x=>1-Math.pow(1-clamp(x),3), eio=x=>{x=clamp(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const back=(x,c=2.2)=>{x=clamp(x);return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const DUR=C.duration||15; window.DURATION=DUR;
+const HOOKS={
+  A:{big:'WHY IS IT<br><span class="b">SNOWING</span><br>INSIDE?!', kick:'wait... look at the ceiling!', open:'wall'},
+  B:{big:'<span style="font-size:122px">THIS LIGHT<br>CHANGES THE<br><span class="b">WHOLE ROOM.</span></span>', kick:'', open:'wall'},
+  C:{big:'IMAGINE<br><span class="b">WAKING UP</span><br>TO THIS...', kick:'', open:'ceiling'},
+};
+const H=HOOKS[C.hook||'A'];
+$('url').textContent=C.url||'morz.lol';
+
+// ---------- shots ----------
+// proj: {mode:'wall'|'ceiling'|'macro'|'corner', z0,z1 (zoom), lamp:bool}
+// photo:{img, w,h, f0:[fx,fy,s], f1:[fx,fy,s]}
+// prod: {img, w0,w1 (display width), cy, dx0,dx1, beam:bool}
+const S=[
+ {a:0.10,b:1.50,t:'proj',mode:H.open,z0:1.7,z1:1.0,hook:1},
+ {a:1.50,b:2.25,t:'proj',mode:'ceiling',z0:1.0,z1:1.15},
+ {a:2.25,b:3.00,t:'photo',img:'room',w:2000,h:1372,f0:[.30,.50,1.45],f1:[.40,.48,1.55]},
+ {a:3.00,b:3.75,t:'photo',img:'tree',w:2000,h:1340,f0:[.24,.42,1.55],f1:[.28,.40,1.75]},
+ {a:3.75,b:4.50,t:'proj',mode:'macro',z0:2.4,z1:2.1},
+ {a:4.50,b:5.25,t:'photo',img:'room',w:2000,h:1372,f0:[.62,.45,1.75],f1:[.55,.50,1.42]},
+ {a:5.25,b:6.00,t:'proj',mode:'corner',z0:1.05,z1:1.15},
+ {a:6.00,b:6.75,t:'prod',img:'hero',w0:1500,w1:1250,cy:980,dx0:0,dx1:0,beam:1},
+ {a:6.75,b:7.50,t:'prod',img:'side',w0:1100,w1:1250,cy:960,dx0:-120,dx1:40},
+ {a:7.50,b:8.25,t:'prod',img:'front',w0:1250,w1:1100,cy:940,dx0:60,dx1:-20},
+ {a:8.25,b:9.00,t:'photo',img:'tree',w:2000,h:1340,f0:[.70,.48,1.70],f1:[.66,.45,1.95]},
+ {a:9.00,b:10.0,t:'proj',mode:'wall',z0:1.12,z1:1.0,lamp:1},
+ {a:10.0,b:11.0,t:'photo',img:'room',w:2000,h:1372,f0:[.45,.52,1.45],f1:[.48,.46,1.62]},
+ {a:11.0,b:12.0,t:'proj',mode:'ceiling',z0:1.2,z1:1.05},
+ {a:12.0,b:99, t:'end'},
+];
+const host=$('shots');
+function projHTML(i){return `<div class="plane" id="pl${i}"><div class="wall"></div><div class="cone"></div>
+  <div class="pat b" id="pb${i}" style="background-image:url(${I.pattern.img})"></div>
+  <div class="pat a" id="pa${i}" style="background-image:url(${I.pattern.img})"></div></div>`;}
+S.forEach((s,i)=>{let h='';
+  if(s.t==='proj') h=projHTML(i)+(s.lamp?`<img class="prod" id="lamp${i}" src="${I.hero.img}" style="width:520px;left:-40px;top:1380px;transform:scaleX(-1) rotate(-18deg)"><canvas class="beam" id="bm${i}" width="1080" height="1920" style="left:0;top:0"></canvas>`:'');
+  if(s.t==='photo') h=`<img class="photo" id="ph${i}" src="${I[s.img].img}"><div class="grade"></div>`;
+  if(s.t==='prod') h=`<div class="prodbg"></div><canvas class="beam" id="bm${i}" width="1080" height="1920" style="left:0;top:0"></canvas><img class="prod" id="pr${i}" src="${I[s.img].img}">`;
+  if(s.t==='end') h=projHTML(i)+`<div class="grade" style="background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,0) 30%,rgba(0,0,0,0) 60%,rgba(0,0,0,.6))"></div><img class="prod" id="pr${i}" src="${I.hero.img}">`;
+  host.insertAdjacentHTML('beforeend',`<div class="shot" id="s${i}">${h}</div>`);});
+
+// ---------- captions ----------
+const CAPS=[
+ [H.big,'hook',330,0.12,1.50],
+ ...(H.kick?[[H.kick,'kick',250,0.55,1.50]]:[]),
+ ['IT LOOKS LIKE A<br><span class="b">WINTER WONDERLAND.</span>','',300,1.50,3.0],
+ ['YOUR ROOM.<br><span class="b">A WHOLE NEW VIBE.</span>','',300,3.0,6.0],
+ ['THE LITTLE LIGHT<br><span class="b">BEHIND IT.</span>','',260,6.0,9.0],
+ ['CHRISTMAS MAGIC<br><span class="b">AT HOME.</span>','',300,9.0,12.0],
+ ['MAKE YOUR ROOM FEEL<br><span class="b">LIKE CHRISTMAS</span>','',560,12.5,99],
+];
+$('caps').innerHTML=CAPS.map((c,i)=>`<div class="cap ${c[1]}" id="c${i}" style="top:${c[2]}px">${c[0]}</div>`).join('');
+const lastCap=$('c'+(CAPS.length-1)); lastCap.style.fontSize='80px';
+
+// pattern drift: the product's pattern drifts slowly (per product description), so keep it gentle
+function drift(i,t,scale){const pa=$('pa'+i),pb=$('pb'+i); if(!pa)return;
+  const sz=1892*scale*1.05; pa.style.backgroundSize=`${sz}px auto`; pb.style.backgroundSize=`${sz*.5}px auto`;
+  pa.style.backgroundPosition=`${t*22}px ${t*48}px`; pb.style.backgroundPosition=`${-t*14+300}px ${t*30+200}px`;}
+function beam(cv,x0,y0,x1,y1,spread,alpha){const g=cv.getContext('2d');g.clearRect(0,0,1080,1920);
+  const ang=Math.atan2(y1-y0,x1-x0),len=Math.hypot(x1-x0,y1-y0);g.save();g.translate(x0,y0);g.rotate(ang);
+  const gr=g.createLinearGradient(0,0,len,0);gr.addColorStop(0,`rgba(235,245,255,${alpha})`);gr.addColorStop(1,'rgba(235,245,255,0)');
+  g.fillStyle=gr;g.beginPath();g.moveTo(0,-30);g.lineTo(len,-spread);g.lineTo(len,spread);g.lineTo(0,30);g.closePath();g.fill();g.restore();}
+
+window.render=function(t){
+  S.forEach((s,i)=>{const el=$('s'+i),on=t>=s.a&&t<s.b;el.style.opacity=on?1:0;if(!on)return;
+    const p=(t-s.a)/Math.min(s.b-s.a,3), e=eio(p);
+    if(s.t==='proj'||s.t==='end'){
+      let z=s.t==='end'?1.05:(s.hook?lerp(s.z0,s.z1,eo((t-s.a)/.38)):lerp(s.z0,s.z1,e));
+      const mode=s.t==='end'?'wall':s.mode;
+      let tf=`scale(${z})`;
+      if(mode==='ceiling') tf=`perspective(1400px) rotateX(${lerp(48,40,e)}deg) scale(${z*1.5}) translateY(${-p*80}px)`;
+      if(mode==='corner')  tf=`perspective(1400px) rotateY(${lerp(-34,-26,e)}deg) scale(${z*1.35})`;
+      if(mode==='macro')   tf=`scale(${z}) rotate(${lerp(-4,4,e)}deg)`;
+      $('pl'+i).style.transform=tf;
+      drift(i,t,mode==='macro'?1.5:1);
+      if(s.lamp){const l=$('lamp'+i);l.style.transform=`scaleX(-1) rotate(-18deg) translateY(${(1-eo((t-s.a)/.4))*200}px)`;
+        beam($('bm'+i),300,1560,560,820,330,.22);}
+    }
+    if(s.t==='photo'){const ph=$('ph'+i),[fx,fy,sc]=s.f0.map((v,k)=>lerp(v,s.f1[k],e));
+      ph.style.width=s.w+'px';ph.style.height=s.h+'px';
+      const wq=t-s.a<.12?(1-(t-s.a)/.12):0;
+      ph.style.filter=`brightness(.95) contrast(1.08) saturate(.9)${wq?` blur(${wq*18}px)`:''}`;
+      ph.style.transform=`translate(${540-fx*s.w*sc+wq*-300}px,${960-fy*s.h*sc}px) scale(${sc})`;}
+    if(s.t==='prod'){const pr=$('pr'+i),w=lerp(s.w0,s.w1,e);pr.style.width=w+'px';
+      pr.style.left=(540-w/2+lerp(s.dx0,s.dx1,e))+'px';pr.style.top=(s.cy-w/2)+'px';
+      pr.style.transform=`rotate(${lerp(-2,2,e)}deg)`;
+      if(s.beam) beam($('bm'+i),540+w*.0-w*.17,s.cy-w*.17,-200,-300,700,.35*(.85+.15*Math.sin(t*9)));
+      else $('bm'+i).getContext('2d').clearRect(0,0,1080,1920);}
+    if(s.t==='end'){const q=t-s.a,pr=$('pr'+i),w=lerp(720,780,clamp(q/3));pr.style.width=w+'px';
+      pr.style.left=(540-w/2)+'px';pr.style.top=(1000-w/2+60)+'px';pr.style.transform=`scale(${back(q/.4,1.4)})`;}
+  });
+  CAPS.forEach((c,i)=>{const el=$('c'+i),l=t-c[3],on=t>=c[3]&&t<c[4];el.style.opacity=on?1:0;if(!on)return;
+    el.style.transform=`scale(${back(l/.22,2.6)*(1+.04*Math.max(0,1-((t%.5)/.12)))}) rotate(${i%2?1.2:-1.2}deg)`;});
+  const q=t-12.2; $('price').style.opacity=q>0?1:0; $('price').style.transform=`scale(${back(q/.28,2.8)}) rotate(-2deg)`;
+  const q2=t-12.9; $('shop').style.opacity=q2>0?1:0; $('shop').style.transform=`translateX(-50%) scale(${back(q2/.3)*(1+.05*Math.max(0,Math.sin(q2*Math.PI*2)))})`;
+  $('url').style.opacity=clamp((t-13.2)/.25);
+  let fl=0;for(const h of [0.10,6.0,12.0]){const d=t-h;if(d>=0&&d<.2)fl=Math.max(fl,(1-d/.2)*(h<1?.9:.6));}$('flash').style.opacity=fl;
+  $('black').style.opacity=t<0.10?1:0;
+};
+</script>
+</body></html>
