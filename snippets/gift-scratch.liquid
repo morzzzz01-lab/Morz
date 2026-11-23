@@ -39,7 +39,6 @@
 .gs-btn[disabled]{opacity:.6;cursor:wait}
 .gs-btn.alt{background:#1b2230;box-shadow:none;border:1px solid #2a3444;margin-top:.9rem}
 .gs-in p.gs-msg{min-height:1.2rem;margin:.55rem 0 0;font-size:.85rem;color:#ff8a8a}
-.gs-in p.gs-fine{margin:.5rem 0 0;font-size:.76rem;color:#6f7a8c}
 
 .gs-ticket{position:relative;height:9rem;border-radius:1rem;overflow:hidden;background:linear-gradient(135deg,#ffcf3a,#ff9b1a 45%,#e2323f);color:#2a0a0e;display:grid;place-content:center;gap:.15rem;user-select:none;-webkit-user-select:none}
 .gs-ticket::before,.gs-ticket::after{content:"";position:absolute;top:50%;width:1.3rem;height:1.3rem;border-radius:50%;background:#121823;translate:0 -50%;z-index:2}
@@ -90,7 +89,6 @@
           <button class="gs-btn" type="submit">Get my gift</button>
         </form>
         <p class="gs-msg" data-gs-msg role="alert"></p>
-        <p class="gs-fine">One gift per email.</p>
       </div>
 
       <div class="gs-step" data-step="scratch">
@@ -123,7 +121,7 @@
 
       <div class="gs-step" data-step="done">
         <h2 data-gs-done-t>Time's up ⌛</h2>
-        <p data-gs-done-p>Your gift code has expired. Each email can get one gift.</p>
+        <p data-gs-done-p>Your gift code has expired.</p>
         <button type="button" class="gs-btn alt" data-gs-close>Close</button>
       </div>
 
@@ -143,11 +141,8 @@
   function live(){return !!st.code&&left()>0}
   function fmt(ms){var s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
   function step(n){$$('.gs-step').forEach(function(el){el.classList.toggle('on',el.getAttribute('data-step')===n)});if(n==='scratch')setTimeout(paint,30)}
-  function view(){
-    if(live())return st.rev?'code':'scratch';
-    if(st.code||st.used)return 'done';
-    return 'email';
-  }
+  function view(){return live()?(st.rev?'code':'scratch'):'email'}
+  function done(h,p){$('[data-gs-done-t]').textContent=h;$('[data-gs-done-p]').textContent=p;step('done')}
   function open(){
     ov.classList.add('open');fab.classList.add('seen');
     if(!st.seen){st.seen=1;save()}
@@ -160,14 +155,14 @@
     $$('[data-gs-pct]').forEach(function(el){el.textContent=p+' OFF'});
     $('[data-gs-code]').textContent=st.code||'';
   }
-  function hideAll(){fab.removeAttribute('data-left');fab.style.display='none';var r=$('.gs-remind');if(r)r.remove()}
+  function endCode(){fab.removeAttribute('data-left');var r=$('.gs-remind');if(r)r.remove()}
 
   /* countdown everywhere: popup, gift button and the reminder on product pages */
   function run(){
     clearInterval(tick);
     function f(){
       var ms=left();
-      if(ms<=0){clearInterval(tick);hideAll();if(ov.classList.contains('open'))step('done');return}
+      if(ms<=0){clearInterval(tick);endCode();if(ov.classList.contains('open'))done("Time's up ⌛",'Your gift code has expired.');return}
       var t=fmt(ms);
       $('[data-gs-time]').textContent=t;
       $('[data-gs-bar]').style.transform='scaleX('+Math.min(1,ms/FULL)+')';
@@ -204,10 +199,7 @@
           st.code=x.j.code;st.exp=x.j.expires_at;st.pct=x.j.percent||10;st.rev=!!x.j.again;save();fill();run();
           step(st.rev?'code':'scratch');if(st.rev)remind();
         }else if(x.j.error==='used'){
-          st.used=1;save();hideAll();
-          $('[data-gs-done-t]').textContent='Already used 🙈';
-          $('[data-gs-done-p]').textContent='This email already got its gift. Each email can get one gift.';
-          step('done');
+          done('Already used 🙈','This email has already received its gift.');
         }else if(x.j.error==='email')msg.textContent='Please enter a valid email.';
         else if(x.j.error==='limit')msg.textContent='Too many tries today. Please come back tomorrow.';
         else msg.textContent='Something went wrong. Please try again.';
@@ -253,7 +245,6 @@
   /* start: restore state from earlier pages */
   if(st.seen)fab.classList.add('seen');
   if(live()){fill();run();remind()}
-  else if(st.code||st.used)hideAll();
 
   /* open by itself once, a few seconds after the loading screen is gone */
   function afterIntro(fn){
