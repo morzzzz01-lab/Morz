@@ -96,7 +96,7 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "A gift button that opens a scratch card with a discount code. After it is scratched, a countdown starts; when it ends the code is hidden. Payments go through Whop, so create the code in Whop (Promo codes) with the same name. Leave the code empty to hide the gift."
+        "content": "Visitors enter their email and scratch a card to get a personal Whop promo code (letters and digits) that stops working after 10 minutes. One gift per email. Codes are made by the Cloudflare worker below."
       },
       {
         "type": "checkbox",
@@ -106,84 +106,32 @@
       },
       {
         "type": "text",
-        "id": "gift_code",
-        "label": "Discount code",
-        "info": "Must match a Whop promo code exactly"
-      },
-      {
-        "type": "text",
-        "id": "gift_amount",
-        "label": "Prize text",
-        "default": "10% OFF"
+        "id": "gift_endpoint",
+        "label": "Gift server address",
+        "default": "https://morz-whop-shopify-sync.morz.workers.dev/gift"
       },
       {
         "type": "text",
         "id": "gift_title",
         "label": "Title",
-        "default": "A gift for you 🎁"
+        "default": "A secret gift for you"
       },
       {
-        "type": "text",
+        "type": "textarea",
         "id": "gift_text",
         "label": "Text",
-        "default": "Scratch the card. The code works for 10 minutes — paste it at card checkout."
-      },
-      {
-        "type": "text",
-        "id": "gift_scratch_label",
-        "label": "Text on scratch layer",
-        "default": "Scratch here ✨"
-      },
-      {
-        "type": "text",
-        "id": "gift_copy_label",
-        "label": "Copy button",
-        "default": "Copy code"
-      },
-      {
-        "type": "text",
-        "id": "gift_copied_label",
-        "label": "Copied message",
-        "default": "Copied ✓"
-      },
-      {
-        "type": "text",
-        "id": "gift_shop_label",
-        "label": "Shop button",
-        "default": "Shop now"
-      },
-      {
-        "type": "range",
-        "id": "gift_minutes",
-        "label": "Code visible for",
-        "min": 1,
-        "max": 60,
-        "step": 1,
-        "unit": "min",
-        "default": 10
-      },
-      {
-        "type": "text",
-        "id": "gift_expired_label",
-        "label": "Timer ended label",
-        "default": "Expired"
-      },
-      {
-        "type": "text",
-        "id": "gift_expired_text",
-        "label": "Timer ended text",
-        "default": "Sorry, the time is up. Watch for the next gift!"
+        "default": "Enter your email and scratch a card to unlock a personal discount on anything in the store."
       },
       {
         "type": "range",
         "id": "gift_delay",
-        "label": "Open automatically after",
-        "info": "0 = only when the gift button is clicked. Opens once per visitor.",
+        "label": "Open by itself this long after the loading screen",
+        "info": "Opens once per visitor.",
         "min": 0,
-        "max": 60,
-        "step": 5,
+        "max": 30,
+        "step": 1,
         "unit": "s",
-        "default": 15
+        "default": 3
       }
     ]
   }

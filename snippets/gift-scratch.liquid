@@ -1,140 +1,269 @@
 {%- comment -%}
-  Gift scratch card: a floating gift button that opens a scratch-to-reveal
-  discount card. Renders only when enabled and a discount code is set in
-  Theme settings > Gift scratch card. The code must exist in Shopify admin
-  (Discounts) or checkout will reject it.
+  Gift scratch card.
+  1. Visitor enters an email (one gift per email, checked on the server).
+  2. The server (Cloudflare Worker /gift) creates a personal Whop promo code
+     (letters + digits) that Whop itself expires after 10 minutes.
+  3. Visitor scratches the card, sees the code, a countdown and how to use it.
+  While the code runs, product pages show a reminder above the Buy now button.
+  Opens by itself once, a few seconds after the loading screen is gone.
 {%- endcomment -%}
-{%- if settings.gift_enable and settings.gift_code != blank -%}
+{%- if settings.gift_enable and settings.gift_endpoint != blank -%}
 <style>
-.gs-fab{position:fixed;right:.9rem;bottom:calc(.9rem + env(safe-area-inset-bottom,0px));z-index:70;width:3.4rem;height:3.4rem;border-radius:50%;border:0;cursor:pointer;font-size:1.7rem;line-height:1;background:linear-gradient(135deg,#c8202f,#8b0f1c);color:#fff;box-shadow:0 8px 24px #c8202f66;animation:gs-wig 3s ease-in-out infinite}
-.gs-fab:hover{transform:scale(1.08)}
-.gs-fab .gs-dot{position:absolute;top:.1rem;right:.1rem;width:.8rem;height:.8rem;border-radius:50%;background:#ffd23f;border:2px solid #000}
-.gs-fab.seen .gs-dot{display:none}
-.gs-fab[data-left]::after{content:attr(data-left);position:absolute;bottom:-.55rem;left:50%;translate:-50% 0;white-space:nowrap;font:800 .68rem/1 ui-monospace,monospace;background:#000;border:1px solid #c8202f;padding:.2rem .35rem;border-radius:999px}
-@keyframes gs-wig{0%,86%,100%{rotate:0deg}89%{rotate:-14deg}92%{rotate:12deg}95%{rotate:-8deg}}
+.gs-fab{position:fixed;right:.9rem;bottom:calc(.9rem + env(safe-area-inset-bottom,0px));z-index:70;width:3.5rem;height:3.5rem;border-radius:50%;border:2px solid #ffffff2e;cursor:pointer;font-size:1.65rem;line-height:1;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,#ff4d5e,#b3121f 60%,#7c0a14);color:#fff;box-shadow:0 10px 28px #c8202f66,inset 0 -3px 6px #0004;animation:gs-wig 3.2s ease-in-out infinite}
+.gs-fab:hover{transform:scale(1.07)}
+.gs-fab i{position:absolute;top:-.15rem;right:-.15rem;width:.95rem;height:.95rem;border-radius:50%;background:#ffd23f;border:2px solid #000}
+.gs-fab.seen i{display:none}
+.gs-fab[data-left]::after{content:attr(data-left);position:absolute;top:calc(100% - .55rem);left:50%;translate:-50% 0;white-space:nowrap;font:800 .7rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;background:#000;border:1px solid #ff4d5e;padding:.22rem .4rem;border-radius:999px}
+@keyframes gs-wig{0%,84%,100%{rotate:0deg}87%{rotate:-13deg}90%{rotate:11deg}93%{rotate:-7deg}96%{rotate:4deg}}
 @media (prefers-reduced-motion:reduce){.gs-fab{animation:none}}
-.gs-ov{position:fixed;inset:0;z-index:9000;display:none;place-items:center;padding:1rem;background:#000b;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+
+.gs-ov{position:fixed;inset:0;z-index:9000;display:none;place-items:center;padding:1rem;background:#000c;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .gs-ov.open{display:grid}
-.gs-box{position:relative;width:min(100%,22rem);background:var(--panel,#0c0f14);border:1px solid var(--line,#1d2530);border-radius:1.1rem;padding:1.6rem 1.3rem 1.3rem;text-align:center;color:var(--ink,#f4f6fa);animation:gs-pop .35s cubic-bezier(.2,.9,.3,1.3)}
-@keyframes gs-pop{from{transform:scale(.85);opacity:0}}
-.gs-x{position:absolute;top:.5rem;right:.6rem;background:none;border:0;color:var(--muted,#98a2b3);font-size:1.6rem;cursor:pointer;line-height:1}
-.gs-box h2{margin:0 0 .3rem;font-size:1.4rem}
-.gs-box p{margin:0 0 1rem;color:var(--muted,#98a2b3);font-size:.92rem}
-.gs-card{position:relative;height:9.5rem;border-radius:.8rem;overflow:hidden;background:linear-gradient(135deg,#ffb400,#c8202f);display:grid;place-content:center;gap:.3rem;color:#fff;user-select:none}
-.gs-card b{font-size:2.1rem;line-height:1}
-.gs-card code{font:800 1.15rem/1 ui-monospace,monospace;letter-spacing:.12em;background:#0006;padding:.45rem .8rem;border-radius:.4rem}
-.gs-card canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none;transition:opacity .5s}
-.gs-timer{font:800 .95rem/1 ui-monospace,monospace;background:#000a;padding:.35rem .7rem;border-radius:999px;justify-self:center}
-.gs-card.exp b,.gs-card.exp code{opacity:.35;text-decoration:line-through}
-.gs-card.exp .gs-timer{background:#000;color:#ff6b6b}
-.gs-acts{display:none;gap:.5rem;margin-top:1rem}
-.gs-acts.on{display:flex}
-.gs-acts>*{flex:1;text-align:center;padding:.75rem .5rem;border-radius:.5rem;font-weight:800;border:1px solid var(--line,#1d2530);background:none;color:inherit;cursor:pointer;text-decoration:none;font-family:inherit;font-size:.9rem}
-.gs-acts a{background:var(--blue,#2d8cff);border-color:var(--blue,#2d8cff);color:#fff}
+.gs-box{position:relative;width:min(100%,23rem);max-height:calc(100vh - 2rem);overflow:auto;border-radius:1.4rem;background:linear-gradient(180deg,#151b26,#0a0d13);border:1px solid #ffffff17;box-shadow:0 30px 80px #000c;color:#f4f6fa;font-family:var(--font,inherit);text-align:center;animation:gs-pop .4s cubic-bezier(.2,.9,.3,1.25)}
+@keyframes gs-pop{from{transform:translateY(16px) scale(.94);opacity:0}}
+.gs-top{position:relative;height:5.2rem;border-radius:1.4rem 1.4rem 0 0;background:radial-gradient(circle at 20% 30%,#ffffff22 0 2px,transparent 3px) 0 0/34px 34px,radial-gradient(circle at 70% 60%,#ffffff1a 0 1.5px,transparent 2.5px) 0 0/26px 26px,linear-gradient(135deg,#d42a3a,#8b0f1c)}
+.gs-top::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1.1rem;translate:-50% 0;background:linear-gradient(90deg,#e0a800,#ffd23f,#e0a800)}
+.gs-badge{position:absolute;left:50%;bottom:-1.9rem;translate:-50% 0;width:3.8rem;height:3.8rem;border-radius:50%;display:grid;place-items:center;font-size:1.9rem;background:#151b26;border:3px solid #ffd23f;box-shadow:0 6px 18px #0008}
+.gs-x{position:absolute;top:.55rem;right:.6rem;z-index:2;width:2rem;height:2rem;border-radius:50%;border:0;background:#0005;color:#fff;font-size:1.25rem;line-height:1;cursor:pointer}
+.gs-in{padding:2.5rem 1.4rem 1.4rem}
+.gs-in h2{margin:0 0 .35rem;font-size:1.45rem;line-height:1.2;font-weight:800;letter-spacing:-.01em}
+.gs-in>div>p{margin:0 0 1.1rem;color:#a7b0bf;font-size:.93rem;line-height:1.45}
+.gs-step{display:none}.gs-step.on{display:block}
+.gs-vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.gs-field{display:flex;flex-direction:column;gap:.6rem}
+.gs-field input{width:100%;height:3.1rem;border-radius:.8rem;border:1px solid #2a3444;background:#0b0f16;color:#fff;padding:0 1rem;font:inherit;font-size:1rem;outline:none;transition:border-color .2s,box-shadow .2s}
+.gs-field input:focus{border-color:#ffd23f;box-shadow:0 0 0 3px #ffd23f26}
+.gs-btn{display:grid;place-items:center;width:100%;height:3.1rem;border-radius:.8rem;border:0;cursor:pointer;font:inherit;font-weight:800;font-size:1rem;color:#fff;text-decoration:none;background:linear-gradient(135deg,#e2323f,#a8101d);box-shadow:0 8px 22px #c8202f55;transition:transform .15s,filter .2s}
+.gs-btn:hover{filter:brightness(1.08)}.gs-btn:active{transform:scale(.98)}
+.gs-btn[disabled]{opacity:.6;cursor:wait}
+.gs-btn.alt{background:#1b2230;box-shadow:none;border:1px solid #2a3444;margin-top:.9rem}
+.gs-in p.gs-msg{min-height:1.2rem;margin:.55rem 0 0;font-size:.85rem;color:#ff8a8a}
+.gs-in p.gs-fine{margin:.5rem 0 0;font-size:.76rem;color:#6f7a8c}
+
+.gs-ticket{position:relative;height:9rem;border-radius:1rem;overflow:hidden;background:linear-gradient(135deg,#ffcf3a,#ff9b1a 45%,#e2323f);color:#2a0a0e;display:grid;place-content:center;gap:.15rem;user-select:none;-webkit-user-select:none}
+.gs-ticket::before,.gs-ticket::after{content:"";position:absolute;top:50%;width:1.3rem;height:1.3rem;border-radius:50%;background:#121823;translate:0 -50%;z-index:2}
+.gs-ticket::before{left:-.65rem}.gs-ticket::after{right:-.65rem}
+.gs-ticket small{font-weight:800;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;opacity:.75}
+.gs-ticket b{font-size:2.6rem;line-height:1;font-weight:900;letter-spacing:-.02em}
+.gs-ticket canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none;transition:opacity .5s;z-index:1}
+
+.gs-code{display:flex;align-items:center;gap:.5rem;margin:0 0 .7rem;padding:.45rem .45rem .45rem 1rem;border-radius:.9rem;border:2px dashed #ffd23f88;background:#ffd23f0d}
+.gs-code code{flex:1;text-align:left;font:800 1.35rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;color:#ffd23f}
+.gs-code button{flex:none;height:2.4rem;padding:0 1rem;border-radius:.6rem;border:0;cursor:pointer;font:inherit;font-weight:800;font-size:.85rem;background:#ffd23f;color:#1a1200}
+.gs-time{display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:#a7b0bf;margin-bottom:1.1rem}
+.gs-time span{flex:none;font:800 .95rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#fff}
+.gs-bar{flex:1;height:.4rem;border-radius:999px;background:#ffffff14;overflow:hidden}
+.gs-bar div{height:100%;width:100%;border-radius:inherit;background:linear-gradient(90deg,#ffd23f,#e2323f);transform-origin:left;transition:transform 1s linear}
+
+.gs-how{text-align:left;margin:0 0 1rem;padding:.9rem 1rem;border-radius:.9rem;background:#0b0f16;border:1px solid #1f2733}
+.gs-how h3{margin:0 0 .6rem;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:#ffd23f}
+.gs-how ol{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:.55rem}
+.gs-how li{counter-increment:s;display:grid;grid-template-columns:1.6rem 1fr;gap:.6rem;align-items:start;font-size:.88rem;line-height:1.45;color:#d6dbe4}
+.gs-how li::before{content:counter(s);width:1.6rem;height:1.6rem;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.8rem;background:#e2323f;color:#fff}
+.gs-how b{color:#fff}
+.gs-pill{display:inline-block;padding:.02rem .45rem;border-radius:.35rem;background:#e2323f;color:#fff;font-weight:800;font-size:.8rem;white-space:nowrap}
+.gs-pill.w{background:#fff;color:#111}
+.gs-how p{margin:.75rem 0 0;font-size:.78rem;line-height:1.4;color:#7d8798}
+
+.gs-remind{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .7rem;margin:0 0 .8rem;padding:.75rem .9rem;border-radius:.8rem;border:2px dashed #ffd23f99;background:#ffd23f12;color:#f4f6fa;font-size:.86rem;line-height:1.35}
+.gs-remind code{font:800 1.05rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;color:#ffd23f}
+.gs-remind button{height:2rem;padding:0 .8rem;border-radius:.5rem;border:0;cursor:pointer;font:inherit;font-weight:800;font-size:.8rem;background:#ffd23f;color:#1a1200}
+.gs-remind .t{margin-left:auto;font:800 .85rem/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+.gs-remind p{flex-basis:100%;margin:0;color:#c3cad6;font-size:.82rem}
 </style>
 
-<button type="button" class="gs-fab" data-gs-open aria-label="{{ settings.gift_title | escape }}">🎁<span class="gs-dot"></span></button>
+<button type="button" class="gs-fab" data-gs-open aria-label="Open your gift">🎁<i></i></button>
 
 <div class="gs-ov" data-gs-ov role="dialog" aria-modal="true" aria-labelledby="GsTitle">
   <div class="gs-box">
+    <div class="gs-top"><div class="gs-badge">🎁</div></div>
     <button type="button" class="gs-x" data-gs-close aria-label="Close">×</button>
-    <h2 id="GsTitle">{{ settings.gift_title }}</h2>
-    <p data-gs-hint>{{ settings.gift_text }}</p>
-    <div class="gs-card">
-      <b>{{ settings.gift_amount }}</b>
-      <code data-gs-code>{{ settings.gift_code | escape }}</code>
-      <span class="gs-timer" data-gs-timer hidden></span>
-      <canvas data-gs-canvas aria-hidden="true"></canvas>
-    </div>
-    <div class="gs-acts" data-gs-acts>
-      <button type="button" data-gs-copy>{{ settings.gift_copy_label }}</button>
-      <a href="{{ routes.all_products_collection_url }}">{{ settings.gift_shop_label }}</a>
+    <div class="gs-in">
+
+      <div class="gs-step" data-step="email">
+        <h2 id="GsTitle">{{ settings.gift_title }}</h2>
+        <p>{{ settings.gift_text }}</p>
+        <form class="gs-field" data-gs-form novalidate>
+          <label class="gs-vh" for="GsEmail">Email</label>
+          <input id="GsEmail" type="email" name="email" required autocomplete="email" inputmode="email" placeholder="your@email.com">
+          <button class="gs-btn" type="submit">Get my gift</button>
+        </form>
+        <p class="gs-msg" data-gs-msg role="alert"></p>
+        <p class="gs-fine">One gift per email.</p>
+      </div>
+
+      <div class="gs-step" data-step="scratch">
+        <h2>Scratch your card ✨</h2>
+        <p>Rub the silver area with your finger or mouse.</p>
+        <div class="gs-ticket">
+          <small>Your gift</small>
+          <b data-gs-pct>10% OFF</b>
+          <canvas data-gs-canvas aria-hidden="true"></canvas>
+        </div>
+        <button type="button" class="gs-btn alt" data-gs-skip>Just show me the code</button>
+      </div>
+
+      <div class="gs-step" data-step="code">
+        <h2>You got <span data-gs-pct>10% OFF</span> 🎉</h2>
+        <p>This is your personal code. It works for 10 minutes only.</p>
+        <div class="gs-code"><code data-gs-code></code><button type="button" data-gs-copy>Copy</button></div>
+        <div class="gs-time">Expires in <div class="gs-bar"><div data-gs-bar></div></div><span data-gs-time>10:00</span></div>
+        <div class="gs-how">
+          <h3>How to use your code</h3>
+          <ol>
+            <li><span>Tap <b>Copy</b> to copy your code.</span></li>
+            <li><span>Open the product you want and tap the red <span class="gs-pill">Buy now</span> button.</span></li>
+            <li><span>On the payment page, tap <span class="gs-pill w">Promo code</span>, paste your code and tap <b>Apply</b>.</span></li>
+          </ol>
+          <p>Works with the <b>Buy now</b> card payment and bundles. It does not work for orders made with “Add to cart”.</p>
+        </div>
+        <a class="gs-btn" href="{{ routes.all_products_collection_url }}">Shop now</a>
+      </div>
+
+      <div class="gs-step" data-step="done">
+        <h2 data-gs-done-t>Time's up ⌛</h2>
+        <p data-gs-done-p>Your gift code has expired. Each email can get one gift.</p>
+        <button type="button" class="gs-btn alt" data-gs-close>Close</button>
+      </div>
+
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-  var KEY='morz_gift_'+{{ settings.gift_code | json }};
-  var fab=document.querySelector('[data-gs-open]'),ov=document.querySelector('[data-gs-ov]'),
-      cv=document.querySelector('[data-gs-canvas]'),acts=document.querySelector('[data-gs-acts]'),
-      ctx=cv.getContext('2d'),drawn=false,done=false,down=false;
-  function store(k,v){try{v===undefined?v=localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){}return v}
-  var MS={{ settings.gift_minutes | default: 10 }}*60000,card=document.querySelector('.gs-card'),
-      tm=document.querySelector('[data-gs-timer]'),hint=document.querySelector('[data-gs-hint]'),tick;
-  var st=store(KEY)||'',t0=st.indexOf('r:')===0?+st.slice(2):0;
-  if(t0){done=true}
-  if(st)fab.classList.add('seen');
-  function left(){return t0+MS-Date.now()}
-  function expire(){
-    clearInterval(tick);card.classList.add('exp');acts.classList.remove('on');
-    document.querySelector('[data-gs-code]').textContent='••••••';
-    tm.hidden=false;tm.textContent={{ settings.gift_expired_label | json }};
-    hint.textContent={{ settings.gift_expired_text | json }};fab.style.display='none';
+  var API={{ settings.gift_endpoint | json }}, KEY='morz_gift_v2', DELAY={{ settings.gift_delay | default: 3 }}*1000, FULL=600000;
+  var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s){return [].slice.call(document.querySelectorAll(s))};
+  var fab=$('[data-gs-open]'),ov=$('[data-gs-ov]'),cv=$('[data-gs-canvas]'),ctx=cv.getContext('2d'),form=$('[data-gs-form]'),msg=$('[data-gs-msg]');
+  var st={},tick=0,painted=false,down=false;
+  try{st=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+  function left(){return st.exp?Date.parse(st.exp)-Date.now():0}
+  function live(){return !!st.code&&left()>0}
+  function fmt(ms){var s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
+  function step(n){$$('.gs-step').forEach(function(el){el.classList.toggle('on',el.getAttribute('data-step')===n)});if(n==='scratch')setTimeout(paint,30)}
+  function view(){
+    if(live())return st.rev?'code':'scratch';
+    if(st.code||st.used)return 'done';
+    return 'email';
   }
-  function run(){
-    clearInterval(tick);tm.hidden=false;
-    (tick=setInterval(function f(){
-      var s=Math.ceil(left()/1000);
-      if(s<=0)return expire();
-      tm.textContent='⏳ '+Math.floor(s/60)+':'+('0'+s%60).slice(-2);
-      fab.setAttribute('data-left',tm.textContent);return f;
-    }(),1000));
-  }
-  if(t0&&left()<=0){expire();fab.style.display='none'}else if(t0){run()}
-
-  function paint(){
-    var r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;
-    cv.width=r.width*d;cv.height=r.height*d;ctx.scale(d,d);
-    var g=ctx.createLinearGradient(0,0,r.width,r.height);
-    g.addColorStop(0,'#c9d1dc');g.addColorStop(.5,'#eef2f7');g.addColorStop(1,'#a9b3c1');
-    ctx.fillStyle=g;ctx.fillRect(0,0,r.width,r.height);
-    ctx.fillStyle='#5b6676';ctx.font='800 17px Manrope,Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText({{ settings.gift_scratch_label | json }},r.width/2,r.height/2);
-    ctx.globalCompositeOperation='destination-out';drawn=true;
-  }
-  function reveal(){
-    if(done&&cv.style.display==='none')return;
-    done=true;cv.style.opacity='0';setTimeout(function(){cv.style.display='none'},500);
-    acts.classList.add('on');t0=Date.now();store(KEY,'r:'+t0);run();
-  }
-  function pct(){
-    var px=ctx.getImageData(0,0,cv.width,cv.height).data,n=0,t=0;
-    for(var i=3;i<px.length;i+=64){t++;if(px[i]===0)n++}
-    return n/t;
-  }
-  function scratch(e){
-    if(!down||done)return;
-    var r=cv.getBoundingClientRect();
-    ctx.beginPath();ctx.arc(e.clientX-r.left,e.clientY-r.top,20,0,Math.PI*2);ctx.fill();
-    if(pct()>.45)reveal();
-  }
-  cv.addEventListener('pointerdown',function(e){down=true;cv.setPointerCapture(e.pointerId);scratch(e)});
-  cv.addEventListener('pointermove',scratch);
-  cv.addEventListener('pointerup',function(){down=false});
-  cv.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')reveal()});
-
   function open(){
     ov.classList.add('open');fab.classList.add('seen');
-    if(!store(KEY))store(KEY,'seen');
-    if(done){cv.style.display='none';if(left()>0)acts.classList.add('on')}
-    else if(!drawn)paint();
+    if(!st.seen){st.seen=1;save()}
+    var v=view();step(v);
+    if(v==='email')setTimeout(function(){$('#GsEmail').focus()},60);
   }
   function close(){ov.classList.remove('open')}
+  function fill(){
+    var p=(st.pct||10)+'%';
+    $$('[data-gs-pct]').forEach(function(el){el.textContent=p+' OFF'});
+    $('[data-gs-code]').textContent=st.code||'';
+  }
+  function hideAll(){fab.removeAttribute('data-left');fab.style.display='none';var r=$('.gs-remind');if(r)r.remove()}
+
+  /* countdown everywhere: popup, gift button and the reminder on product pages */
+  function run(){
+    clearInterval(tick);
+    function f(){
+      var ms=left();
+      if(ms<=0){clearInterval(tick);hideAll();if(ov.classList.contains('open'))step('done');return}
+      var t=fmt(ms);
+      $('[data-gs-time]').textContent=t;
+      $('[data-gs-bar]').style.transform='scaleX('+Math.min(1,ms/FULL)+')';
+      if(st.rev)fab.setAttribute('data-left','⏳ '+t);
+      var rt=$('.gs-remind .t');if(rt)rt.textContent='⏳ '+t;
+    }
+    f();tick=setInterval(f,1000);
+  }
+  function remind(){
+    var row=$('.buy-row');
+    if(!row||!live()||!st.rev||$('.gs-remind'))return;
+    var d=document.createElement('div');d.className='gs-remind';
+    d.innerHTML='<span>🎁 Your '+(st.pct||10)+'% OFF code:</span><code></code><button type="button">Copy</button><span class="t"></span><p>Tap the red <b>Buy now</b> button, then paste the code in <b>Promo code</b> on the payment page.</p>';
+    $('code',d).textContent=st.code;
+    $('button',d).addEventListener('click',function(){copy(this)});
+    row.parentNode.insertBefore(d,row);
+    run();
+  }
+  function copy(btn){
+    var c=st.code,ok=function(){var o=btn.textContent;btn.textContent='Copied ✓';setTimeout(function(){btn.textContent=o},1600)};
+    if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(c).then(ok,function(){prompt('Copy your code:',c)});
+    else prompt('Copy your code:',c);
+  }
+
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var inp=$('#GsEmail'),btn=$('button',form),email=inp.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){msg.textContent='Please enter a valid email.';inp.focus();return}
+    msg.textContent='';btn.disabled=true;btn.textContent='Please wait…';
+    fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
+      .then(function(r){return r.json().then(function(j){return {s:r.status,j:j}})})
+      .then(function(x){
+        if(x.s===200&&x.j.code){
+          st.code=x.j.code;st.exp=x.j.expires_at;st.pct=x.j.percent||10;st.rev=!!x.j.again;save();fill();run();
+          step(st.rev?'code':'scratch');if(st.rev)remind();
+        }else if(x.j.error==='used'){
+          st.used=1;save();hideAll();
+          $('[data-gs-done-t]').textContent='Already used 🙈';
+          $('[data-gs-done-p]').textContent='This email already got its gift. Each email can get one gift.';
+          step('done');
+        }else if(x.j.error==='email')msg.textContent='Please enter a valid email.';
+        else if(x.j.error==='limit')msg.textContent='Too many tries today. Please come back tomorrow.';
+        else msg.textContent='Something went wrong. Please try again.';
+      })
+      .catch(function(){msg.textContent='Connection problem. Please try again.'})
+      .then(function(){btn.disabled=false;btn.textContent='Get my gift'});
+  });
+
+  /* scratch layer */
+  function paint(){
+    if(painted)return;var r=cv.getBoundingClientRect();if(!r.width)return;
+    var d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;ctx.scale(d,d);
+    var g=ctx.createLinearGradient(0,0,r.width,r.height);
+    g.addColorStop(0,'#b9c2cf');g.addColorStop(.45,'#eef2f7');g.addColorStop(.55,'#dfe5ee');g.addColorStop(1,'#9aa5b5');
+    ctx.fillStyle=g;ctx.fillRect(0,0,r.width,r.height);
+    ctx.fillStyle='#ffffff66';for(var i=0;i<220;i++)ctx.fillRect(Math.random()*r.width,Math.random()*r.height,1.5,1.5);
+    ctx.fillStyle='#4b5566';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='800 18px Manrope,Arial,sans-serif';ctx.fillText('SCRATCH HERE',r.width/2,r.height/2-10);
+    ctx.font='600 13px Manrope,Arial,sans-serif';ctx.fillText('rub with your finger',r.width/2,r.height/2+14);
+    ctx.globalCompositeOperation='destination-out';painted=true;
+  }
+  function reveal(){
+    if(st.rev)return;st.rev=1;save();
+    cv.style.opacity='0';run();remind();
+    setTimeout(function(){step('code')},650);
+  }
+  function scratch(e){
+    if(!down||st.rev)return;var r=cv.getBoundingClientRect();
+    ctx.beginPath();ctx.arc(e.clientX-r.left,e.clientY-r.top,22,0,Math.PI*2);ctx.fill();
+    var px=ctx.getImageData(0,0,cv.width,cv.height).data,n=0,t=0;
+    for(var i=3;i<px.length;i+=80){t++;if(px[i]===0)n++}
+    if(n/t>.5)reveal();
+  }
+  cv.addEventListener('pointerdown',function(e){down=true;try{cv.setPointerCapture(e.pointerId)}catch(_){}scratch(e)});
+  cv.addEventListener('pointermove',scratch);
+  cv.addEventListener('pointerup',function(){down=false});
+  $('[data-gs-skip]').addEventListener('click',reveal);
+  $('[data-gs-copy]').addEventListener('click',function(){copy(this)});
   fab.addEventListener('click',open);
   ov.addEventListener('click',function(e){if(e.target===ov||e.target.closest('[data-gs-close]'))close()});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
 
-  document.querySelector('[data-gs-copy]').addEventListener('click',function(){
-    var b=this,c=document.querySelector('[data-gs-code]').textContent;
-    (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(function(){
-      b.textContent={{ settings.gift_copied_label | json }};
-    },function(){prompt('',c)});
-  });
+  /* start: restore state from earlier pages */
+  if(st.seen)fab.classList.add('seen');
+  if(live()){fill();run();remind()}
+  else if(st.code||st.used)hideAll();
 
-  var delay={{ settings.gift_delay | default: 0 }};
-  if(delay>0&&!store(KEY)&&!/\/(cart|checkout)/.test(location.pathname)){
-    setTimeout(function(){if(!store(KEY))open()},delay*1000);
+  /* open by itself once, a few seconds after the loading screen is gone */
+  function afterIntro(fn){
+    var h=document.documentElement,fired=false;function go(){if(!fired){fired=true;fn()}}
+    if(!h.classList.contains('intro-on'))return go();
+    var mo=new MutationObserver(function(){if(!h.classList.contains('intro-on')){mo.disconnect();go()}});
+    mo.observe(h,{attributes:true,attributeFilter:['class']});setTimeout(go,15000);
+  }
+  if(!st.seen&&!st.code&&!(window.Shopify&&Shopify.designMode)&&!/\/(cart|checkout|account)/.test(location.pathname)){
+    afterIntro(function(){setTimeout(function(){if(!st.seen&&!ov.classList.contains('open'))open()},DELAY)});
   }
 })();
 </script>
