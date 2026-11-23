@@ -257,10 +257,11 @@
 
   /* open by itself once, a few seconds after the loading screen is gone */
   function afterIntro(fn){
-    var h=document.documentElement,fired=false;function go(){if(!fired){fired=true;fn()}}
-    if(!h.classList.contains('intro-on'))return go();
-    var mo=new MutationObserver(function(){if(!h.classList.contains('intro-on')){mo.disconnect();go()}});
-    mo.observe(h,{attributes:true,attributeFilter:['class']});setTimeout(go,15000);
+    var h=document.documentElement,t0=Date.now();
+    (function wait(){
+      if((!h.classList.contains('intro-on')&&!document.getElementById('XIntro'))||Date.now()-t0>25000)return fn();
+      setTimeout(wait,300);
+    })();
   }
   if(!st.seen&&!st.code&&!(window.Shopify&&Shopify.designMode)&&!/\/(cart|checkout|account)/.test(location.pathname)){
     afterIntro(function(){setTimeout(function(){if(!st.seen&&!ov.classList.contains('open'))open()},DELAY)});
