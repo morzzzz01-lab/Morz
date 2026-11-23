@@ -93,7 +93,13 @@ async function whopLead(env, email, country) {
 // Sends with Resend (from gift@morz.lol, once RESEND_API_KEY is set and the domain is verified there),
 // otherwise through Gmail SMTP (GMAIL_USER + GMAIL_APP_PASSWORD).
 async function sendMail(env, to, mail) {
-  if (env.RESEND_API_KEY) return sendResend(env, to, mail);
+  if (env.RESEND_API_KEY) {
+    try { return await sendResend(env, to, mail); }
+    catch (err) {
+      console.error("gift: resend failed", err && err.message);
+      if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) throw err;
+    }
+  }
   return sendGmail(env, to, mail);
 }
 async function sendResend(env, to, { subject, text, html }) {
