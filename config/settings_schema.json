@@ -96,7 +96,7 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "A gift button that opens a scratch card with a discount code. Create the code first in Shopify admin > Discounts, then paste it here. Leave the code empty to hide the gift."
+        "content": "A gift button that opens a scratch card with a discount code. After it is scratched, a countdown starts; when it ends the code is hidden. Payments go through Whop, so create the code in Whop (Promo codes) with the same name. Leave the code empty to hide the gift."
       },
       {
         "type": "checkbox",
@@ -108,7 +108,7 @@
         "type": "text",
         "id": "gift_code",
         "label": "Discount code",
-        "info": "Must match a code in Discounts exactly"
+        "info": "Must match a Whop promo code exactly"
       },
       {
         "type": "text",
@@ -126,7 +126,7 @@
         "type": "text",
         "id": "gift_text",
         "label": "Text",
-        "default": "Scratch the card to reveal your discount code."
+        "default": "Scratch the card. The code works for 10 minutes — paste it at card checkout."
       },
       {
         "type": "text",
@@ -150,7 +150,29 @@
         "type": "text",
         "id": "gift_shop_label",
         "label": "Shop button",
-        "default": "Use it now"
+        "default": "Shop now"
+      },
+      {
+        "type": "range",
+        "id": "gift_minutes",
+        "label": "Code visible for",
+        "min": 1,
+        "max": 60,
+        "step": 1,
+        "unit": "min",
+        "default": 10
+      },
+      {
+        "type": "text",
+        "id": "gift_expired_label",
+        "label": "Timer ended label",
+        "default": "Expired"
+      },
+      {
+        "type": "text",
+        "id": "gift_expired_text",
+        "label": "Timer ended text",
+        "default": "Sorry, the time is up. Watch for the next gift!"
       },
       {
         "type": "range",

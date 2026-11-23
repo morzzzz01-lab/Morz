@@ -10,6 +10,7 @@
 .gs-fab:hover{transform:scale(1.08)}
 .gs-fab .gs-dot{position:absolute;top:.1rem;right:.1rem;width:.8rem;height:.8rem;border-radius:50%;background:#ffd23f;border:2px solid #000}
 .gs-fab.seen .gs-dot{display:none}
+.gs-fab[data-left]::after{content:attr(data-left);position:absolute;bottom:-.55rem;left:50%;translate:-50% 0;white-space:nowrap;font:800 .68rem/1 ui-monospace,monospace;background:#000;border:1px solid #c8202f;padding:.2rem .35rem;border-radius:999px}
 @keyframes gs-wig{0%,86%,100%{rotate:0deg}89%{rotate:-14deg}92%{rotate:12deg}95%{rotate:-8deg}}
 @media (prefers-reduced-motion:reduce){.gs-fab{animation:none}}
 .gs-ov{position:fixed;inset:0;z-index:9000;display:none;place-items:center;padding:1rem;background:#000b;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -23,6 +24,9 @@
 .gs-card b{font-size:2.1rem;line-height:1}
 .gs-card code{font:800 1.15rem/1 ui-monospace,monospace;letter-spacing:.12em;background:#0006;padding:.45rem .8rem;border-radius:.4rem}
 .gs-card canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none;transition:opacity .5s}
+.gs-timer{font:800 .95rem/1 ui-monospace,monospace;background:#000a;padding:.35rem .7rem;border-radius:999px;justify-self:center}
+.gs-card.exp b,.gs-card.exp code{opacity:.35;text-decoration:line-through}
+.gs-card.exp .gs-timer{background:#000;color:#ff6b6b}
 .gs-acts{display:none;gap:.5rem;margin-top:1rem}
 .gs-acts.on{display:flex}
 .gs-acts>*{flex:1;text-align:center;padding:.75rem .5rem;border-radius:.5rem;font-weight:800;border:1px solid var(--line,#1d2530);background:none;color:inherit;cursor:pointer;text-decoration:none;font-family:inherit;font-size:.9rem}
@@ -39,11 +43,12 @@
     <div class="gs-card">
       <b>{{ settings.gift_amount }}</b>
       <code data-gs-code>{{ settings.gift_code | escape }}</code>
+      <span class="gs-timer" data-gs-timer hidden></span>
       <canvas data-gs-canvas aria-hidden="true"></canvas>
     </div>
     <div class="gs-acts" data-gs-acts>
       <button type="button" data-gs-copy>{{ settings.gift_copy_label }}</button>
-      <a href="/discount/{{ settings.gift_code | url_encode }}?redirect={{ routes.all_products_collection_url | url_encode }}">{{ settings.gift_shop_label }}</a>
+      <a href="{{ routes.all_products_collection_url }}">{{ settings.gift_shop_label }}</a>
     </div>
   </div>
 </div>
@@ -55,8 +60,28 @@
       cv=document.querySelector('[data-gs-canvas]'),acts=document.querySelector('[data-gs-acts]'),
       ctx=cv.getContext('2d'),drawn=false,done=false,down=false;
   function store(k,v){try{v===undefined?v=localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){}return v}
-  if(store(KEY)==='revealed'){done=true}
-  if(store(KEY))fab.classList.add('seen');
+  var MS={{ settings.gift_minutes | default: 10 }}*60000,card=document.querySelector('.gs-card'),
+      tm=document.querySelector('[data-gs-timer]'),hint=document.querySelector('[data-gs-hint]'),tick;
+  var st=store(KEY)||'',t0=st.indexOf('r:')===0?+st.slice(2):0;
+  if(t0){done=true}
+  if(st)fab.classList.add('seen');
+  function left(){return t0+MS-Date.now()}
+  function expire(){
+    clearInterval(tick);card.classList.add('exp');acts.classList.remove('on');
+    document.querySelector('[data-gs-code]').textContent='••••••';
+    tm.hidden=false;tm.textContent={{ settings.gift_expired_label | json }};
+    hint.textContent={{ settings.gift_expired_text | json }};fab.style.display='none';
+  }
+  function run(){
+    clearInterval(tick);tm.hidden=false;
+    (tick=setInterval(function f(){
+      var s=Math.ceil(left()/1000);
+      if(s<=0)return expire();
+      tm.textContent='⏳ '+Math.floor(s/60)+':'+('0'+s%60).slice(-2);
+      fab.setAttribute('data-left',tm.textContent);return f;
+    }(),1000));
+  }
+  if(t0&&left()<=0){expire();fab.style.display='none'}else if(t0){run()}
 
   function paint(){
     var r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;
@@ -71,7 +96,7 @@
   function reveal(){
     if(done&&cv.style.display==='none')return;
     done=true;cv.style.opacity='0';setTimeout(function(){cv.style.display='none'},500);
-    acts.classList.add('on');store(KEY,'revealed');
+    acts.classList.add('on');t0=Date.now();store(KEY,'r:'+t0);run();
   }
   function pct(){
     var px=ctx.getImageData(0,0,cv.width,cv.height).data,n=0,t=0;
@@ -92,7 +117,7 @@
   function open(){
     ov.classList.add('open');fab.classList.add('seen');
     if(!store(KEY))store(KEY,'seen');
-    if(done){cv.style.display='none';acts.classList.add('on')}
+    if(done){cv.style.display='none';if(left()>0)acts.classList.add('on')}
     else if(!drawn)paint();
   }
   function close(){ov.classList.remove('open')}
