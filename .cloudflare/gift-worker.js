@@ -6,7 +6,7 @@
 //                                 Whop lead. The code itself is NOT returned: it only goes by email.
 //   POST /gift/verify  {code}  -> {code, expires_at, percent} when the code is a running gift code
 // One gift per email. Emails are kept in the KV namespace GIFT_KV ("morz-gift-emails").
-// Needs: WHOP_API_KEY, GMAIL_USER, GMAIL_APP_PASSWORD (secrets), GIFT_KV (KV binding).
+// Needs: WHOP_API_KEY and either RESEND_API_KEY (preferred) or GMAIL_USER + GMAIL_APP_PASSWORD (secrets), GIFT_KV (KV binding).
 import { connect } from "cloudflare:sockets";
 import base from "./worker.js";
 import { parseEmail, typoFix, isDisposable, domainTakesMail, buildMessage, smtpSend, giftEmail } from "./gift-lib.js";
@@ -90,7 +90,25 @@ async function whopLead(env, email, country) {
   } catch (err) { console.error("whop lead failed", err && err.message); }
 }
 
-async function sendMail(env, to, { subject, text, html }) {
+// Sends with Resend (from gift@morz.lol, once RESEND_API_KEY is set and the domain is verified there),
+// otherwise through Gmail SMTP (GMAIL_USER + GMAIL_APP_PASSWORD).
+async function sendMail(env, to, mail) {
+  if (env.RESEND_API_KEY) return sendResend(env, to, mail);
+  return sendGmail(env, to, mail);
+}
+async function sendResend(env, to, { subject, text, html }) {
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: env.MAIL_FROM || "MORZ <gift@morz.lol>", to: [to], subject, text, html, reply_to: env.MAIL_REPLY_TO || undefined }),
+  });
+  const body = await r.text();
+  if (!r.ok) throw new Error("resend " + r.status + " " + body.slice(0, 200));
+  console.log("gift: mail accepted (resend)", body.slice(0, 120));
+  return "resend " + body.slice(0, 120);
+}
+async function sendGmail(env, to, { subject, text, html }) {
+  if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) throw new Error("mail not set up");
   const user = String(env.GMAIL_USER).trim(), pass = String(env.GMAIL_APP_PASSWORD).replace(/\s+/g, "");
   const message = buildMessage({ from: user, fromName: "MORZ", to, subject, text, html });
   const sock = connect({ hostname: "smtp.gmail.com", port: 465 }, { secureTransport: "on", allowHalfOpen: false });
@@ -143,7 +161,7 @@ async function gift(request, env, ctx) {
   const n = Number(await env.GIFT_KV.get(ipKey)) || 0;
   if (n >= MAX_NEW_EMAILS_PER_IP_PER_DAY) return reply(origin, 429, { error: "limit" });
 
-  if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) { console.error("gift: Gmail secrets missing"); return reply(origin, 503, { error: "setup" }); }
+  if (!env.RESEND_API_KEY && (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD)) { console.error("gift: mail not set up"); return reply(origin, 503, { error: "setup" }); }
 
   const expiresAt = new Date(Date.now() + GIFT_MINUTES * 60000).toISOString();
   let made;
