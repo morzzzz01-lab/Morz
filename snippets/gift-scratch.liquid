@@ -70,6 +70,9 @@
 .gs-remind button{height:2rem;padding:0 .8rem;border-radius:.5rem;border:0;cursor:pointer;font:inherit;font-weight:800;font-size:.8rem;background:#ffd23f;color:#1a1200}
 .gs-remind .t{margin-left:auto;font:800 .85rem/1 ui-monospace,SFMono-Regular,Menlo,monospace}
 .gs-remind p{flex-basis:100%;margin:0;color:#c3cad6;font-size:.82rem}
+.gs-in p.gs-note{margin:.8rem 0 0;font-size:.8rem;color:#7d8798;line-height:1.45}
+.gs-link{background:none;border:0;padding:0;font:inherit;color:#ffd23f;text-decoration:underline;cursor:pointer}
+.gs-field input.gs-codein{text-align:center;font:800 1.2rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;text-transform:lowercase}
 .gs-navcode{margin-left:.4rem;padding:.1rem .4rem;border-radius:.35rem;background:#ffd23f;color:#1a1200;font:800 .72rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;white-space:nowrap}
 </style>
 
@@ -87,9 +90,21 @@
         <form class="gs-field" data-gs-form novalidate>
           <label class="gs-vh" for="GsEmail">Email</label>
           <input id="GsEmail" type="email" name="email" required autocomplete="email" inputmode="email" placeholder="your@email.com">
-          <button class="gs-btn" type="submit">Get my gift</button>
+          <button class="gs-btn" type="submit">Email me my gift</button>
         </form>
         <p class="gs-msg" data-gs-msg role="alert"></p>
+      </div>
+
+      <div class="gs-step" data-step="check">
+        <h2>Check your email 📬</h2>
+        <p><span data-gs-again hidden>We already sent it. </span>Your personal code went to <b data-gs-to></b>. Open the email and tap <b>Open my gift</b>, or type the code here.</p>
+        <form class="gs-field" data-gs-vform novalidate>
+          <label class="gs-vh" for="GsCode">Code from the email</label>
+          <input id="GsCode" class="gs-codein" name="code" autocomplete="one-time-code" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" placeholder="mz······">
+          <button class="gs-btn" type="submit">Open my gift</button>
+        </form>
+        <p class="gs-msg" data-gs-vmsg role="alert"></p>
+        <p class="gs-note">Can't find it? Look in Spam or Promotions. The code works for 10 minutes. <button type="button" class="gs-link" data-gs-change>Use another email</button></p>
       </div>
 
       <div class="gs-step" data-step="scratch">
@@ -142,12 +157,13 @@
   function live(){return !!st.code&&left()>0}
   function fmt(ms){var s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
   function step(n){$$('.gs-step').forEach(function(el){el.classList.toggle('on',el.getAttribute('data-step')===n)});if(n==='scratch')setTimeout(paint,30)}
-  function view(){return live()?(st.rev?'code':'scratch'):'email'}
+  function pend(){return !!(st.pend&&Date.parse(st.pend.exp)>Date.now())}
+  function view(){return live()?(st.rev?'code':'scratch'):pend()?'check':'email'}
   function done(h,p){$('[data-gs-done-t]').textContent=h;$('[data-gs-done-p]').textContent=p;step('done')}
   function open(){
     ov.classList.add('open');fab.classList.add('seen');
     if(!st.seen){st.seen=1;save()}
-    var v=view();step(v);
+    var v=view();if(v==='check')showCheck();else step(v);
     if(v==='email')setTimeout(function(){$('#GsEmail').focus()},60);
   }
   function close(){ov.classList.remove('open')}
@@ -192,22 +208,52 @@
     e.preventDefault();
     var inp=$('#GsEmail'),btn=$('button',form),email=inp.value.trim();
     if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){msg.textContent='Please enter a valid email.';inp.focus();return}
-    msg.textContent='';btn.disabled=true;btn.textContent='Please wait…';
+    msg.textContent='';btn.disabled=true;btn.textContent='Sending…';
     fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
       .then(function(r){return r.json().then(function(j){return {s:r.status,j:j}})})
       .then(function(x){
-        if(x.s===200&&x.j.code){
-          st.code=x.j.code;st.exp=x.j.expires_at;st.pct=x.j.percent||10;st.rev=!!x.j.again;save();fill();run();
-          step(st.rev?'code':'scratch');if(st.rev)remind();
-        }else if(x.j.error==='used'){
+        if(x.s===200&&x.j.sent){
+          st.pend={email:email,exp:x.j.expires_at,pct:x.j.percent||10,again:!!x.j.again};save();showCheck();
+        }else if(x.j.error==='typo'&&x.j.suggest){
+          msg.textContent='Did you mean ';var b=document.createElement('button');b.type='button';b.className='gs-link';b.textContent=x.j.suggest;
+          b.addEventListener('click',function(){inp.value=x.j.suggest;msg.textContent='';inp.focus()});msg.appendChild(b);msg.appendChild(document.createTextNode('?'));
+        }else if(x.j.error==='temp')msg.textContent='Temporary emails are not allowed. Please use your real email.';
+        else if(x.j.error==='nomail')msg.textContent='This email address can’t receive mail. Please check it.';
+        else if(x.j.error==='used'){
           st.used=1;save();done('Already used 🙈','This email has already received its gift.');
         }else if(x.j.error==='email')msg.textContent='Please enter a valid email.';
         else if(x.j.error==='limit')msg.textContent='Too many tries today. Please come back tomorrow.';
-        else msg.textContent='Something went wrong. Please try again.';
+        else msg.textContent='We couldn’t send the email right now. Please try again in a minute.';
       })
       .catch(function(){msg.textContent='Connection problem. Please try again.'})
-      .then(function(){btn.disabled=false;btn.textContent='Get my gift'});
+      .then(function(){btn.disabled=false;btn.textContent='Email me my gift'});
   });
+
+  /* step 2: the code from the email */
+  var vform=$('[data-gs-vform]'),vmsg=$('[data-gs-vmsg]');
+  function showCheck(){
+    $('[data-gs-to]').textContent=st.pend.email;$('[data-gs-again]').hidden=!st.pend.again;vmsg.textContent='';
+    step('check');setTimeout(function(){$('#GsCode').focus()},60);
+  }
+  function verify(code,btn){
+    code=String(code||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    if(!/^mz[a-z0-9]{6}$/.test(code)){vmsg.textContent='Please type the code from the email.';return}
+    vmsg.textContent='';if(btn){btn.disabled=true;btn.textContent='Checking…'}
+    fetch(API.replace(/\/?$/,'/verify'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code})})
+      .then(function(r){return r.json().then(function(j){return {s:r.status,j:j}})})
+      .then(function(x){
+        if(x.s===200&&x.j.code){
+          if(st.code!==x.j.code){st.rev=0;painted=false;cv.style.opacity='';}
+          st.code=x.j.code;st.exp=x.j.expires_at;st.pct=x.j.percent||10;delete st.pend;save();fill();run();
+          if(st.rev){step('code');remind()}else step('scratch');
+        }else if(x.j.error==='expired')done("Time's up ⌛",'This gift code has expired.');
+        else{if(view()!=='check'&&st.pend)showCheck();vmsg.textContent='That code doesn’t match. Please check the email.'}
+      })
+      .catch(function(){vmsg.textContent='Connection problem. Please try again.'})
+      .then(function(){if(btn){btn.disabled=false;btn.textContent='Open my gift'}});
+  }
+  vform.addEventListener('submit',function(e){e.preventDefault();verify($('#GsCode').value,$('button',vform))});
+  $('[data-gs-change]').addEventListener('click',function(){delete st.pend;save();step('email');setTimeout(function(){$('#GsEmail').focus()},60)});
 
   /* scratch layer */
   function paint(){
@@ -260,7 +306,10 @@
       setTimeout(wait,150);
     })();
   }
-  if(location.hash==='#gift'){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}afterIntro(open)}
+  var fromMail=(location.search.match(/[?&]gift=([A-Za-z0-9]+)/)||[])[1];
+  if(fromMail){try{history.replaceState(null,'',location.pathname+location.search.replace(/([?&])gift=[^&]*&?/,'$1').replace(/[?&]$/,'')+location.hash)}catch(e){}
+    afterIntro(function(){ov.classList.add('open');fab.classList.add('seen');step('check');$('[data-gs-to]').textContent=(st.pend&&st.pend.email)||'your email';$('#GsCode').value=fromMail;verify(fromMail,$('button',vform))})}
+  else if(location.hash==='#gift'){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}afterIntro(open)}
   else if(!st.code&&!st.used&&!ss('morz_gift_auto')&&!(window.Shopify&&Shopify.designMode)&&!/\/(cart|checkout|account)/.test(location.pathname)){
     afterIntro(function(){setTimeout(function(){if(!st.code&&!ov.classList.contains('open')){ss('morz_gift_auto',1);open()}},DELAY)});
   }

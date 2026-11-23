@@ -96,7 +96,7 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "Visitors enter their email and scratch a card to get a personal Whop promo code (letters and digits) that stops working after 10 minutes. One gift per email. Codes are made by the Cloudflare worker below."
+        "content": "Visitors enter their email and get a personal Whop promo code (letters and digits) by email, then scratch a card on the site to open it. The code stops working after 10 minutes. One gift per email; emails are checked and saved in Whop. Codes are made and emailed by the Cloudflare worker below."
       },
       {
         "type": "checkbox",
@@ -120,7 +120,7 @@
         "type": "textarea",
         "id": "gift_text",
         "label": "Text",
-        "default": "Enter your email and scratch a card to unlock a personal discount on anything in the store."
+        "default": "Enter your email and we'll send you a personal discount code for anything in the store."
       },
       {
         "type": "range",
