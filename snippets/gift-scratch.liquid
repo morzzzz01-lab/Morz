@@ -132,7 +132,7 @@
 
 <script>
 (function(){
-  var API={{ settings.gift_endpoint | json }}, KEY='morz_gift_v2', DELAY={{ settings.gift_delay | default: 3 }}*1000, FULL=600000;
+  var API={{ settings.gift_endpoint | json }}, KEY='morz_gift_v2', DELAY={{ settings.gift_delay | default: 0 }}*1000, FULL=600000;
   var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s){return [].slice.call(document.querySelectorAll(s))};
   var fab=$('[data-gs-open]'),ov=$('[data-gs-ov]'),cv=$('[data-gs-canvas]'),ctx=cv.getContext('2d'),form=$('[data-gs-form]'),msg=$('[data-gs-msg]');
   var st={},tick=0,painted=false,down=false;
@@ -200,7 +200,7 @@
           st.code=x.j.code;st.exp=x.j.expires_at;st.pct=x.j.percent||10;st.rev=!!x.j.again;save();fill();run();
           step(st.rev?'code':'scratch');if(st.rev)remind();
         }else if(x.j.error==='used'){
-          done('Already used 🙈','This email has already received its gift.');
+          st.used=1;save();done('Already used 🙈','This email has already received its gift.');
         }else if(x.j.error==='email')msg.textContent='Please enter a valid email.';
         else if(x.j.error==='limit')msg.textContent='Too many tries today. Please come back tomorrow.';
         else msg.textContent='Something went wrong. Please try again.';
@@ -250,17 +250,19 @@
   if(st.seen)fab.classList.add('seen');
   if(live()){fill();run();remind()}
 
-  /* open by itself once, a few seconds after the loading screen is gone */
+  /* open by itself as soon as the loading screen is gone: once per visit, until the visitor has a code */
+  function ss(k,v){try{if(v===undefined)return sessionStorage.getItem(k);sessionStorage.setItem(k,v)}catch(e){}}
+  function introGone(){var x=document.getElementById('XIntro');if(!x)return true;var s=getComputedStyle(x);return s.visibility==='hidden'||s.display==='none'||+s.opacity<.15}
   function afterIntro(fn){
     var h=document.documentElement,t0=Date.now();
     (function wait(){
-      if((!h.classList.contains('intro-on')&&!document.getElementById('XIntro'))||Date.now()-t0>25000)return fn();
-      setTimeout(wait,300);
+      if((!h.classList.contains('intro-on')&&introGone())||Date.now()-t0>25000)return fn();
+      setTimeout(wait,150);
     })();
   }
   if(location.hash==='#gift'){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}afterIntro(open)}
-  else if(!st.seen&&!st.code&&!(window.Shopify&&Shopify.designMode)&&!/\/(cart|checkout|account)/.test(location.pathname)){
-    afterIntro(function(){setTimeout(function(){if(!st.seen&&!ov.classList.contains('open'))open()},DELAY)});
+  else if(!st.code&&!st.used&&!ss('morz_gift_auto')&&!(window.Shopify&&Shopify.designMode)&&!/\/(cart|checkout|account)/.test(location.pathname)){
+    afterIntro(function(){setTimeout(function(){if(!st.code&&!ov.classList.contains('open')){ss('morz_gift_auto',1);open()}},DELAY)});
   }
 })();
 </script>

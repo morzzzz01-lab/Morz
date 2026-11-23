@@ -126,12 +126,12 @@
         "type": "range",
         "id": "gift_delay",
         "label": "Open by itself this long after the loading screen",
-        "info": "Opens once per visitor.",
+        "info": "0 = right away. Opens once per visit until the visitor has a code.",
         "min": 0,
         "max": 30,
         "step": 1,
         "unit": "s",
-        "default": 3
+        "default": 0
       }
     ]
   }
