@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<!-- Iron LED Candle Lantern reel (18.5 s, 120 BPM). Built only from the store's 10 unique product photos, each used once.
+     Virtual camera per shot (fx/fy focus point, scale, roll) + gentle flicker on the light already in each photo
+     (the product's LED flickers like a flame, per the description). -->
+<style>
+  html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#120a05;font-family:'Inter Display',Inter,'Noto Color Emoji',sans-serif}
+  .shot{position:absolute;inset:0;overflow:hidden;visibility:hidden}
+  .cam{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+  .cam img{position:absolute;left:0;top:0;width:100%;height:100%}
+  .cam img.glow{mix-blend-mode:screen}
+  .ctabg{position:absolute;inset:0;background:radial-gradient(900px 1000px at 50% 40%,#3a1f0c 0%,#1a0d05 55%,#0a0502 100%)}
+  .halo{position:absolute;left:50%;top:90px;width:1300px;height:1300px;margin-left:-650px;border-radius:50%;
+        background:radial-gradient(circle,rgba(255,190,110,.42) 0%,rgba(255,150,60,.12) 38%,rgba(255,150,60,0) 68%)}
+  .floor{position:absolute;left:50%;top:1110px;width:900px;height:120px;margin-left:-450px;border-radius:50%;
+         background:radial-gradient(ellipse,rgba(255,180,90,.35),rgba(255,180,90,0) 70%)}
+  .vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,rgba(0,0,0,0) 52%,rgba(0,0,0,.5) 100%)}
+  #leak{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:0}
+  .cap{position:absolute;left:0;right:0;text-align:center;opacity:0}
+  .cap span{display:inline;background:rgba(14,9,6,.80);color:#fff;font-weight:800;font-size:76px;line-height:1.42;
+            padding:.08em .34em;border-radius:20px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .cap.hook span{font-size:86px}
+  .cap.soft span{font-weight:700;text-transform:none}
+  .cap .w{color:#ffcf86}
+  .chip{position:absolute;left:70px;top:1290px;opacity:0;background:rgba(255,248,238,.94);color:#22140a;border-radius:999px;
+        padding:22px 44px;font-weight:700;font-size:52px;white-space:nowrap;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  .chip i{display:inline-block;width:30px;height:30px;border-radius:50%;margin-right:18px;vertical-align:-3px;border:3px solid rgba(0,0,0,.15)}
+  #get{position:absolute;left:0;right:0;top:215px;text-align:center;color:#fff;font-weight:900;font-size:92px;letter-spacing:.01em;opacity:0;
+       text-shadow:0 6px 30px rgba(0,0,0,.6)}
+  #price{position:absolute;left:0;right:0;top:1190px;text-align:center;color:#ffd08a;font-weight:900;font-size:210px;letter-spacing:-.035em;
+         line-height:1;opacity:0;text-shadow:0 8px 40px rgba(0,0,0,.55)}
+  #shop{position:absolute;left:50%;top:1435px;transform:translateX(-50%);background:#ffd08a;color:#1c1007;font-weight:900;font-size:72px;
+        padding:30px 92px;border-radius:999px;opacity:0;white-space:nowrap;letter-spacing:.03em;box-shadow:0 0 50px rgba(255,190,100,.45)}
+  #url{position:absolute;left:0;right:0;top:1600px;text-align:center;color:#f2dcc0;font-weight:700;font-size:42px;letter-spacing:.12em;opacity:0}
+</style></head>
+<body>
+<div id="shots"></div>
+<canvas id="leak" width="540" height="960" style="width:1080px;height:1920px"></canvas>
+<div id="caps"></div>
+<div id="get">GET YOURS TODAY</div>
+<div id="price">$29.99</div>
+<div id="shop">SHOP NOW</div>
+<div id="url">morz.lol · red · white · green</div>
+<script>
+const C=window.CONFIG, I=C.images, $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), lerp=(a,b,x)=>a+(b-a)*x;
+const EASE={lin:x=>x, out:x=>1-Math.pow(1-x,4), in:x=>x*x*x,
+  io:x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2, sine:x=>-(Math.cos(Math.PI*x)-1)/2};
+const back=(x,c=2.0)=>{x=clamp(x);return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const DUR=18.5; window.DURATION=DUR;
+
+// k: [time, fx, fy, scale, roll, ease]; fin: fade-in seconds (0 = hard cut); punch: beat punch-ins
+const S=[
+ {img:'x10', a:0.0,  b:2.0,  fin:0, punch:[1.0,1.5],
+  k:[[0.0,.548,.640,3.10,-1.5],[0.45,.545,.632,2.85,-.8,'lin'],[1.0,.520,.585,1.00,0,'out'],[2.0,.515,.580,1.06,.8,'lin']]},
+ {img:'x04', a:2.0,  b:3.33, fin:.18,
+  k:[[2.0,.270,.600,1.95,0],[3.33,.600,.740,1.80,1,'sine']]},
+ {img:'x06', a:3.33, b:4.67, fin:.18,
+  k:[[3.33,.640,.640,1.70,1],[4.67,.660,.630,2.10,-1,'sine']]},
+ {img:'x07', a:4.67, b:6.0,  fin:.18,
+  k:[[4.67,.495,.400,1.85,0],[6.0,.500,.650,1.65,0,'sine']]},
+ {img:'x08', a:6.0,  b:7.25, fin:0, punch:[6.0], chip:['#c8242b','Red · reindeer & hearts'],
+  k:[[6.0,.480,.600,1.12,-1],[7.25,.485,.620,1.28,.5,'io']]},
+ {img:'x09', a:7.25, b:8.5,  fin:0, punch:[7.25], chip:['#1f8a3a','Green · trees & stars'],
+  k:[[7.25,.470,.610,1.28,1],[8.5,.470,.615,1.12,-.5,'io']]},
+ {img:'x03', a:8.5,  b:9.75, fin:0, punch:[8.5], chip:['#f4f1ea','White · snowflakes'],
+  k:[[8.5,.500,.520,1.05,0],[9.75,.500,.560,1.24,0,'io']]},
+ {img:'x02', a:9.75, b:11.0, fin:0, punch:[9.75], chip:['#3a3a3a','Wrought iron · carry handle'],
+  k:[[9.75,.280,.270,1.70,-2],[11.0,.290,.560,1.45,1,'io']]},
+ {img:'x05', a:11.0, b:14.5, fin:.3,
+  k:[[11.0,.360,.680,1.85,-1],[12.6,.430,.640,1.45,0,'io'],[14.5,.560,.600,1.12,1,'sine']]},
+ {img:'hero', a:14.5, b:99, fin:0, cta:1, punch:[15.1,16.5,17.5],
+  k:[[14.5,.500,.720,.44,-3],[14.95,.500,.708,.52,0,'out'],[18.5,.500,.700,.555,.6,'lin']]},
+];
+const GLOW={x10:'glow_x10',x05:'glow_x05',x04:'glow_x04',x06:'glow_x06',x07:'glow_x07',x08:'glow_x08',x09:'glow_x09',x03:'glow_x03',x02:'glow_x02',hero:'glow_x01'};
+$('shots').innerHTML=S.map((s,i)=>`<div class="shot" id="s${i}">${s.cta?'<div class="ctabg"></div><div class="halo" id="halo"></div><div class="floor"></div>':''}
+  <div class="cam" id="cam${i}" style="width:2000px;height:2000px"><img src="${I[s.img].img}"><img class="glow" id="gl${i}" src="${I[GLOW[s.img]].img}"></div>
+  ${s.cta?'':'<div class="vig"></div>'}
+  ${s.chip?`<div class="chip" id="ch${i}"><i style="background:${s.chip[0]}"></i>${s.chip[1]}</div>`:''}</div>`).join('');
+
+// captions: [html, class, top, in, out]
+const CAPS=[
+ ['WAIT... THAT\'S NOT<br>A <span class="w">REAL CANDLE?!</span>','hook',250,0.0,2.0],
+ ['The cozy candle look...','soft',250,2.05,6.0],
+ ['without a real flame.','soft',360,3.0,6.0],
+ ['Make your space<br>feel <span class="w">warmer.</span>','soft',250,11.35,14.5],
+];
+$('caps').innerHTML=CAPS.map((c,i)=>`<div class="cap ${c[1]}" id="c${i}" style="top:${c[2]}px"><span>${c[0]}</span></div>`).join('');
+
+function cam(s,t){const k=s.k;let j=0;while(j<k.length-1&&t>=k[j+1][0])j++;
+  if(j>=k.length-1)return k[k.length-1].slice(1,5);
+  const A=k[j],B=k[j+1],p=EASE[B[5]||'io'](clamp((t-A[0])/(B[0]-A[0])));return [1,2,3,4].map(n=>lerp(A[n],B[n],p));}
+const drift=(t,a)=>[a*(5*Math.sin(t*1.9)+3*Math.sin(t*3.7+1)),a*(4*Math.sin(t*1.5+2)+3*Math.sin(t*3.1)),a*.15*Math.sin(t*1.3)];
+const punch=(s,t)=>{let m=1;for(const b of (s.punch||[])){const d=t-b;if(d>=0&&d<.5)m*=1+.06*Math.exp(-d*9);}return m;};
+// candle-like flicker: layered irregular sines (the LED flickers like a flame)
+const flick=(t,o)=>clamp(.55+.18*Math.sin(t*11.3+o)+.12*Math.sin(t*17.9+o*2)+.08*Math.sin(t*29.1+o*3)+.07*Math.sin(t*5.3+o));
+
+window.render=function(t){
+  S.forEach((s,i)=>{const nxt=S[i+1], end=s.b+(nxt?nxt.fin:0);
+    const on=t>=s.a&&t<end, el=$('s'+i); el.style.visibility=on?'visible':'hidden'; if(!on)return;
+    el.style.opacity=s.fin?clamp((t-s.a)/s.fin):1;
+    let [fx,fy,sc,r]=cam(s,t); sc*=punch(s,t);
+    if(!s.cta){const m=1+Math.abs(r)*.02; sc=Math.max(sc,1920*m/2000);
+      const hw=540*m/(2000*sc),hh=960*m/(2000*sc); fx=clamp(fx,hw,1-hw); fy=clamp(fy,hh,1-hh);}
+    const [dx,dy,dr]=drift(t,s.cta?.4:1); const ox=fx*2000, oy=fy*2000, c=$('cam'+i);
+    c.style.transformOrigin=`${ox}px ${oy}px`;
+    c.style.transform=`translate(${540-ox+dx}px,${960-oy+dy}px) rotate(${r+dr}deg) scale(${sc})`;
+    $('gl'+i).style.opacity=flick(t,i*1.7)*(s.cta?.75:.6);
+    if(s.chip){const ch=$('ch'+i),l=t-s.a-.12; ch.style.opacity=l>0?1:0;
+      ch.style.transform=`translateX(${(1-EASE.out(clamp(l/.35)))*-80}px)`;}
+    if(s.cta) $('halo').style.opacity=.75+.25*flick(t,9);
+  });
+  CAPS.forEach((c,i)=>{const el=$('c'+i),on=t>=c[3]&&t<c[4];el.style.opacity=on?(i===0?1:clamp((t-c[3])/.2)):0;if(!on)return;
+    const l=t-c[3]; el.style.transform=i===0?`scale(${Math.min(1,.95+l*.5)})`:`translateY(${(1-EASE.out(clamp(l/.3)))*18}px)`;});
+  // warm light-leak sweep on section changes
+  const lk=$('leak'),g=lk.getContext('2d');g.clearRect(0,0,540,960);let la=0,lx=0;
+  for(const h of [2.0,6.0,11.0,14.5]){const d=t-h+.12;if(d>=0&&d<.45){la=Math.sin(Math.PI*d/.45);lx=lerp(-200,740,d/.45);}}
+  if(la>0){const gr=g.createRadialGradient(lx,420,0,lx,420,520);gr.addColorStop(0,'rgba(255,190,110,.85)');gr.addColorStop(.5,'rgba(255,120,50,.35)');gr.addColorStop(1,'rgba(255,120,50,0)');
+    g.fillStyle=gr;g.fillRect(0,0,540,960);} lk.style.opacity=la*.42;
+  const q=t-14.5;
+  $('get').style.opacity=clamp((q-.15)/.2); $('get').style.transform=`translateY(${(1-EASE.out(clamp((q-.15)/.35)))*30}px)`;
+  $('price').style.opacity=q>.6?1:0; $('price').style.transform=`scale(${back((q-.6)/.28,2.4)})`;
+  $('shop').style.opacity=q>1.1?1:0; $('shop').style.transform=`translateX(-50%) scale(${back((q-1.1)/.26)*(1+.035*Math.max(0,Math.sin((q-1.4)*Math.PI*2)))})`;
+  $('url').style.opacity=clamp((q-1.4)/.25);
+};
+</script>
+</body></html>

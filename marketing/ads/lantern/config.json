@@ -1,0 +1,83 @@
+{
+ "template": "../ads/lantern/scene.html",
+ "audioScript": "audio_lantern.py",
+ "images": {
+  "x10": {
+   "img": "img/x10.png"
+  },
+  "x05": {
+   "img": "img/x05.png"
+  },
+  "x04": {
+   "img": "img/x04.png"
+  },
+  "x06": {
+   "img": "img/x06.png"
+  },
+  "x07": {
+   "img": "img/x07.png"
+  },
+  "x08": {
+   "img": "img/x08.png"
+  },
+  "x09": {
+   "img": "img/x09.png"
+  },
+  "x03": {
+   "img": "img/x03.png"
+  },
+  "x02": {
+   "img": "img/x02.png"
+  },
+  "hero": {
+   "img": "img/hero.png"
+  },
+  "glow_x10": {
+   "img": "img/glow_x10.png"
+  },
+  "glow_x05": {
+   "img": "img/glow_x05.png"
+  },
+  "glow_x04": {
+   "img": "img/glow_x04.png"
+  },
+  "glow_x06": {
+   "img": "img/glow_x06.png"
+  },
+  "glow_x07": {
+   "img": "img/glow_x07.png"
+  },
+  "glow_x08": {
+   "img": "img/glow_x08.png"
+  },
+  "glow_x09": {
+   "img": "img/glow_x09.png"
+  },
+  "glow_x03": {
+   "img": "img/glow_x03.png"
+  },
+  "glow_x02": {
+   "img": "img/glow_x02.png"
+  },
+  "glow_x01": {
+   "img": "img/glow_x01.png"
+  }
+ },
+ "products": [],
+ "stills": [
+  0.0,
+  0.3,
+  1.3,
+  2.5,
+  3.9,
+  5.3,
+  6.6,
+  7.9,
+  9.1,
+  10.4,
+  12.0,
+  13.8,
+  15.0,
+  17.0
+ ]
+}
