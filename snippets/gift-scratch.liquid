@@ -128,7 +128,7 @@
           <ol>
             <li><span>Tap <b>Copy</b> to copy your code.</span></li>
             <li><span>Open the product you want and tap the red <span class="gs-pill">Buy now</span> button.</span></li>
-            <li><span>On the payment page, tap <span class="gs-pill w">Promo code</span>, paste your code and tap <b>Apply</b>.</span></li>
+            <li><span>On the payment page, tap <span class="gs-pill w">Promo code &amp; details</span> at the top, paste your code and tap <b>Apply</b>.</span></li>
           </ol>
           <p>Works with the <b>Buy now</b> card payment and bundles. It does not work for orders made with “Add to cart”.</p>
         </div>
@@ -192,7 +192,7 @@
     var row=$('.buy-row');
     if(!row||!live()||!st.rev||$('.gs-remind'))return;
     var d=document.createElement('div');d.className='gs-remind';
-    d.innerHTML='<span>🎁 Your '+(st.pct||10)+'% OFF code:</span><code></code><button type="button">Copy</button><span class="t"></span><p>Tap the red <b>Buy now</b> button, then paste the code in <b>Promo code</b> on the payment page.</p>';
+    d.innerHTML='<span>🎁 Your '+(st.pct||10)+'% OFF code:</span><code></code><button type="button">Copy</button><span class="t"></span><p>Tap the red <b>Buy now</b> button, then on the payment page tap <b>Promo code &amp; details</b> at the top and paste the code.</p>';
     $('code',d).textContent=st.code;
     $('button',d).addEventListener('click',function(){copy(this)});
     row.parentNode.insertBefore(d,row);

@@ -163,7 +163,7 @@ export function giftEmail({ code, percent, minutes, shopUrl }) {
     "How to use it:",
     "1. Open the product you want on morz.lol.",
     "2. Tap the red \"Buy now\" button.",
-    "3. On the payment page, tap \"Promo code\", paste your code and tap Apply.",
+    "3. On the payment page, tap \"Promo code & details\" at the top, paste your code and tap Apply.",
     "",
     "Works with the Buy now card payment and bundles. Not for orders made with \"Add to cart\".",
     "",
@@ -185,7 +185,7 @@ export function giftEmail({ code, percent, minutes, shopUrl }) {
 <table role="presentation" cellpadding="0" cellspacing="0">
 ${step(1, "Open the product you want on <b>morz.lol</b>.")}
 ${step(2, "Tap the red <b>Buy now</b> button.")}
-${step(3, "On the payment page, tap <b>Promo code</b>, paste your code and tap <b>Apply</b>.")}
+${step(3, "On the payment page, tap <b>Promo code &amp; details</b> at the top, paste your code and tap <b>Apply</b>.")}
 </table>
 <div style="margin-top:10px;font:13px/1.4 Arial,sans-serif;color:#777">Works with the Buy now card payment and bundles. Not for orders made with “Add to cart”.</div>
 <div style="text-align:center;margin-top:22px"><a href="${esc(link)}" style="display:inline-block;background:#e2323f;color:#fff;text-decoration:none;font:bold 16px/1 Arial,sans-serif;padding:15px 28px;border-radius:10px">Open my gift</a></div>
