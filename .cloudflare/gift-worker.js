@@ -136,6 +136,11 @@ async function gift(request, env, ctx) {
   try { await sendGiftMail(env, p.email, made.code); }
   catch (err) {
     console.error("gift: mail failed", err && err.message);
+    if (/AUTH/.test(String(err && err.message))) {
+      // shape only, never the values
+      const u = String(env.GMAIL_USER).trim(), pw = String(env.GMAIL_APP_PASSWORD).replace(/\s+/g, "");
+      console.error("gift: gmail setup check", JSON.stringify({ user_has_at: u.includes("@"), user_domain: u.split("@")[1] || "", user_has_space: /\s/.test(String(env.GMAIL_USER).trim()), pass_length: pw.length, pass_only_letters: /^[a-z]+$/i.test(pw) }));
+    }
     await deleteWhopCode(env, made.id);
     return reply(origin, 502, { error: "send" });
   }
