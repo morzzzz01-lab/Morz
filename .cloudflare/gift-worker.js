@@ -90,13 +90,30 @@ async function whopLead(env, email, country) {
   } catch (err) { console.error("whop lead failed", err && err.message); }
 }
 
-async function sendGiftMail(env, to, code) {
-  const { subject, text, html } = giftEmail({ code, percent: GIFT_PERCENT, minutes: GIFT_MINUTES, shopUrl: SHOP_URL });
+async function sendMail(env, to, { subject, text, html }) {
   const user = String(env.GMAIL_USER).trim(), pass = String(env.GMAIL_APP_PASSWORD).replace(/\s+/g, "");
   const message = buildMessage({ from: user, fromName: "MORZ", to, subject, text, html });
   const sock = connect({ hostname: "smtp.gmail.com", port: 465 }, { secureTransport: "on", allowHalfOpen: false });
-  try { await smtpSend(sock, { user, pass, to, message }); }
+  try { const r = await smtpSend(sock, { user, pass, to, message }); console.log("gift: mail accepted", r); return r; }
   finally { try { await sock.close(); } catch { /* ignore */ } }
+}
+async function sendGiftMail(env, to, code) {
+  return sendMail(env, to, giftEmail({ code, percent: GIFT_PERCENT, minutes: GIFT_MINUTES, shopUrl: SHOP_URL }));
+}
+
+// Mail test for the shop owner: POST /gift/test {token, to, kind: "plain"|"gift"}.
+// The token is the KV value "admin:test-token" (set it to use the test, delete it afterwards).
+async function mailTest(request, env) {
+  const body = await readJson(request);
+  const token = await env.GIFT_KV.get("admin:test-token");
+  if (!token || body.token !== token) return new Response("forbidden", { status: 403 });
+  const p = parseEmail(body.to);
+  if (!p) return new Response("bad to", { status: 400 });
+  const mail = body.kind === "gift"
+    ? giftEmail({ code: "mztest00", percent: GIFT_PERCENT, minutes: GIFT_MINUTES, shopUrl: SHOP_URL })
+    : { subject: "MORZ mail test " + new Date().toISOString().slice(11, 19), text: "Hello! This is a test message from the MORZ shop.", html: "<p>Hello! This is a test message from the MORZ shop.</p>" };
+  try { return Response.json({ ok: true, smtp: await sendMail(env, p.email, mail) }); }
+  catch (err) { return Response.json({ ok: false, error: String(err && err.message) }, { status: 502 }); }
 }
 
 async function readJson(request) {
@@ -169,6 +186,7 @@ export default {
   ...base,
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === "/gift/test" && request.method === "POST") return mailTest(request, env);
     if (url.pathname === "/gift" || url.pathname === "/gift/verify") {
       const origin = request.headers.get("Origin") || "";
       if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });

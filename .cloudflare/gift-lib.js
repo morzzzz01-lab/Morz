@@ -145,8 +145,9 @@ export async function smtpSend(sock, { user, pass, to, message, helo = "morz.lol
   await cmd(`RCPT TO:<${to}>`, [250, 251], "RCPT");
   await cmd("DATA", [354]);
   const body = message.replace(/\r?\n/g, "\r\n").replace(/^\./gm, "..");
-  await cmd(body + (body.endsWith("\r\n") ? "" : "\r\n") + ".", [250], "DATA end");
+  const end = await cmd(body + (body.endsWith("\r\n") ? "" : "\r\n") + ".", [250], "DATA end");
   try { await writer.write(enc.encode("QUIT\r\n")); } catch { /* ignore */ }
+  return end.text;
 }
 
 // ---------- the gift email ----------
