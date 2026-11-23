@@ -1,11 +1,13 @@
 {%- comment -%}
   Gift scratch card.
-  1. Visitor enters an email (one gift per email, checked on the server).
-  2. The server (Cloudflare Worker /gift) creates a personal Whop promo code
-     (letters + digits) that Whop itself expires after 10 minutes.
+  1. Visitor enters an email. The server (Cloudflare Worker /gift) checks it is a
+     real address, makes a personal Whop promo code (letters + digits) that Whop
+     expires after 10 minutes, emails it (Gmail) and saves the email as a Whop lead.
+     One gift per email.
+  2. Visitor opens the email link (?gift=CODE) or types the code here (/gift/verify).
   3. Visitor scratches the card, sees the code, a countdown and how to use it.
-  While the code runs, product pages show a reminder above the Buy now button.
-  Opens by itself once, a few seconds after the loading screen is gone.
+  While the code runs, product pages show a reminder above the Buy now button and
+  the "#gift" menu link shows the code. Opens by itself when the loading screen is gone.
 {%- endcomment -%}
 {%- if settings.gift_enable and settings.gift_endpoint != blank -%}
 <style>
