@@ -70,6 +70,7 @@
 .gs-remind button{height:2rem;padding:0 .8rem;border-radius:.5rem;border:0;cursor:pointer;font:inherit;font-weight:800;font-size:.8rem;background:#ffd23f;color:#1a1200}
 .gs-remind .t{margin-left:auto;font:800 .85rem/1 ui-monospace,SFMono-Regular,Menlo,monospace}
 .gs-remind p{flex-basis:100%;margin:0;color:#c3cad6;font-size:.82rem}
+.gs-navcode{margin-left:.4rem;padding:.1rem .4rem;border-radius:.35rem;background:#ffd23f;color:#1a1200;font:800 .72rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;white-space:nowrap}
 </style>
 
 <button type="button" class="gs-fab" data-gs-open aria-label="Open your gift">🎁<i></i></button>
@@ -155,7 +156,7 @@
     $$('[data-gs-pct]').forEach(function(el){el.textContent=p+' OFF'});
     $('[data-gs-code]').textContent=st.code||'';
   }
-  function endCode(){fab.removeAttribute('data-left');var r=$('.gs-remind');if(r)r.remove()}
+  function endCode(){fab.removeAttribute('data-left');navCode(null);var r=$('.gs-remind');if(r)r.remove()}
 
   /* countdown everywhere: popup, gift button and the reminder on product pages */
   function run(){
@@ -166,7 +167,7 @@
       var t=fmt(ms);
       $('[data-gs-time]').textContent=t;
       $('[data-gs-bar]').style.transform='scaleX('+Math.min(1,ms/FULL)+')';
-      if(st.rev)fab.setAttribute('data-left','⏳ '+t);
+      if(st.rev){fab.setAttribute('data-left','⏳ '+t);navCode(t)}
       var rt=$('.gs-remind .t');if(rt)rt.textContent='⏳ '+t;
     }
     f();tick=setInterval(f,1000);
@@ -239,6 +240,9 @@
   $('[data-gs-skip]').addEventListener('click',reveal);
   $('[data-gs-copy]').addEventListener('click',function(){copy(this)});
   fab.addEventListener('click',open);
+  /* menu link to "#gift" (e.g. "🎁 Promo code"): opens the gift and shows the running code next to it */
+  document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href$="#gift"]');if(a){e.preventDefault();open()}});
+  function navCode(t){$$('a[href$="#gift"]').forEach(function(a){if(a.getAttribute('data-gs-t')==null)a.setAttribute('data-gs-t',a.textContent);if(!t){a.textContent=a.getAttribute('data-gs-t');return}var s=a.querySelector('.gs-navcode');if(!s){a.textContent='🎁';s=document.createElement('span');s.className='gs-navcode';a.appendChild(s)}s.textContent=st.code+' · '+t})}
   ov.addEventListener('click',function(e){if(e.target===ov||e.target.closest('[data-gs-close]'))close()});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
 
@@ -254,7 +258,8 @@
       setTimeout(wait,300);
     })();
   }
-  if(!st.seen&&!st.code&&!(window.Shopify&&Shopify.designMode)&&!/\/(cart|checkout|account)/.test(location.pathname)){
+  if(location.hash==='#gift'){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}afterIntro(open)}
+  else if(!st.seen&&!st.code&&!(window.Shopify&&Shopify.designMode)&&!/\/(cart|checkout|account)/.test(location.pathname)){
     afterIntro(function(){setTimeout(function(){if(!st.seen&&!ov.classList.contains('open'))open()},DELAY)});
   }
 })();
